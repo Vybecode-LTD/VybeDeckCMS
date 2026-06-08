@@ -1,0 +1,32 @@
+<% content_for :title, public_page_title(@page) %>
+
+<main class="page-shell">
+  <section class="content-hero">
+    <div class="shell content-hero__grid">
+      <div class="content-hero__copy">
+        <div class="eyebrow">
+          Content Page
+          <% unless @page.published? %>
+            <span class="status-pill"><%= published_label(@page) %></span>
+          <% end %>
+        </div>
+        <h1><%= @page.title %></h1>
+        <% if @page.meta_description.present? %>
+          <p class="lede"><%= @page.meta_description %></p>
+        <% end %>
+      </div>
+
+      <% if @page.hero_image.attached? %>
+        <figure class="feature-media">
+          <%= image_tag url_for(@page.hero_image), alt: "" %>
+        </figure>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="content-band">
+    <div class="shell reading-width trix-content">
+      <%= @page.body %>
+    </div>
+  </section>
+</main>

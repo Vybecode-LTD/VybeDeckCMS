@@ -1,0 +1,42 @@
+<% content_for :title, public_page_title(@post) %>
+
+<main class="page-shell">
+  <article>
+    <header class="content-hero">
+      <div class="shell content-hero__grid">
+        <div class="content-hero__copy">
+          <div class="eyebrow">
+            <%= readable_date(@post.published_at || @post.created_at) %>
+            <% unless @post.published? %>
+              <span class="status-pill"><%= published_label(@post) %></span>
+            <% end %>
+          </div>
+          <h1><%= @post.title %></h1>
+          <% if @post.excerpt.present? %>
+            <p class="lede"><%= @post.excerpt %></p>
+          <% end %>
+          <p class="byline"><%= @post.author.email_address %></p>
+          <% if @post.categories.any? %>
+            <div class="topic-list" aria-label="Topics">
+              <% @post.categories.each do |category| %>
+                <%= link_to category.name, category_path(category), class: "topic-chip" %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <% if @post.cover_image.attached? %>
+          <figure class="feature-media">
+            <%= image_tag url_for(@post.cover_image), alt: "" %>
+          </figure>
+        <% end %>
+      </div>
+    </header>
+
+    <section class="content-band">
+      <div class="shell reading-width trix-content">
+        <%= @post.body %>
+      </div>
+    </section>
+  </article>
+</main>

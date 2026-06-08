@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Vybedeck Cms" %></title>
+    <title><%= content_for(:title) || "VybeDeck CMS" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Vybedeck Cms">
+    <meta name="application-name" content="VybeDeck CMS">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <%= turbo_refreshes_with method: :morph, scroll: :preserve %>
 
     <%= yield :head %>
 
@@ -24,6 +25,8 @@
   </head>
 
   <body>
+    <%= render "shared/site_header" %>
     <%= yield %>
+    <%= render "shared/site_footer" %>
   </body>
 </html>
