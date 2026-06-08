@@ -1,125 +1,116 @@
-# CLAUDE.md - VybeDeck CMS Handoff
+# CLAUDE.md — VybeDeck CMS
 
-> New Claude/Codex sessions should read this first. Keep "Last Completed Task" current at the end of every work session.
+> New sessions read this first. Then read `HANDOFF.md` for current state and `ROADMAP.md` for planned work.
+> Keep "Last Completed Task" and "Active Task" current at the end of every session.
+
+---
 
 ## Project Snapshot
-- Project name: VybeDeck CMS.
-- Repo path: `C:\DEV\VybeDeck\vybedeck_cms`.
-- GitHub remote: `https://github.com/Vybecode-LTD/VybeDeckCMS.git`.
-- Current branch: `codex/public-hotwire-site`.
-- Main branch status at branch point: `f51fd8e` (`Merge Session 2 admin panel baseline`).
-- Current branch state: public site work is implemented and tested, but not committed, merged, or pushed.
-- Runtime: Rails 8.1, Ruby 3.4, PostgreSQL, Hotwire, Minitest.
 
-## Last Completed Task
-Public Hotwire site baseline complete on branch `codex/public-hotwire-site`: page, blog, post, and topic templates render through the public content model; VybeDeck CMS naming and VybeCod.ing styling are applied; seed content is idempotent and media-backed; Active Storage named variants enqueue background transform jobs.
+| Field | Value |
+|-------|-------|
+| Name | VybeDeck CMS |
+| Repo | `C:\DEV\VybeDeck\vybedeck_cms` |
+| Remote | `https://github.com/Vybecode-LTD/VybeDeckCMS.git` |
+| Branch | `main` |
+| Platform | Railway (PaaS, auto-deploy from main) |
+| Stack | Rails 8.1, Ruby 3.4, PostgreSQL 17, Propshaft, Importmap, Minitest |
+| Last commit | `9ef92be` |
 
-Verification from June 8, 2026:
-- `ruby bin\rails test` passed: `29 runs, 141 assertions, 0 failures, 0 errors, 0 skips`.
-- `ruby bin\rails db:seed` completed.
-- HTTP smoke checks passed for `/`, `/blog`, `/topics/announcements`, and compiled CSS.
+## Last Completed Task (2026-06-08)
 
-## Completed Task History
-1. Agent kit assembled with root `AGENTS.md`, root `CLAUDE.md`, and six project-scoped skills under `.codex/skills/` and `.claude/skills/`.
-2. Rails 8 CMS foundation generated in `vybedeck_cms` with PostgreSQL and the Rails 8 Solid trio defaults.
-3. Core CMS model baseline added: separate `Page` and `Post` models, `Category`, `Tagging`, FriendlyId slugs, Action Text bodies, Active Storage media, `Publishable` and `Seoable` concerns, generated Rails authentication, Pundit roles, and public route policy coverage.
-4. Session 2 admin baseline merged to `main` and pushed: Administrate installed, dashboards trimmed to Page/Post/Category/User, admin namespace gated to editor/admin via Pundit, and admin access/create tests passing.
-5. Public Hotwire site baseline implemented on `codex/public-hotwire-site`: public templates, shared header/footer, VybeCod.ing CSS, idempotent seeds with generated media, and async Active Storage variant enqueue tests.
+**Design system rewrite** — complete light/dark theme with Inter variable font, OKLCH design
+tokens, glass-morphism header, rounded form controls, auth card layout, no-flash localStorage
+theme toggle. Verified via computed-style inspection in both modes. Committed to `main`.
 
-## Architecture
-- Rails 8 monolith and database island. Do not share this database with another app.
-- PostgreSQL primary database.
-- Solid Queue, Solid Cache, and Solid Cable use their own database configs/migration paths per Rails 8 defaults.
-- No Redis.
-- Public site is server-rendered Hotwire. There is no React frontend.
-- Admin is Administrate. Own the Administrate views when polishing admin UX.
-- Auth is Rails 8 generated authentication.
-- Authorization is Ruby/Pundit using `User.role`: `author`, `editor`, `admin`.
-- Content model rule: `Page` and `Post` are separate tables/models. Never combine them with STI or a `type` column.
+Previous sessions: Rails 8 foundation → auth/Pundit → Page/Post/Category models → Administrate
+admin → public Hotwire site → Railway deployment → admin UX polish (Phase 3) → design system.
+
+## Active Task
+
+Phase 1 — Media Manager (not yet started). See `ROADMAP.md` Phase 1.
+
+## Architecture (rules — never break without explicit owner approval)
+
+- `Page` and `Post` are **separate models, separate tables**. No STI. No `type` column.
+- **Pundit** for all authorisation. No shortcuts that skip policy checks.
+- **Rails 8 generated auth**. Do not add Devise.
+- **Minitest** for all tests. Do not migrate to RSpec.
+- **Propshaft** for assets. No Webpack or Sprockets.
+- **No Redis.** Solid Queue / Cache / Cable use PostgreSQL.
+- **No React.** Public site is Hotwire/Turbo. Admin is Administrate.
+- **Stripe only** for payments (Phase 3+).
+- **Anthropic / Claude** for AI integration (Phase 7+).
+- Database is a **Rails island** — no other app shares this PostgreSQL instance.
+- **No secrets in the repo.** `RAILS_MASTER_KEY` and all API keys are Railway env vars only.
 
 ## Current Content Model
-- `Page`: standalone/hierarchical/nav-placed content with `parent`, `children`, Action Text `body`, `hero_image`, SEO fields, status, slug, nav position, and `show_in_nav`.
-- `Post`: dated editorial content with `author`, `categories`, Action Text `body`, `cover_image`, `gallery`, excerpt, SEO fields, status, slug history.
-- `Category`: FriendlyId topic taxonomy for posts.
-- Shared concerns: `Publishable` for status/live scope and `Seoable` for metadata.
 
-## Public Site Implementation
-- Layout and naming: `app/views/layouts/application.html.erb` now uses "VybeDeck CMS", Turbo morph refresh, shared public header/footer.
-- Public helpers: `app/helpers/application_helper.rb` provides nav pages, page titles, status labels, and readable dates.
-- Public controllers now render templates instead of plain text:
-  - `PagesController#show`
-  - `PostsController#index`
-  - `PostsController#show`
-  - `CategoriesController#show`
-- Views added:
-  - `app/views/shared/_site_header.html.erb`
-  - `app/views/shared/_site_footer.html.erb`
-  - `app/views/pages/show.html.erb`
-  - `app/views/posts/index.html.erb`
-  - `app/views/posts/show.html.erb`
-  - `app/views/posts/_post_card.html.erb`
-  - `app/views/categories/show.html.erb`
-- Styling: `app/assets/stylesheets/application.css` uses the VybeCod.ing design system: `#0a0a0a`, `#e8440a`, JetBrains Mono, OKLCH tokens, restrained public CMS layout.
+- `Page` — standalone/hierarchical. Action Text body, Active Storage hero_image, Publishable, Seoable, FriendlyId slug, show_in_nav, position
+- `Post` — dated editorial. Action Text body, Active Storage cover_image + gallery, author, categories, Publishable, Seoable, FriendlyId slug history
+- `Category` — FriendlyId taxonomy for posts
+- `User` — roles: `author` (0), `editor` (1), `admin` (2)
+- Concerns: `Publishable` (status enum, live scope), `Seoable` (meta fields — **not yet wired to view output**)
 
-## Media And Jobs
-- `Page#hero_image` defines a preprocessed `:hero` variant.
-- `Post#cover_image` defines a preprocessed `:cover` variant.
-- `Post#gallery` defines a preprocessed `:thumb` variant.
-- Views render original attachments, not `.processed` variants, so requests do not do inline image transformation.
-- Local ImageMagick/Vips binaries were not present during implementation. Tests verify enqueue behavior, not actual image transformation execution.
+## Design System (current state)
 
-## Seeds
-- `db/seeds.rb` is idempotent.
-- Creates admin user: `admin@vybedeck.test` with password `password`.
-- Creates categories: `Announcements`, `Field Notes`.
-- Creates pages: `home`, `about`.
-- Creates posts: `launch-notes`, `editorial-workflow`, and draft `private-draft`.
-- Generates small PNG attachments in Ruby and attaches them once.
-
-## Tests
-- Current full suite: `29 runs, 141 assertions`.
-- Important files:
-  - `test/integration/public_cms_routes_test.rb`
-  - `test/integration/admin_access_test.rb`
-  - `test/integration/admin_content_management_test.rb`
-  - `test/integration/seeds_test.rb`
-  - `test/models/active_storage_variant_test.rb`
-- Use Minitest unless there is a strong reason to change.
+- **Font:** Inter variable font (Google Fonts `@import` in CSS)
+- **Light:** `--bg #f8f7f5`, `--bg-elevated #ffffff`, `--text #18150e`, `--accent #e8440a`
+- **Dark:** `--bg #0f0e0d`, `--bg-elevated #1a1816`, `--text #f0ece4`, `--accent #e8440a`
+- **Theme switch:** `data-color-scheme` attribute on `<html>` + `@media (prefers-color-scheme: dark)` + no-flash localStorage script
+- **Auth layout:** `app/views/layouts/auth.html.erb` — centred card, brand at top, no nav
+- **All new UI** must use the existing CSS custom properties. No hard-coded colours or fonts.
 
 ## Windows Command Prefix
-Use this PATH prefix before Rails commands in PowerShell:
 
 ```powershell
 $env:PATH='C:\DEV\VybeDeck\.tools\Ruby34\bin;C:\DEV\VybeDeck\.tools\Ruby34\msys64\ucrt64\bin;C:\DEV\VybeDeck\.tools\Ruby34\msys64\usr\bin;C:\DEV\VybeDeck\.tools\PostgreSQL17\bin;' + $env:PATH
-```
-
-Then run Rails through Ruby:
-
-```powershell
+cd C:\DEV\VybeDeck\vybedeck_cms
 ruby bin\rails test
-ruby bin\rails db:seed
-ruby bin\rails server
 ```
 
-## Git State For Next Agent
-- The branch `codex/public-hotwire-site` contains uncommitted application changes.
-- Root workspace docs under `C:\DEV\VybeDeck` are outside the app Git repo.
-- Repo-local docs added in this handoff should be committed with the branch.
-- Do not merge or push until the user asks.
-- Before commit, inspect staged files and secrets. Do not use `git add .` blindly.
+## Test Suite
 
-## Known Gaps
-- Browser visual validation was attempted, but the in-app browser JS execution entry point was not exposed in the active tool list. Fallback HTTP/rendered-content checks were used.
-- Production image processing needs a real processor binary in the image/runtime: libvips or ImageMagick.
-- Deployment has not been hardened yet.
-- Admin UX is functional but not yet polished.
-- Public SEO artifacts such as sitemap/robots/canonical helpers are not implemented yet.
-- No production content import has been performed.
+```
+29 runs, 141 assertions, 0 failures, 0 errors, 0 skips
+```
 
-## Next Step
-Review and commit `codex/public-hotwire-site`, then move into deployment hardening:
-- Kamal config and secrets.
-- Solid Queue runtime posture.
-- Active Storage persistence and backups.
-- Production image processor.
-- Production environment settings and smoke checklist.
+Key test files:
+- `test/integration/public_cms_routes_test.rb`
+- `test/integration/admin_access_test.rb`
+- `test/integration/admin_content_management_test.rb`
+- `test/integration/seeds_test.rb`
+- `test/models/active_storage_variant_test.rb`
+
+## Seeds
+
+`ruby bin\rails db:seed` (idempotent):
+- Admin: `admin@vybedeck.test` / `password`
+- Categories: Announcements, Field Notes
+- Pages: home, about
+- Posts: launch-notes (pub), editorial-workflow (pub), private-draft (draft)
+
+## Deployment
+
+- Railway auto-deploys from `main` via Dockerfile
+- `railway.toml`: `PORT=80` (critical — do not remove), `healthcheckTimeout=600`
+- `bin/docker-entrypoint`: retries `db:migrate` 12× before starting Puma
+- All 4 DB configs share `DATABASE_URL` in production
+- `RAILS_MASTER_KEY` is a Railway env var — never committed
+
+## Known Gaps (priority order)
+
+1. `libvips` not in Dockerfile — Active Storage variants enqueue but don't run in production
+2. Active Storage on local volume — needs S3 before content is irreplaceable in Railway
+3. `Seoable` not wired to views — `<title>` and `<meta>` don't read model fields yet
+4. `display_name` missing on User — post bylines show email addresses publicly
+5. No SMTP config — password reset emails silently fail in production
+6. No pagination (Pagy) — blog/topic lists will degrade at scale
+7. No empty states on blog/topic list pages
+
+## Session Protocol
+
+**Start:** Read this file → read `HANDOFF.md` → run `ruby bin\rails test` → confirm green.  
+**During:** After each significant change: run affected tests. Bug fix = write failing test first.  
+**End:** Update this file (Last Completed / Active Task) + `HANDOFF.md` + commit docs.  
+**Commits:** `type(scope): message` format. Stage specific files. Never `git add -A` blindly. Never commit `storage/`, `tmp/`, `log/`, or any credential file.
