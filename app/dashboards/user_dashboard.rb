@@ -3,6 +3,7 @@ require "administrate/base_dashboard"
 class UserDashboard < Administrate::BaseDashboard
   ATTRIBUTE_TYPES = {
     id: Field::Number,
+    display_name: Field::String,
     email_address: Field::Email,
     password: Field::Password,
     posts: Field::HasMany,
@@ -23,6 +24,7 @@ class UserDashboard < Administrate::BaseDashboard
 
   SHOW_PAGE_ATTRIBUTES = %i[
     id
+    display_name
     email_address
     posts
     role
@@ -31,6 +33,7 @@ class UserDashboard < Administrate::BaseDashboard
   ].freeze
 
   FORM_ATTRIBUTES = %i[
+    display_name
     email_address
     password
     role
@@ -39,6 +42,6 @@ class UserDashboard < Administrate::BaseDashboard
   COLLECTION_FILTERS = {}.freeze
 
   def display_resource(user)
-    user.email_address
+    user.byline
   end
 end

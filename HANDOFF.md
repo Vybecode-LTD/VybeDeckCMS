@@ -5,7 +5,7 @@
 
 **Updated:** 2026-06-08  
 **Branch:** `main`  
-**Last commit:** `9ef92be` — `feat(design): complete light/dark design system with Inter font and auth layout`
+**Last commit:** gaps-close session (uncommitted) — all seven pre-Phase-1 gaps resolved; tests 33/148 green
 
 ---
 
@@ -18,7 +18,7 @@
 | GitHub | `https://github.com/Vybecode-LTD/VybeDeckCMS.git` |
 | Deployed | Railway (auto-deploy from `main`) |
 | Branch | `main` — everything is merged and pushed |
-| Tests | `29 runs, 141 assertions, 0 failures, 0 errors, 0 skips` |
+| Tests | `33 runs, 148 assertions, 0 failures, 0 errors, 0 skips` |
 
 ---
 
@@ -74,6 +74,14 @@ ruby bin\rails server        # dev server on :3000
 - Shared partials: `_site_header.html.erb`, `_site_footer.html.erb`
 - `ApplicationHelper`: `public_nav_pages`, `page_title`, `status_label`, `readable_date`
 
+### Content Quality & UX Fixes
+- `User#display_name` column + `User#byline` helper (falls back to `email_address`)
+- `<meta name="description">` emitted from layout via `content_for(:description)`; set on all public show/index views
+- Empty states on blog index and category show pages
+- Pagy pagination (12/page, nav renders only when pages > 1) on `PostsController#index` and `CategoriesController#show`
+- SMTP config in `production.rb` reads `SMTP_*` Railway env vars — silent until added
+- `aws-sdk-s3` gem added; `storage.yml` has amazon service; production auto-switches to S3 when `AWS_BUCKET` set
+
 ### Design System
 - **Font:** Inter (variable, Google Fonts `@import` in CSS)
 - **Light theme:** `--bg #f8f7f5`, white cards, `--text #18150e`, accent `#e8440a`
@@ -111,15 +119,10 @@ Posts: `launch-notes` (published), `editorial-workflow` (published), `private-dr
 
 | Issue | Severity | Notes |
 |-------|----------|-------|
-| `Seoable` concern not wired to views | Medium | `meta_title` / `meta_description` fields exist in DB but `<title>` and `<meta>` tags don't read them yet |
-| `display_name` missing on User | Medium | Post bylines currently show `email_address` publicly |
-| No image processor in Docker | Medium | `libvips` or ImageMagick not installed; Active Storage variants enqueue but don't transform in production |
-| Active Storage on local volume | Medium | Fine for dev; fragile in Railway containers — needs S3 before production content is irreplaceable |
-| No SMTP configured | Low | Password reset emails will silently fail in production until `SMTP_*` env vars and Action Mailer config are added |
-| No pagination | Low | Blog index and topic pages will degrade at scale; Pagy not yet added |
-| No empty states | Low | Blog index / topic pages show nothing when no published posts exist |
-| No `alt_text` field on media | Low | All `image_tag` calls use `alt: ""` |
-| SEO deferred | Intentional | Owner requested: complete features first, then SEO |
+| S3 not yet active | Medium | `aws-sdk-s3` gem added, `storage.yml` and production config ready. Add `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_BUCKET` Railway env vars to activate. |
+| SMTP not yet active | Low | Config ready in `production.rb`. Add `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD` Railway env vars to activate password-reset email. |
+| No `alt_text` field on media | Low | All `image_tag` calls use `alt: ""` — will be addressed in Phase 1 Media Manager |
+| SEO deferred | Intentional | Owner requested: complete features first, then Phase 10 SEO |
 
 ---
 
@@ -135,16 +138,16 @@ cd C:\DEV\VybeDeck\vybedeck_cms
 # 2. Confirm green baseline
 ruby bin\rails test
 
-# 3. Start work on next roadmap phase
+# 3. Start work on Phase 1 — Media Manager
 ```
 
 **Next recommended phase:** Phase 1 — Media Manager (see `ROADMAP.md`)
 
-The most valuable first task inside Phase 1 is:
-1. Add `libvips` to `Dockerfile` (unblocks image processing in production immediately)
-2. Switch Active Storage to S3 (`STORAGE_BUCKET`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` as Railway env vars)
-3. Build the `Medium` model and admin media library
-4. Wire `Seoable` to output `<title>` and `<meta name="description">` (quick win, unblocks content quality)
+Suggested start order inside Phase 1:
+1. `Medium` model + admin media library grid (Pagy already wired)
+2. Drag-and-drop Stimulus upload controller
+3. Inline "pick from library" modal on Page/Post forms
+4. Add AWS env vars to Railway → S3 becomes live (code already deployed)
 
 ---
 

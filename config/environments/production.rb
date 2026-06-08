@@ -21,8 +21,8 @@ Rails.application.configure do
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.asset_host = "http://assets.example.com"
 
-  # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
+  # Use S3 when AWS_BUCKET is set; fall back to local disk otherwise.
+  config.active_storage.service = ENV["AWS_BUCKET"].present? ? :amazon : :local
 
   # Railway terminates SSL at the edge — trust it and enforce HTTPS.
   config.assume_ssl = true
@@ -49,20 +49,26 @@ Rails.application.configure do
   config.active_job.queue_adapter = :solid_queue
   config.solid_queue.connects_to = { database: { writing: :queue } }
 
-  # Ignore bad email addresses and do not raise email delivery errors.
-  # Set this to true and configure the email server for immediate delivery to raise delivery errors.
-  # config.action_mailer.raise_delivery_errors = false
-
   config.action_mailer.default_url_options = { host: ENV.fetch("RAILS_HOST", "localhost") }
 
-  # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
-  # config.action_mailer.smtp_settings = {
-  #   user_name: Rails.application.credentials.dig(:smtp, :user_name),
-  #   password: Rails.application.credentials.dig(:smtp, :password),
-  #   address: "smtp.example.com",
-  #   port: 587,
-  #   authentication: :plain
-  # }
+  # SMTP is enabled when SMTP_ADDRESS is set as a Railway env var.
+  # Required vars: SMTP_ADDRESS, SMTP_USERNAME, SMTP_PASSWORD
+  # Optional vars: SMTP_PORT (default 587), ACTION_MAILER_FROM
+  if ENV["SMTP_ADDRESS"].present?
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.raise_delivery_errors = true
+    config.action_mailer.smtp_settings = {
+      address: ENV.fetch("SMTP_ADDRESS"),
+      port: ENV.fetch("SMTP_PORT", "587").to_i,
+      user_name: ENV.fetch("SMTP_USERNAME", nil),
+      password: ENV.fetch("SMTP_PASSWORD", nil),
+      authentication: :plain,
+      enable_starttls_auto: true
+    }
+    config.action_mailer.default_options = {
+      from: ENV.fetch("ACTION_MAILER_FROM", "noreply@#{ENV.fetch("RAILS_HOST", "localhost")}")
+    }
+  end
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

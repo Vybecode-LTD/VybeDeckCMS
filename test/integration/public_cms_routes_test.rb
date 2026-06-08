@@ -15,6 +15,29 @@ class PublicCmsRoutesTest < ActionDispatch::IntegrationTest
     )
   end
 
+  test "meta description is output when page has meta_description" do
+    page = Page.create!(
+      title: "Meta Page",
+      status: :published,
+      published_at: 1.hour.ago,
+      meta_description: "A custom page description for search engines."
+    )
+
+    get page_path(page)
+
+    assert_response :success
+    assert_select "meta[name=description][content=?]", "A custom page description for search engines."
+  end
+
+  test "meta description is absent when page has none" do
+    page = Page.create!(title: "No Meta Page", status: :published, published_at: 1.hour.ago)
+
+    get page_path(page)
+
+    assert_response :success
+    assert_select "meta[name=description]", count: 0
+  end
+
   test "published page is visible to anonymous visitor" do
     page = Page.create!(
       title: "Published Page",
@@ -100,7 +123,7 @@ class PublicCmsRoutesTest < ActionDispatch::IntegrationTest
     assert_select "main h1", "Published Post"
     assert_select "a[href=?]", category_path(category), text: "Releases"
     assert_includes response.body, "Published post body."
-    assert_includes response.body, @author.email_address
+    assert_includes response.body, @author.byline
   end
 
   test "draft post is not visible to anonymous visitor" do

@@ -4,9 +4,10 @@ class CategoriesController < ApplicationController
 
   def show
     @category = Category.friendly.find(params[:slug])
-    @posts = policy_scope(@category.posts)
+    posts_scope = policy_scope(@category.posts)
       .includes(:author, :categories, cover_image_attachment: :blob)
       .order(published_at: :desc, created_at: :desc)
+    @pagy, @posts = pagy(posts_scope)
   rescue ActiveRecord::RecordNotFound
     render plain: "Not found", status: :not_found
   end

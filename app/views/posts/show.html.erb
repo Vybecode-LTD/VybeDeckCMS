@@ -1,4 +1,5 @@
 <% content_for :title, public_page_title(@post) %>
+<% content_for :description, @post.meta_description if @post.meta_description.present? %>
 
 <main class="page-shell">
   <article>
@@ -15,7 +16,7 @@
           <% if @post.excerpt.present? %>
             <p class="lede"><%= @post.excerpt %></p>
           <% end %>
-          <p class="byline"><%= @post.author.email_address %></p>
+          <p class="byline"><%= @post.author.byline %></p>
           <% if @post.categories.any? %>
             <div class="topic-list" aria-label="Topics">
               <% @post.categories.each do |category| %>

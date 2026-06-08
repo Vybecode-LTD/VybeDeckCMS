@@ -3,9 +3,10 @@ class PostsController < ApplicationController
   before_action :resume_session
 
   def index
-    @posts = policy_scope(Post)
+    posts_scope = policy_scope(Post)
       .includes(:author, :categories, cover_image_attachment: :blob)
       .order(published_at: :desc, created_at: :desc)
+    @pagy, @posts = pagy(posts_scope)
     @categories = Category.joins(:posts).merge(Post.live).distinct.order(:name)
   end
 

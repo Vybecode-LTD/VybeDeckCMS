@@ -1,4 +1,5 @@
 module ApplicationHelper
+  include Pagy::Frontend
   def public_nav_pages
     @public_nav_pages ||= Page.live.where(show_in_nav: true).order(:position, :title)
   end

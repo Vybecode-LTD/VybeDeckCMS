@@ -6,4 +6,8 @@ class User < ApplicationRecord
   enum :role, { author: 0, editor: 1, admin: 2 }, default: :author
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
+
+  def byline
+    display_name.presence || email_address
+  end
 end

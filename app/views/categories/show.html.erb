@@ -1,4 +1,5 @@
 <% content_for :title, "#{@category.name} | VybeDeck CMS" %>
+<% content_for :description, "Posts tagged #{@category.name}" %>
 
 <main class="page-shell">
   <section class="list-heading">
@@ -10,7 +11,16 @@
 
   <section class="content-band">
     <div class="shell post-grid">
-      <%= render partial: "posts/post_card", collection: @posts, as: :post %>
+      <% if @posts.empty? %>
+        <p class="empty-state">No posts in this topic yet.</p>
+      <% else %>
+        <%= render partial: "posts/post_card", collection: @posts, as: :post %>
+      <% end %>
     </div>
+    <% if @pagy.pages > 1 %>
+      <div class="shell pagy-nav">
+        <%= pagy_nav(@pagy) %>
+      </div>
+    <% end %>
   </section>
 </main>

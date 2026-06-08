@@ -74,3 +74,5 @@ group :test do
 end
 
 gem "administrate", "~> 1.0"
+gem "pagy", "~> 9.3"
+gem "aws-sdk-s3", "~> 1.170", require: false

@@ -32,7 +32,7 @@ def attach_once(record, attachment_name, attachable)
 end
 
 admin = User.find_or_initialize_by(email_address: "admin@vybedeck.test")
-admin.assign_attributes(role: :admin, password: "password")
+admin.assign_attributes(role: :admin, password: "password", display_name: "VybeDeck Admin")
 admin.save!
 
 announcements = Category.find_or_create_by!(name: "Announcements")

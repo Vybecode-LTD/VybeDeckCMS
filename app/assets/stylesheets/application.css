@@ -923,3 +923,73 @@ button[type="submit"]:active {
     padding: 16px 0;
   }
 }
+
+/* ─────────────────────────────────────────────────────
+   EMPTY STATE
+───────────────────────────────────────────────────── */
+
+.empty-state {
+  grid-column: 1 / -1;
+  padding: 48px 0;
+  color: var(--text-muted);
+  font-size: 1rem;
+  text-align: center;
+}
+
+/* ─────────────────────────────────────────────────────
+   PAGINATION (Pagy)
+───────────────────────────────────────────────────── */
+
+.pagy-nav {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0 8px;
+}
+
+.pagy nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.pagy nav a,
+.pagy nav span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: .875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background .15s, color .15s;
+}
+
+.pagy nav a {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.pagy nav a:hover {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.pagy nav span.current {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
+}
+
+.pagy nav span.gap,
+.pagy nav span.disabled {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-faint);
+  cursor: default;
+}

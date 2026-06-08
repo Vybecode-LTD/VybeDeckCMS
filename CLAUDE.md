@@ -19,12 +19,18 @@
 
 ## Last Completed Task (2026-06-08)
 
-**Design system rewrite** — complete light/dark theme with Inter variable font, OKLCH design
-tokens, glass-morphism header, rounded form controls, auth card layout, no-flash localStorage
-theme toggle. Verified via computed-style inspection in both modes. Committed to `main`.
+**Known gaps closed** — all seven pre-Phase-1 gaps resolved:
+- `display_name` column added to users; `User#byline` helper falls back to email; post bylines updated; admin dashboard updated; seeds updated.
+- `Seoable` wired to views: `<meta name="description">` emitted from layout via `content_for(:description)`; all show/index views set it.
+- Empty states added to blog index and category show pages.
+- Pagy pagination added (12/page default); blog and category controllers paginated; nav shown when pages > 1; CSS added.
+- SMTP config in production.rb reads `SMTP_ADDRESS/PORT/USERNAME/PASSWORD/ACTION_MAILER_FROM` env vars — silent until set.
+- S3 config: `aws-sdk-s3` gem added; `storage.yml` has amazon service; production switches to `:amazon` when `AWS_BUCKET` is set.
+- `libvips` was already present in Dockerfile (both base and build stages) — gap was already closed.
+- Tests: 33 runs, 148 assertions, 0 failures (up from 29/141).
 
 Previous sessions: Rails 8 foundation → auth/Pundit → Page/Post/Category models → Administrate
-admin → public Hotwire site → Railway deployment → admin UX polish (Phase 3) → design system.
+admin → public Hotwire site → Railway deployment → admin UX polish (Phase 3) → design system → gaps closed.
 
 ## Active Task
 
@@ -72,7 +78,7 @@ ruby bin\rails test
 ## Test Suite
 
 ```
-29 runs, 141 assertions, 0 failures, 0 errors, 0 skips
+33 runs, 148 assertions, 0 failures, 0 errors, 0 skips
 ```
 
 Key test files:
@@ -100,13 +106,11 @@ Key test files:
 
 ## Known Gaps (priority order)
 
-1. `libvips` not in Dockerfile — Active Storage variants enqueue but don't run in production
-2. Active Storage on local volume — needs S3 before content is irreplaceable in Railway
-3. `Seoable` not wired to views — `<title>` and `<meta>` don't read model fields yet
-4. `display_name` missing on User — post bylines show email addresses publicly
-5. No SMTP config — password reset emails silently fail in production
-6. No pagination (Pagy) — blog/topic lists will degrade at scale
-7. No empty states on blog/topic list pages
+All pre-Phase-1 gaps closed. Remaining items before content is fully production-safe:
+
+1. **S3 not yet active** — code is ready; add `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_BUCKET` as Railway env vars to switch Active Storage from local disk to S3.
+2. **SMTP not yet active** — code is ready; add `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD` (and optionally `SMTP_PORT`, `ACTION_MAILER_FROM`) as Railway env vars to enable password-reset email.
+3. `Seoable` concern body is still empty — fields are DB columns, wired to views, but no model-level validation or helpers live in the concern yet.
 
 ## Session Protocol
 
