@@ -5,7 +5,6 @@ class PagesController < ApplicationController
   def show
     @page = policy_scope(Page).friendly.find(params[:id])
     authorize @page
-    render plain: @page.title
   rescue ActiveRecord::RecordNotFound
     render plain: "Not found", status: :not_found
   end

@@ -9,7 +9,9 @@ class Page < ApplicationRecord
     foreign_key: :parent_id, dependent: :nullify
 
   has_rich_text :body
-  has_one_attached :hero_image
+  has_one_attached :hero_image do |attachable|
+    attachable.variant :hero, resize_to_fill: [ 1600, 900 ], preprocessed: true
+  end
 
   validates :title, presence: true
 end

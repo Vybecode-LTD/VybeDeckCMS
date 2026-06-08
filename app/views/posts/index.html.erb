@@ -1,0 +1,21 @@
+<% content_for :title, "Journal | VybeDeck CMS" %>
+
+<main class="page-shell">
+  <section class="list-heading">
+    <div class="shell">
+      <p class="eyebrow">VybeDeck CMS</p>
+      <h1>Journal</h1>
+      <div class="topic-list" aria-label="Topics">
+        <% @categories.each do |category| %>
+          <%= link_to category.name, category_path(category), class: "topic-chip" %>
+        <% end %>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-band">
+    <div class="shell post-grid">
+      <%= render partial: "post_card", collection: @posts, as: :post %>
+    </div>
+  </section>
+</main>

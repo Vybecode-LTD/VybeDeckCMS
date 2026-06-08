@@ -1,0 +1,18 @@
+<header class="site-header">
+  <div class="shell site-header__inner">
+    <%= link_to root_path, class: "brand-mark" do %>
+      <span class="brand-mark__sigil">VD</span>
+      <span class="brand-mark__name">VybeDeck CMS</span>
+    <% end %>
+
+    <nav class="site-nav" aria-label="Primary">
+      <% public_nav_pages.each do |page| %>
+        <%= link_to page.title, page_path(page) %>
+      <% end %>
+      <%= link_to "Journal", posts_path %>
+      <% if Current.user&.editor? || Current.user&.admin? %>
+        <%= link_to "Admin", admin_root_path %>
+      <% end %>
+    </nav>
+  </div>
+</header>

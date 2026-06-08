@@ -1,0 +1,16 @@
+<% content_for :title, "#{@category.name} | VybeDeck CMS" %>
+
+<main class="page-shell">
+  <section class="list-heading">
+    <div class="shell">
+      <p class="eyebrow">Topic</p>
+      <h1><%= @category.name %></h1>
+    </div>
+  </section>
+
+  <section class="content-band">
+    <div class="shell post-grid">
+      <%= render partial: "posts/post_card", collection: @posts, as: :post %>
+    </div>
+  </section>
+</main>

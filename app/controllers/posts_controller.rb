@@ -4,13 +4,14 @@ class PostsController < ApplicationController
 
   def index
     @posts = policy_scope(Post)
-    render plain: @posts.map(&:title).join(", ")
+      .includes(:author, :categories, cover_image_attachment: :blob)
+      .order(published_at: :desc, created_at: :desc)
+    @categories = Category.joins(:posts).merge(Post.live).distinct.order(:name)
   end
 
   def show
-    @post = policy_scope(Post).friendly.find(params[:slug])
+    @post = policy_scope(Post).includes(:author, :categories, cover_image_attachment: :blob).friendly.find(params[:slug])
     authorize @post
-    render plain: @post.title
   rescue ActiveRecord::RecordNotFound
     render plain: "Not found", status: :not_found
   end

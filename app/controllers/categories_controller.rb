@@ -1,8 +1,13 @@
 class CategoriesController < ApplicationController
   allow_unauthenticated_access
+  before_action :resume_session
 
   def show
     @category = Category.friendly.find(params[:slug])
-    render plain: @category.name
+    @posts = policy_scope(@category.posts)
+      .includes(:author, :categories, cover_image_attachment: :blob)
+      .order(published_at: :desc, created_at: :desc)
+  rescue ActiveRecord::RecordNotFound
+    render plain: "Not found", status: :not_found
   end
 end
