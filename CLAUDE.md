@@ -19,6 +19,13 @@
 
 ## Last Completed Task (2026-06-08)
 
+**Phase 1.2 — Audio Player** (commit `44b5b56`):
+- Stimulus `audio_player_controller.js`: play/pause toggle, seek scrubber with CSS-gradient progress track, volume slider, playback speed select, tabular time display, aria attributes, clean connect/disconnect lifecycle.
+- Shared partial `app/views/shared/_audio_player.html.erb`: accepts any audio `Medium`; `show_download` local controls download link visibility.
+- Admin media show page renders the player for audio files.
+- ~190 lines of CSS using design-system tokens; responsive (hides volume/speed on narrow screens).
+- 10 integration tests. Full suite: **73 runs, 231 assertions, 0 failures**.
+
 **Phase 1.1 — Media Manager** (commit `06a7d2f`):
 - `Medium` model: polymorphic owner, image/audio/video/document enum, 200 MB cap, content-type allow-list, `byte_size` cached via `after_create_commit`.
 - Pundit policy: editors upload/edit; admins only delete.
@@ -32,7 +39,7 @@ Previous milestones: Rails 8 foundation → auth/Pundit → Page/Post/Category �
 
 ## Active Task
 
-Phase 1.2 — Audio Player. See `ROADMAP.md`.
+Phase 1.3 — Video Player. See `ROADMAP.md`.
 
 ## Architecture (rules — never break without explicit owner approval)
 
@@ -76,7 +83,7 @@ ruby bin\rails test
 ## Test Suite
 
 ```
-63 runs, 213 assertions, 0 failures, 0 errors, 0 skips
+73 runs, 231 assertions, 0 failures, 0 errors, 0 skips
 ```
 
 Key test files:

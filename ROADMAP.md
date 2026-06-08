@@ -38,7 +38,8 @@ e-commerce, and collaborative album production — all inside one deployable mon
 | SMTP config | Production mailer reads `SMTP_*` env vars; silent until set on Railway |
 | S3 config | Active Storage switches to `:amazon` when `AWS_BUCKET` env var is present |
 | Media Manager | `Medium` model, admin library grid, drag-drop upload, Pundit policy, 30 new tests |
-| Tests | 63 runs, 213 assertions, 0 failures; Minitest throughout |
+| Audio Player | Stimulus controller, shared partial, play/pause/seek/volume/speed, 10 new tests |
+| Tests | 73 runs, 231 assertions, 0 failures; Minitest throughout |
 
 ---
 
@@ -53,11 +54,10 @@ on top of it. Everything in later phases depends on rich media working reliably.
 - Pundit policy: editor can upload/edit; admin-only delete
 - 30 new tests (15 model + 15 integration); full suite now 63 runs / 213 assertions / 0 failures
 
-### 1.2 Audio Player
-- `<audio>` HTML5 player wrapped in a Stimulus controller
-- Controls: play/pause, seek scrubber, volume, speed, download link (if permitted)
-- Styled with design-system tokens; works in light and dark modes
-- Embeddable as an Action Text attachment and as a standalone content block on Pages
+### ~~1.2 Audio Player~~ ✅ Done
+- Stimulus `audio_player_controller.js`: play/pause, seek scrubber with CSS gradient progress, volume, speed (0.5×–2×), aria-label/aria-pressed
+- Shared partial `app/views/shared/_audio_player.html.erb`: accepts any `Medium` + `show_download` option
+- Wired into admin media show page for audio files; 10 integration tests
 
 ### 1.3 Video Player
 - `<video>` HTML5 player with same Stimulus controller pattern as audio
