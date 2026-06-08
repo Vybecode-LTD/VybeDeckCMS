@@ -19,22 +19,20 @@
 
 ## Last Completed Task (2026-06-08)
 
-**Known gaps closed** — all seven pre-Phase-1 gaps resolved:
-- `display_name` column added to users; `User#byline` helper falls back to email; post bylines updated; admin dashboard updated; seeds updated.
-- `Seoable` wired to views: `<meta name="description">` emitted from layout via `content_for(:description)`; all show/index views set it.
-- Empty states added to blog index and category show pages.
-- Pagy pagination added (12/page default); blog and category controllers paginated; nav shown when pages > 1; CSS added.
-- SMTP config in production.rb reads `SMTP_ADDRESS/PORT/USERNAME/PASSWORD/ACTION_MAILER_FROM` env vars — silent until set.
-- S3 config: `aws-sdk-s3` gem added; `storage.yml` has amazon service; production switches to `:amazon` when `AWS_BUCKET` is set.
-- `libvips` was already present in Dockerfile (both base and build stages) — gap was already closed.
-- Tests: 33 runs, 148 assertions, 0 failures (up from 29/141).
+**Phase 1.1 — Media Manager** (commit `06a7d2f`):
+- `Medium` model: polymorphic owner, image/audio/video/document enum, 200 MB cap, content-type allow-list, `byte_size` cached via `after_create_commit`.
+- Pundit policy: editors upload/edit; admins only delete.
+- `Admin::MediaController`: grid index with filter tabs, search, Pagy (24/page), CRUD, and `bulk_destroy` collection action.
+- Stimulus `upload_controller.js`: drag-and-drop zone, multi-file Fetch API loop.
+- `MediumDashboard` stub so Administrate nav registers the resource.
+- ~350 lines of media-library CSS (drop zone, grid, cards, type badges, bulk bar, dark-mode tokens).
+- 30 new tests (15 model + 15 integration). Full suite: **63 runs, 213 assertions, 0 failures**.
 
-Previous sessions: Rails 8 foundation → auth/Pundit → Page/Post/Category models → Administrate
-admin → public Hotwire site → Railway deployment → admin UX polish (Phase 3) → design system → gaps closed.
+Previous milestones: Rails 8 foundation → auth/Pundit → Page/Post/Category → Administrate admin → public Hotwire site → Railway deployment → admin UX polish → design system → pre-Phase-1 gaps closed → Phase 1.1 Media Manager.
 
 ## Active Task
 
-Phase 1 — Media Manager (not yet started). See `ROADMAP.md` Phase 1.
+Phase 1.2 — Audio Player. See `ROADMAP.md`.
 
 ## Architecture (rules — never break without explicit owner approval)
 
@@ -78,7 +76,7 @@ ruby bin\rails test
 ## Test Suite
 
 ```
-33 runs, 148 assertions, 0 failures, 0 errors, 0 skips
+63 runs, 213 assertions, 0 failures, 0 errors, 0 skips
 ```
 
 Key test files:

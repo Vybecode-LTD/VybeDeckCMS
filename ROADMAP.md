@@ -37,7 +37,8 @@ e-commerce, and collaborative album production — all inside one deployable mon
 | Meta description | `Seoable` `meta_description` wired to `<meta name="description">` via layout |
 | SMTP config | Production mailer reads `SMTP_*` env vars; silent until set on Railway |
 | S3 config | Active Storage switches to `:amazon` when `AWS_BUCKET` env var is present |
-| Tests | 33 runs, 148 assertions, 0 failures; Minitest throughout |
+| Media Manager | `Medium` model, admin library grid, drag-drop upload, Pundit policy, 30 new tests |
+| Tests | 63 runs, 213 assertions, 0 failures; Minitest throughout |
 
 ---
 
@@ -45,15 +46,12 @@ e-commerce, and collaborative album production — all inside one deployable mon
 **Goal:** Give editors a complete toolbox for all media types before any feature builds
 on top of it. Everything in later phases depends on rich media working reliably.
 
-### 1.1 Media Manager
-- `Medium` model: polymorphic owner (`Page`, `Post`, `Album`, etc.), file, title, alt text, caption, file type enum, byte size, duration (audio/video), uploaded-by
-- Supported types: JPEG, PNG, GIF, WebP, AVIF, SVG — MP3, WAV, FLAC, AAC — MP4, AVI, MOV, WebM — PDF, DOCX, TXT, ZIP
-- Active Storage with S3-compatible back-end (replace local volume for production durability)
-- Admin media library grid: search, filter by type, pagination (Pagy), bulk-delete
-- Drag-and-drop upload component (Stimulus controller)
-- Inline "pick from library" modal on Page/Post forms
-- Alt text and caption editable from the library
-- MIME type validation and file-size limits enforced in model
+### ~~1.1 Media Manager~~ ✅ Done
+- `Medium` model: polymorphic owner, file type enum (image/audio/video/document), 200 MB cap, content-type allow-list
+- Admin media library: grid view, filter tabs, search, Pagy pagination (24/page), bulk-delete
+- Drag-and-drop multi-file upload via Stimulus + Fetch API
+- Pundit policy: editor can upload/edit; admin-only delete
+- 30 new tests (15 model + 15 integration); full suite now 63 runs / 213 assertions / 0 failures
 
 ### 1.2 Audio Player
 - `<audio>` HTML5 player wrapped in a Stimulus controller
