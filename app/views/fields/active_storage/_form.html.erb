@@ -1,0 +1,7 @@
+<% if field.data.attached? %>
+  <p style="margin: 0 0 0.35rem; font-size: 0.85rem; color: #555;">
+    Current: <strong><%= field.data.filename %></strong>
+    — uploading a new file will replace it.
+  </p>
+<% end %>
+<%= f.file_field field.attribute, accept: "image/*", class: "administrate-field-input" %>

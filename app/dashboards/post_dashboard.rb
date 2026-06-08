@@ -4,16 +4,17 @@ class PostDashboard < Administrate::BaseDashboard
   ATTRIBUTE_TYPES = {
     id: Field::Number,
     title: Field::String,
-    body: Field::RichText,
-    slug: Field::String,
-    author: Field::BelongsTo,
-    categories: Field::HasMany,
-    excerpt: Field::Text,
     status: Field::Select.with_options(
       searchable: false,
       collection: ->(field) { field.resource.class.statuses.keys }
     ),
     published_at: Field::DateTime,
+    body: Field::RichText,
+    slug: Field::String,
+    author: Field::BelongsTo,
+    categories: Field::HasMany,
+    excerpt: Field::Text,
+    cover_image: ActiveStorageField,
     meta_title: Field::String,
     meta_description: Field::Text,
     created_at: Field::DateTime,
@@ -23,20 +24,23 @@ class PostDashboard < Administrate::BaseDashboard
   COLLECTION_ATTRIBUTES = %i[
     title
     author
+    categories
     status
     published_at
+    cover_image
   ].freeze
 
   SHOW_PAGE_ATTRIBUTES = %i[
     id
     title
+    status
+    published_at
+    cover_image
     body
     slug
     author
     categories
     excerpt
-    status
-    published_at
     meta_title
     meta_description
     created_at
@@ -45,18 +49,23 @@ class PostDashboard < Administrate::BaseDashboard
 
   FORM_ATTRIBUTES = %i[
     title
+    status
+    published_at
+    cover_image
     body
     slug
     author
     categories
     excerpt
-    status
-    published_at
     meta_title
     meta_description
   ].freeze
 
-  COLLECTION_FILTERS = {}.freeze
+  COLLECTION_FILTERS = {
+    draft: ->(resources) { resources.draft },
+    published: ->(resources) { resources.published },
+    archived: ->(resources) { resources.archived }
+  }.freeze
 
   def display_resource(post)
     post.title

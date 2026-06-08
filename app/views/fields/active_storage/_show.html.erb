@@ -1,0 +1,9 @@
+<% if field.data.attached? %>
+  <% if field.data.content_type&.start_with?("image/") %>
+    <%= image_tag url_for(field.data),
+          style: "max-width: 400px; height: auto; display: block; margin-bottom: 0.5rem;" %>
+  <% end %>
+  <span><%= field.data.filename %> (<%= number_to_human_size(field.data.byte_size) %>)</span>
+<% else %>
+  <span class="empty-value">—</span>
+<% end %>
