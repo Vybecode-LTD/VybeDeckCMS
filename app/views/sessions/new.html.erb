@@ -1,11 +1,42 @@
-<%= tag.div(flash[:alert], style: "color:red") if flash[:alert] %>
-<%= tag.div(flash[:notice], style: "color:green") if flash[:notice] %>
+<% content_for :title, "Sign in — VybeDeck CMS" %>
 
-<%= form_with url: session_path do |form| %>
-  <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username", placeholder: "Enter your email address", value: params[:email_address] %><br>
-  <%= form.password_field :password, required: true, autocomplete: "current-password", placeholder: "Enter your password", maxlength: 72 %><br>
-  <%= form.submit "Sign in" %>
-<% end %>
-<br>
+<div class="auth-card">
+  <div class="auth-card__header">
+    <h1>Welcome back</h1>
+    <p>Sign in to your account to continue.</p>
+  </div>
 
-<%= link_to "Forgot password?", new_password_path %>
+  <% if flash[:alert].present? %>
+    <div class="flash flash--alert" style="margin-bottom:20px"><%= flash[:alert] %></div>
+  <% end %>
+  <% if flash[:notice].present? %>
+    <div class="flash flash--notice" style="margin-bottom:20px"><%= flash[:notice] %></div>
+  <% end %>
+
+  <%= form_with url: session_path, class: "auth-form" do |form| %>
+    <div class="form-field">
+      <%= form.label :email_address, "Email address" %>
+      <%= form.email_field :email_address,
+            required: true,
+            autofocus: true,
+            autocomplete: "username",
+            placeholder: "you@example.com",
+            value: params[:email_address] %>
+    </div>
+
+    <div class="form-field">
+      <%= form.label :password, "Password" %>
+      <%= form.password_field :password,
+            required: true,
+            autocomplete: "current-password",
+            placeholder: "••••••••",
+            maxlength: 72 %>
+    </div>
+
+    <%= form.submit "Sign in", class: "btn btn--full" %>
+  <% end %>
+
+  <div class="auth-footer">
+    <%= link_to "Forgot your password?", new_password_path %>
+  </div>
+</div>

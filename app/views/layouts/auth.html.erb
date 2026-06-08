@@ -3,27 +3,19 @@
   <head>
     <title><%= content_for(:title) || "VybeDeck CMS" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="VybeDeck CMS">
-    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="robots" content="noindex">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-    <%= turbo_refreshes_with method: :morph, scroll: :preserve %>
-
-    <%= yield :head %>
 
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
 
-    <%# No-flash theme: reads localStorage before first paint to prevent color flicker %>
     <script>
       (function() {
         var stored = null;
@@ -36,21 +28,15 @@
   </head>
 
   <body>
-    <%= render "shared/site_header" %>
+    <div class="auth-shell">
+      <%= link_to root_path, class: "auth-brand" do %>
+        <span class="brand-mark__sigil">VD</span>
+        VybeDeck CMS
+      <% end %>
 
-    <% if notice.present? %>
-      <div class="shell" style="padding-top:12px">
-        <div class="flash flash--notice"><%= notice %></div>
-      </div>
-    <% end %>
-    <% if alert.present? %>
-      <div class="shell" style="padding-top:12px">
-        <div class="flash flash--alert"><%= alert %></div>
-      </div>
-    <% end %>
-
-    <%= yield %>
-
-    <%= render "shared/site_footer" %>
+      <main>
+        <%= yield %>
+      </main>
+    </div>
   </body>
 </html>
