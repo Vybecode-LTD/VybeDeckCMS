@@ -27,7 +27,8 @@
     <%= javascript_importmap_tags %>
 
     <%# No-flash theme: reads localStorage before first paint to prevent color flicker %>
-    <script>
+    <%# nonce attribute required by the Content Security Policy script-src directive %>
+    <script nonce="<%= content_security_policy_nonce %>">
       (function() {
         var stored = null;
         try { stored = localStorage.getItem("vyb-color-scheme"); } catch(e) {}

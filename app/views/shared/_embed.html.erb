@@ -1,0 +1,33 @@
+<%#
+  Locals:
+    embed – an EmbedParser::Result
+%>
+<div class="embed-widget embed-widget--<%= embed.provider %>">
+  <% if embed.aspect %>
+    <%# 16:9 (or other ratio) — use CSS aspect-ratio %>
+    <div class="embed-widget__ratio" style="aspect-ratio: <%= embed.aspect %>;">
+      <iframe class="embed-widget__frame"
+              src="<%= embed.embed_url %>"
+              title="<%= embed.title_hint %>"
+              frameborder="0"
+              width="100%"
+              height="100%"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+              loading="lazy">
+      </iframe>
+    </div>
+  <% else %>
+    <%# Fixed-height embed (Spotify, SoundCloud, Apple Music) %>
+    <iframe class="embed-widget__frame"
+            src="<%= embed.embed_url %>"
+            title="<%= embed.title_hint %>"
+            frameborder="0"
+            width="100%"
+            height="<%= embed.height %>"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            loading="lazy">
+    </iframe>
+  <% end %>
+</div>

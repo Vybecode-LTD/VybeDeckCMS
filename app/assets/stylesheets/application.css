@@ -1746,3 +1746,100 @@ textarea.field-unit__input { resize: vertical; min-height: 80px; }
   .video-player__vol-label { display: none; }
   .video-player__speed     { display: none; }
 }
+
+/* ─────────────────────────────────────────────────────
+   EMBED WIDGETS (shared/_embed.html.erb)
+───────────────────────────────────────────────────── */
+
+.embed-widget {
+  margin: 1rem 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-sunken);
+}
+
+/* 16:9 ratio container */
+.embed-widget__ratio {
+  position: relative;
+  width: 100%;
+}
+.embed-widget__ratio iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+/* Fixed-height embeds (Spotify, SoundCloud, Apple Music) */
+.embed-widget__frame {
+  display: block;
+  width: 100%;
+  border: 0;
+}
+
+/* Provider accent colours on the wrapper */
+.embed-widget--youtube    { border: 1px solid #ff000033; }
+.embed-widget--vimeo      { border: 1px solid #1ab7ea33; }
+.embed-widget--spotify    { border: 1px solid #1DB95433; }
+.embed-widget--soundcloud { border: 1px solid #ff551533; }
+.embed-widget--apple_music { border: 1px solid #fa233b33; }
+
+/* ─────────────────────────────────────────────────────
+   EMBED PICKER PANEL (embed_picker_controller.js)
+───────────────────────────────────────────────────── */
+
+.embed-picker-panel {
+  margin-top: 0.5rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.embed-picker-panel__inner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.embed-picker-panel__input {
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  padding: 0 0.625rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.875rem;
+}
+.embed-picker-panel__input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.embed-picker-panel__preview {
+  padding: 0.75rem;
+}
+
+.embed-picker-panel__loading,
+.embed-picker-panel__error,
+.embed-picker-panel__hint {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+.embed-picker-panel__error { color: var(--danger); }
+
+/* Trix toolbar embed button */
+.trix-button--embed {
+  font-size: 0.7rem;
+  white-space: nowrap;
+  padding: 0 8px;
+}
