@@ -39,7 +39,8 @@ e-commerce, and collaborative album production — all inside one deployable mon
 | S3 config | Active Storage switches to `:amazon` when `AWS_BUCKET` env var is present |
 | Media Manager | `Medium` model, admin library grid, drag-drop upload, Pundit policy, 30 new tests |
 | Audio Player | Stimulus controller, shared partial, play/pause/seek/volume/speed, 10 new tests |
-| Tests | 73 runs, 231 assertions, 0 failures; Minitest throughout |
+| Video Player | Stimulus controller, shared partial, screen-click, fullscreen, 12 new tests |
+| Tests | 85 runs, 251 assertions, 0 failures; Minitest throughout |
 
 ---
 
@@ -59,10 +60,10 @@ on top of it. Everything in later phases depends on rich media working reliably.
 - Shared partial `app/views/shared/_audio_player.html.erb`: accepts any `Medium` + `show_download` option
 - Wired into admin media show page for audio files; 10 integration tests
 
-### 1.3 Video Player
-- `<video>` HTML5 player with same Stimulus controller pattern as audio
-- Poster image from Active Storage or a manual upload
-- Supports MP4 and WebM; AVI re-encode instruction added to README
+### ~~1.3 Video Player~~ ✅ Done
+- Stimulus `video_player_controller.js`: play/pause, scrubber, volume, speed, screen-click, fullscreen (container-level with video fallback)
+- Shared partial `app/views/shared/_video_player.html.erb`: accepts `poster_url` + `show_download` locals
+- Wired into admin media show page; AVI re-encode FFmpeg instructions in README; 12 integration tests
 
 ### 1.4 Third-Party Embed Widgets
 Build a small `Embed` helper and Trix extension that generates safe iframes:

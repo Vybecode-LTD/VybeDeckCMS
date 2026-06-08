@@ -19,6 +19,14 @@
 
 ## Last Completed Task (2026-06-08)
 
+**Phase 1.3 — Video Player** (commit `088e824`):
+- Stimulus `video_player_controller.js`: same lifecycle pattern as audio player; adds screen-click toggle, fullscreen via `requestFullscreen()` on the container, `_handleFullscreenChange` swapping aria-label and toggling `.is-fullscreen`.
+- Shared partial `app/views/shared/_video_player.html.erb`: video screen + controls bar. Accepts `poster_url` and `show_download` locals. Source supports MP4 and WebM.
+- Admin media show page renders the video player for video-type media.
+- `~215` lines of CSS including fullscreen state (`:fullscreen` + `:-webkit-full-screen`).
+- README: AVI → MP4 re-encode FFmpeg instructions.
+- 12 integration tests. Full suite: **85 runs, 251 assertions, 0 failures**.
+
 **Phase 1.2 — Audio Player** (commit `44b5b56`):
 - Stimulus `audio_player_controller.js`: play/pause toggle, seek scrubber with CSS-gradient progress track, volume slider, playback speed select, tabular time display, aria attributes, clean connect/disconnect lifecycle.
 - Shared partial `app/views/shared/_audio_player.html.erb`: accepts any audio `Medium`; `show_download` local controls download link visibility.
@@ -39,7 +47,7 @@ Previous milestones: Rails 8 foundation → auth/Pundit → Page/Post/Category �
 
 ## Active Task
 
-Phase 1.3 — Video Player. See `ROADMAP.md`.
+Phase 1.4 — Third-Party Embed Widgets. See `ROADMAP.md`.
 
 ## Architecture (rules — never break without explicit owner approval)
 
@@ -83,7 +91,7 @@ ruby bin\rails test
 ## Test Suite
 
 ```
-73 runs, 231 assertions, 0 failures, 0 errors, 0 skips
+85 runs, 251 assertions, 0 failures, 0 errors, 0 skips
 ```
 
 Key test files:
