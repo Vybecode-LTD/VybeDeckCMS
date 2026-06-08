@@ -1,0 +1,96 @@
+<%#
+  Locals:
+    medium         – a Medium record with file_type == "audio" and file attached
+    show_download  – boolean, default true; set to false to hide the download link
+%>
+<% show_download = local_assigns.fetch(:show_download, true) %>
+
+<div class="audio-player" data-controller="audio-player">
+  <% if medium.file.attached? %>
+    <audio data-audio-player-target="audio" preload="metadata">
+      <source src="<%= url_for(medium.file) %>" type="<%= medium.file.content_type %>">
+      Your browser does not support the audio element.
+    </audio>
+  <% end %>
+
+  <div class="audio-player__inner">
+
+    <%# Play / Pause button %>
+    <button class="audio-player__play-btn"
+            data-audio-player-target="playBtn"
+            data-action="click->audio-player#togglePlay"
+            aria-label="Play"
+            aria-pressed="false"
+            type="button">
+      <%# Play icon (shown when paused) %>
+      <svg class="audio-player__icon audio-player__icon--play"
+           xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+           fill="currentColor" width="20" height="20" aria-hidden="true">
+        <path d="M8 5v14l11-7z"/>
+      </svg>
+      <%# Pause icon (shown when playing) %>
+      <svg class="audio-player__icon audio-player__icon--pause"
+           xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+           fill="currentColor" width="20" height="20" aria-hidden="true">
+        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+      </svg>
+    </button>
+
+    <%# Title + scrubber %>
+    <div class="audio-player__meta">
+      <span class="audio-player__title"><%= medium.title %></span>
+      <div class="audio-player__scrubber-row">
+        <span class="audio-player__time" data-audio-player-target="currentTime">–:––</span>
+        <input class="audio-player__scrubber"
+               type="range"
+               min="0" max="100" value="0" step="0.1"
+               data-audio-player-target="scrubber"
+               data-action="input->audio-player#seek"
+               aria-label="Seek">
+        <span class="audio-player__time audio-player__time--total"
+              data-audio-player-target="totalTime">–:––</span>
+      </div>
+    </div>
+
+    <%# Speed, volume, download %>
+    <div class="audio-player__controls">
+      <select class="audio-player__speed"
+              data-audio-player-target="speed"
+              data-action="change->audio-player#setSpeed"
+              aria-label="Playback speed">
+        <option value="0.5">0.5×</option>
+        <option value="0.75">0.75×</option>
+        <option value="1" selected>1×</option>
+        <option value="1.25">1.25×</option>
+        <option value="1.5">1.5×</option>
+        <option value="2">2×</option>
+      </select>
+
+      <label class="audio-player__vol-label" aria-label="Volume">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+             fill="currentColor" width="14" height="14" aria-hidden="true">
+          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+        </svg>
+        <input class="audio-player__volume"
+               type="range"
+               min="0" max="1" step="0.05" value="1"
+               data-audio-player-target="volume"
+               data-action="input->audio-player#setVolume"
+               aria-label="Volume">
+      </label>
+
+      <% if show_download && medium.file.attached? %>
+        <%= link_to rails_blob_path(medium.file, disposition: "attachment"),
+                    class: "audio-player__download",
+                    title: "Download #{medium.file.filename}",
+                    aria: { label: "Download #{medium.title}" } do %>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+               fill="currentColor" width="16" height="16" aria-hidden="true">
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+          </svg>
+        <% end %>
+      <% end %>
+    </div>
+
+  </div>
+</div>
