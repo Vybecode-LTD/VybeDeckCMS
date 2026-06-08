@@ -1,0 +1,41 @@
+<% content_for(:title) { "Edit — #{@medium.title}" } %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title">Edit: <%= @medium.title %></h1>
+  <div>
+    <%= link_to "View", admin_medium_path(@medium), class: "button button--secondary" %>
+    <%= link_to "← Library", admin_media_path, class: "button button--secondary" %>
+  </div>
+</header>
+
+<section class="main-content__body">
+  <%= form_with model: [:admin, @medium], class: "media-form" do |f| %>
+    <% if @medium.errors.any? %>
+      <div class="flash-inline flash-inline--error">
+        <ul>
+          <% @medium.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="field-unit">
+      <%= f.label :title, "Title", class: "field-unit__label" %>
+      <%= f.text_field :title, class: "field-unit__input" %>
+    </div>
+
+    <div class="field-unit">
+      <%= f.label :alt_text, "Alt text", class: "field-unit__label" %>
+      <span class="field-unit__hint">For images: describe for screen readers</span>
+      <%= f.text_field :alt_text, class: "field-unit__input" %>
+    </div>
+
+    <div class="field-unit">
+      <%= f.label :caption, "Caption", class: "field-unit__label" %>
+      <%= f.text_area :caption, rows: 3, class: "field-unit__input" %>
+    </div>
+
+    <%= f.submit "Save changes", class: "button" %>
+  <% end %>
+</section>

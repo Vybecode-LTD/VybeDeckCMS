@@ -1,0 +1,45 @@
+<% content_for(:title) { "Upload Media" } %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title">Upload Media</h1>
+  <%= link_to "← Library", admin_media_path, class: "button button--secondary" %>
+</header>
+
+<section class="main-content__body">
+  <%= form_with model: [:admin, @medium], class: "media-form" do |f| %>
+    <% if @medium.errors.any? %>
+      <div class="flash-inline flash-inline--error">
+        <ul>
+          <% @medium.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="field-unit">
+      <%= f.label :file, "File", class: "field-unit__label" %>
+      <%= f.file_field :file, class: "field-unit__file",
+                       accept: "image/*,audio/*,video/*,.pdf,.docx,.txt,.zip" %>
+    </div>
+
+    <div class="field-unit">
+      <%= f.label :title, "Title", class: "field-unit__label" %>
+      <span class="field-unit__hint">Auto-set from filename if left blank</span>
+      <%= f.text_field :title, class: "field-unit__input" %>
+    </div>
+
+    <div class="field-unit">
+      <%= f.label :alt_text, "Alt text", class: "field-unit__label" %>
+      <span class="field-unit__hint">Describe the image for screen readers (images only)</span>
+      <%= f.text_field :alt_text, class: "field-unit__input" %>
+    </div>
+
+    <div class="field-unit">
+      <%= f.label :caption, "Caption", class: "field-unit__label" %>
+      <%= f.text_area :caption, rows: 3, class: "field-unit__input" %>
+    </div>
+
+    <%= f.submit "Upload", class: "button" %>
+  <% end %>
+</section>

@@ -1,0 +1,68 @@
+<% content_for(:title) { "Media Library" } %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title">Media Library</h1>
+  <div>
+    <%= link_to "Upload file", new_admin_medium_path, class: "button" %>
+  </div>
+</header>
+
+<section class="main-content__body">
+  <%# Drag-and-drop upload zone %>
+  <div class="media-drop-zone"
+       data-controller="upload"
+       data-upload-url-value="<%= admin_media_path %>"
+       data-action="dragover->upload#onDragOver dragleave->upload#onDragLeave drop->upload#onDrop">
+    <label class="media-drop-label" data-upload-target="dropzone">
+      <input type="file"
+             class="sr-only"
+             data-upload-target="input"
+             data-action="change->upload#onFileSelect"
+             multiple
+             accept="image/*,audio/*,video/*,.pdf,.docx,.txt,.zip">
+      <span class="media-drop-icon">&#8679;</span>
+      <p class="media-drop-text">Drop files here or <span class="media-drop-browse">browse</span></p>
+      <p class="media-drop-hint">JPEG, PNG, GIF, WebP, MP3, MP4, PDF, DOCX, TXT, ZIP &middot; max 200&nbsp;MB</p>
+    </label>
+  </div>
+
+  <%# Filter tabs + search %>
+  <div class="media-toolbar">
+    <nav class="media-filter-tabs" aria-label="Filter by type">
+      <%= link_to "All",      admin_media_path(search: params[:search]),                             class: "tab-chip #{params[:filter].blank? ? "is-active" : ""}" %>
+      <%= link_to "Images",   admin_media_path(filter: "image",    search: params[:search]),     class: "tab-chip #{params[:filter] == "image"    ? "is-active" : ""}" %>
+      <%= link_to "Audio",    admin_media_path(filter: "audio",    search: params[:search]),     class: "tab-chip #{params[:filter] == "audio"    ? "is-active" : ""}" %>
+      <%= link_to "Video",    admin_media_path(filter: "video",    search: params[:search]),     class: "tab-chip #{params[:filter] == "video"    ? "is-active" : ""}" %>
+      <%= link_to "Docs",     admin_media_path(filter: "document", search: params[:search]),     class: "tab-chip #{params[:filter] == "document" ? "is-active" : ""}" %>
+    </nav>
+    <%= form_with url: admin_media_path, method: :get, class: "media-search-form" do |f| %>
+      <%= hidden_field_tag :filter, params[:filter] %>
+      <%= f.search_field :search, value: params[:search], placeholder: "Search by title…", class: "media-search-input" %>
+    <% end %>
+  </div>
+
+  <%# Bulk-delete form wraps the grid %>
+  <%= form_with url: bulk_destroy_admin_media_path, method: :delete, id: "bulk-form" do %>
+    <% if @media.empty? %>
+      <p class="empty-state">No files found.</p>
+    <% else %>
+      <div class="media-grid">
+        <% @media.each do |medium| %>
+          <%= render "medium_card", medium: medium %>
+        <% end %>
+      </div>
+      <div class="media-bulk-bar">
+        <button type="submit" class="button button--danger button--sm"
+                data-turbo-confirm="Delete selected files? This cannot be undone.">
+          Delete selected
+        </button>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if @pagy.pages > 1 %>
+    <div class="pagy-nav shell">
+      <%= pagy_nav(@pagy) %>
+    </div>
+  <% end %>
+</section>

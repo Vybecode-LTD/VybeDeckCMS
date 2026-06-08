@@ -1,5 +1,8 @@
 Rails.application.routes.draw do
   namespace :admin do
+    resources :media do
+      collection { delete :bulk_destroy }
+    end
     resources :categories
     resources :pages
     resources :posts

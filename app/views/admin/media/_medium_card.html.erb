@@ -1,0 +1,28 @@
+<article class="media-card">
+  <label class="media-card__checkbox-label">
+    <input type="checkbox" name="medium_ids[]" value="<%= medium.id %>" class="media-card__checkbox">
+  </label>
+
+  <%= link_to admin_medium_path(medium), class: "media-card__preview" do %>
+    <% if medium.image? && medium.file.attached? %>
+      <%= image_tag medium.file, class: "media-card__thumb",
+                   alt: medium.alt_text.presence || medium.title %>
+    <% else %>
+      <span class="media-card__type-icon media-card__type-icon--<%= medium.file_type %>">
+        <%= { "audio" => "♫", "video" => "▶", "document" => "⊞" }.fetch(medium.file_type, "?") %>
+      </span>
+    <% end %>
+  <% end %>
+
+  <div class="media-card__meta">
+    <p class="media-card__title" title="<%= medium.title %>">
+      <%= truncate(medium.title, length: 28) %>
+    </p>
+    <p class="media-card__info">
+      <span class="tag-chip tag-chip--<%= medium.file_type %>"><%= medium.file_type %></span>
+      <% if medium.byte_size %>
+        <span class="media-card__size"><%= number_to_human_size(medium.byte_size) %></span>
+      <% end %>
+    </p>
+  </div>
+</article>

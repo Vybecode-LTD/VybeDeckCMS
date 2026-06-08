@@ -1,0 +1,47 @@
+<% content_for(:title) { @medium.title } %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title"><%= @medium.title %></h1>
+  <div>
+    <%= link_to "Edit", edit_admin_medium_path(@medium), class: "button" %>
+    <%= button_to "Delete", admin_medium_path(@medium), method: :delete,
+                  class: "button button--danger",
+                  data: { turbo_confirm: "Delete this file? This cannot be undone." } %>
+    <%= link_to "← Library", admin_media_path, class: "button button--secondary" %>
+  </div>
+</header>
+
+<section class="main-content__body">
+  <div class="media-detail">
+    <div class="media-detail__preview">
+      <% if @medium.image? && @medium.file.attached? %>
+        <%= image_tag @medium.file, class: "media-detail__image",
+                     alt: @medium.alt_text.presence || @medium.title %>
+      <% elsif @medium.file.attached? %>
+        <div class="media-detail__icon-block media-detail__icon-block--<%= @medium.file_type %>">
+          <span class="media-detail__type-label"><%= @medium.file_type.upcase %></span>
+          <p class="media-detail__filename"><%= @medium.file.filename %></p>
+        </div>
+      <% end %>
+    </div>
+
+    <dl class="media-detail__attrs">
+      <dt>Title</dt><dd><%= @medium.title %></dd>
+      <dt>Alt text</dt><dd><%= @medium.alt_text.presence || "—" %></dd>
+      <dt>Caption</dt><dd><%= @medium.caption.presence || "—" %></dd>
+      <dt>Type</dt><dd><span class="tag-chip tag-chip--<%= @medium.file_type %>"><%= @medium.file_type %></span></dd>
+      <% if @medium.file.attached? %>
+        <dt>Filename</dt><dd><%= @medium.file.filename %></dd>
+        <dt>Content type</dt><dd><%= @medium.file.content_type %></dd>
+        <dt>Size</dt><dd><%= number_to_human_size(@medium.file.byte_size) %></dd>
+        <dt>Download</dt>
+        <dd><%= link_to "Download", rails_blob_path(@medium.file, disposition: "attachment"), class: "link" %></dd>
+      <% end %>
+      <% if @medium.duration_seconds %>
+        <dt>Duration</dt><dd><%= @medium.duration_seconds.round(1) %>s</dd>
+      <% end %>
+      <dt>Uploaded by</dt><dd><%= @medium.uploaded_by.byline %></dd>
+      <dt>Uploaded</dt><dd><%= @medium.created_at.strftime("%b %-d, %Y") %></dd>
+    </dl>
+  </div>
+</section>

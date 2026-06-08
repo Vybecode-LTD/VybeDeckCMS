@@ -8,6 +8,8 @@ module Admin
   class ApplicationController < Administrate::ApplicationController
     include Authentication
     include Pundit::Authorization
+    include Pagy::Backend
+    helper Pagy::Frontend
 
     before_action :authorize_admin_access
     helper_method :current_user

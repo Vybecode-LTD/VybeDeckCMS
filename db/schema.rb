@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_08_155007) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_08_174854) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -69,6 +69,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_155007) do
     t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true
     t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
     t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
+  end
+
+  create_table "media", force: :cascade do |t|
+    t.string "alt_text"
+    t.bigint "byte_size"
+    t.text "caption"
+    t.datetime "created_at", null: false
+    t.float "duration_seconds"
+    t.integer "file_type", default: 0, null: false
+    t.bigint "owner_id"
+    t.string "owner_type"
+    t.string "title", default: "", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "uploaded_by_id", null: false
+    t.index ["created_at"], name: "index_media_on_created_at"
+    t.index ["file_type"], name: "index_media_on_file_type"
+    t.index ["owner_type", "owner_id"], name: "index_media_on_owner"
+    t.index ["uploaded_by_id"], name: "index_media_on_uploaded_by_id"
   end
 
   create_table "pages", force: :cascade do |t|
@@ -133,6 +151,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_155007) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "media", "users", column: "uploaded_by_id"
   add_foreign_key "pages", "pages", column: "parent_id"
   add_foreign_key "posts", "users", column: "author_id"
   add_foreign_key "sessions", "users"
