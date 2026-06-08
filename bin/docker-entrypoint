@@ -1,8 +1,10 @@
 #!/bin/bash -e
 
-# If running the rails server then create or migrate existing database
+# Run all database migrations (primary, cache, queue, cable) on every boot.
+# db:migrate is idempotent and handles all configured databases.
+# Seeds are intentionally omitted — production data is loaded through the app.
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
-  ./bin/rails db:prepare
+  ./bin/rails db:migrate
 fi
 
 exec "${@}"
