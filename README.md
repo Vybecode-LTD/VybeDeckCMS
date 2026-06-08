@@ -30,9 +30,29 @@ ruby bin\rails db:seed
 ruby bin\rails server
 ```
 
+## Video format support
+
+The video player (`app/views/shared/_video_player.html.erb`) supports **MP4** and **WebM** natively in all modern browsers.
+
+**AVI files are not playable in the browser.** Before uploading an AVI, re-encode it to MP4 with H.264 using FFmpeg:
+
+```sh
+ffmpeg -i input.avi -c:v libx264 -crf 23 -preset fast -c:a aac output.mp4
+```
+
+For batch conversion:
+
+```sh
+for f in *.avi; do
+  ffmpeg -i "$f" -c:v libx264 -crf 23 -preset fast -c:a aac "${f%.avi}.mp4"
+done
+```
+
+After re-encoding, upload the `.mp4` file through the admin Media Library.
+
 ## Current Status
 
-The current handoff branch is `codex/public-hotwire-site`. Public page/blog/post/topic views, VybeCod.ing styling, idempotent seed content, and background-enqueued Active Storage variants are implemented and tested.
+Phase 1.3 (Video Player) complete. Public site + admin panel with full media management (images, audio player, video player), editorial content, design system, and Railway deployment.
 
 See:
 

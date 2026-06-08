@@ -21,6 +21,10 @@
         <div class="media-detail__audio-wrap">
           <%= render "shared/audio_player", medium: @medium, show_download: false %>
         </div>
+      <% elsif @medium.video? && @medium.file.attached? %>
+        <div class="media-detail__video-wrap">
+          <%= render "shared/video_player", medium: @medium, show_download: false %>
+        </div>
       <% elsif @medium.file.attached? %>
         <div class="media-detail__icon-block media-detail__icon-block--<%= @medium.file_type %>">
           <span class="media-detail__type-label"><%= @medium.file_type.upcase %></span>
