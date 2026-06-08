@@ -19,6 +19,14 @@
 
 ## Last Completed Task (2026-06-08)
 
+**Phase 1.4 — Third-Party Embed Widgets** (commit `950a827`):
+- `EmbedParser` PORO: YouTube, Vimeo, Spotify, SoundCloud, Apple Music URL-to-embed-URL conversion.
+- Shared `_embed.html.erb` partial with 16:9 ratio container or fixed-height iframe by provider.
+- `Admin::EmbedsController#preview` — `GET /admin/embeds/preview?url=URL`; Pundit-gated to editor+.
+- Stimulus `embed_picker_controller.js`: adds "Embed" button to Trix toolbars, shows URL input panel, calls preview endpoint and shows live iframe preview.
+- CSP enabled: `frame-src` enforced for 5 providers; nonce-based `script-src` + `strict-dynamic`; inline theme script updated with `content_security_policy_nonce`.
+- 32 new tests. Full suite: **117 runs, 340 assertions, 0 failures**.
+
 **Phase 1.3 — Video Player** (commit `088e824`):
 - Stimulus `video_player_controller.js`: same lifecycle pattern as audio player; adds screen-click toggle, fullscreen via `requestFullscreen()` on the container, `_handleFullscreenChange` swapping aria-label and toggling `.is-fullscreen`.
 - Shared partial `app/views/shared/_video_player.html.erb`: video screen + controls bar. Accepts `poster_url` and `show_download` locals. Source supports MP4 and WebM.
@@ -47,7 +55,7 @@ Previous milestones: Rails 8 foundation → auth/Pundit → Page/Post/Category �
 
 ## Active Task
 
-Phase 1.4 — Third-Party Embed Widgets. See `ROADMAP.md`.
+Phase 1.5 — Blog System Enhancements. See `ROADMAP.md`.
 
 ## Architecture (rules — never break without explicit owner approval)
 
@@ -91,7 +99,7 @@ ruby bin\rails test
 ## Test Suite
 
 ```
-85 runs, 251 assertions, 0 failures, 0 errors, 0 skips
+117 runs, 340 assertions, 0 failures, 0 errors, 0 skips
 ```
 
 Key test files:

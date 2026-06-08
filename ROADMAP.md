@@ -40,7 +40,8 @@ e-commerce, and collaborative album production — all inside one deployable mon
 | Media Manager | `Medium` model, admin library grid, drag-drop upload, Pundit policy, 30 new tests |
 | Audio Player | Stimulus controller, shared partial, play/pause/seek/volume/speed, 10 new tests |
 | Video Player | Stimulus controller, shared partial, screen-click, fullscreen, 12 new tests |
-| Tests | 85 runs, 251 assertions, 0 failures; Minitest throughout |
+| Embed Widgets | EmbedParser PORO (5 providers), admin preview endpoint, Stimulus picker, CSP |
+| Tests | 117 runs, 340 assertions, 0 failures; Minitest throughout |
 
 ---
 
@@ -65,16 +66,13 @@ on top of it. Everything in later phases depends on rich media working reliably.
 - Shared partial `app/views/shared/_video_player.html.erb`: accepts `poster_url` + `show_download` locals
 - Wired into admin media show page; AVI re-encode FFmpeg instructions in README; 12 integration tests
 
-### 1.4 Third-Party Embed Widgets
-Build a small `Embed` helper and Trix extension that generates safe iframes:
-- YouTube (video + playlist)
-- Spotify (track, album, playlist)
-- SoundCloud (track, playlist)
-- Vimeo
-- Apple Music
-- Generic oEmbed fallback for any URL that returns an oEmbed payload
-- Admin "Insert Widget" button in Trix toolbar and Page body editor
-- CSP `frame-src` entries updated for each provider
+### ~~1.4 Third-Party Embed Widgets~~ ✅ Done
+- `EmbedParser` PORO: YouTube (watch/youtu.be/playlist), Vimeo, Spotify (track/album/playlist/artist), SoundCloud, Apple Music
+- Shared `_embed.html.erb` partial: 16:9 ratio container or fixed-height iframe by provider
+- `Admin::EmbedsController#preview` — GET `/admin/embeds/preview?url=URL`; editor/admin only
+- Stimulus `embed_picker_controller`: "Embed" button in Trix toolbar → URL input → live preview panel
+- CSP enabled: `frame-src` enforced; nonce-based `script-src` with `strict-dynamic`
+- 32 new tests (24 unit + 8 integration)
 
 ### 1.5 Blog System Enhancements
 - ~~Pagination with Pagy on blog index and category pages (default: 12 per page)~~ ✅ Done
