@@ -1,10 +1,19 @@
 #!/bin/bash -e
 
-# Run all database migrations (primary, cache, queue, cable) on every boot.
-# db:migrate is idempotent and handles all configured databases.
-# Seeds are intentionally omitted — production data is loaded through the app.
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
-  ./bin/rails db:migrate
+  # Wait for Postgres to accept connections before migrating.
+  # Railway starts the app and database containers simultaneously, so the DB
+  # may not be ready on first boot. Retry up to 12 times (60 seconds).
+  retries=12
+  until ./bin/rails db:migrate; do
+    retries=$((retries - 1))
+    if [ "$retries" -le 0 ]; then
+      echo "ERROR: db:migrate failed after all retries. Aborting." >&2
+      exit 1
+    fi
+    echo "Database not ready yet, retrying in 5s... ($retries attempts left)"
+    sleep 5
+  done
 fi
 
 exec "${@}"

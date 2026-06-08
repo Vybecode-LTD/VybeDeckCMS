@@ -36,8 +36,9 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems
-COPY vendor/* ./vendor/
+# vendor/ is copied only if it exists; an empty or absent directory is fine.
 COPY Gemfile Gemfile.lock ./
+RUN mkdir -p vendor
 
 RUN bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
