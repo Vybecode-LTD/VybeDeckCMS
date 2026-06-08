@@ -5,3 +5,8 @@ builder = "dockerfile"
 healthcheckPath = "/up"
 healthcheckTimeout = 600
 restartPolicyType = "on_failure"
+
+# Thruster (the Rails 8 HTTP accelerator) listens on port 80 by default.
+# Pin PORT=80 so Railway routes traffic to the port Thruster actually uses.
+[deploy.environment]
+PORT = "80"
