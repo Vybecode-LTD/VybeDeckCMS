@@ -5,8 +5,8 @@
 
 **Updated:** 2026-06-09
 **Branch:** `main` — all Phase 3 work committed and on main; auto-deploys to Railway
-**Last commit:** `56ab9a6` (Phase 3.6 — Refunds & Admin Order Management)
-**Test suite:** `418 runs, 1040 assertions, 0 failures, 0 errors, 0 skips`
+**Last commit:** `9f28005` (Phase 3.7 — Email Notifications + security/test remediation)
+**Test suite:** `444 runs, 1110 assertions, 0 failures, 0 errors, 0 skips`
 
 ---
 
@@ -19,7 +19,7 @@
 | GitHub | `https://github.com/Vybecode-LTD/VybeDeckCMS.git` |
 | Deployed | Railway (auto-deploy from `main`) |
 | Branch | `main` — all work merged and committed; nothing pending |
-| Tests | `418 runs, 1040 assertions, 0 failures, 0 errors, 0 skips` |
+| Tests | `444 runs, 1110 assertions, 0 failures, 0 errors, 0 skips` |
 
 ---
 
@@ -172,6 +172,22 @@ ruby bin\rails server        # dev server on :3000
 - `LineItemDashboard` created — required because `OrderDashboard` declares `line_items: Field::HasMany` (Administrate looks up `LineItemDashboard` when rendering the order show page)
 - `StripeHelper#with_stripe_refund` added to `test/test_helpers/stripe_helper.rb`
 
+**3.7 Email Notifications + Security Remediation** (`f0ba7d7`, `9f28005`)
+- `Admin::ApplicationController` — `include Pundit::Authorization` replaced with `include Administrate::Punditize`; all Administrate base CRUD methods now auto-enforce `policy_scope!` / `authorize`
+- `CategoryPolicy` — new; `index?`/`show?`/`create?`/`update?` = `admin_accessible?`; `destroy?` = admin-only; `Scope` returns `scope.all`
+- `Admin::UsersController` — explicit `authorize User, :index?` in `index`; explicit `authorize @user, :show?` in `show` (these override Administrate base methods, so Punditize cannot reach them automatically)
+- `Admin::MediaController` — explicit `authorize` on all 8 actions: `index`, `show`, `new`, `create`, `edit`, `update`, `destroy`, `bulk_destroy` (fully custom controller, no Administrate base methods)
+- `Admin::PagesController` + `Admin::PostsController` — `find_resource(param)` override using `resource_class.friendly.find(param)` fixes FriendlyId slug resolution for admin delete/edit/show routes
+- `OrderMailer#confirmation(order)` — itemised order receipt; `@line_items` loaded with `includes(:product, :price)` for N+1 safety
+- `OrderMailer#download_ready(order)` — filters only line items where `product.download_files.attached?`; links to `account_downloads_url` for signed-in users, sign-in prompt for guests
+- `OrderMailer#refund_receipt(order)` — refund amount and order reference
+- HTML + text templates for all three mailer actions
+- `SendOrderConfirmationJob` — `Order.where(id:, confirmation_email_sent_at: nil).update_all(...)` atomic claim; sends `download_ready` when any product has download files
+- `SendRefundReceiptJob` — same idempotency pattern with `refund_receipt_sent_at`
+- Migration `20260609165539_add_email_timestamps_to_orders` — two nullable datetime columns on `orders`
+- Wired: `CheckoutsController#confirmation` after `@order.update!(status: :paid)`; `StripeWebhooksController#handle_payment_intent_succeeded`; `Admin::OrdersController#refund` after Stripe refund success (before rescue)
+- 26 new tests across `test/mailers/` (3 files, 6 tests) and `test/jobs/` (3 files, 13 tests), plus regression tests in `test/integration/`
+
 ---
 
 ## Seeds
@@ -207,11 +223,10 @@ Also seeds: `Announcements` and `Field Notes` categories; `home` and `about` pag
 
 | # | Issue | Severity | Notes |
 |---|-------|----------|-------|
-| 1 | No order confirmation / download / refund emails | High | Phase 3.7. Infrastructure ready (Solid Queue, Action Mailer, `UserMailer` pattern). Needs `OrderMailer`. |
-| 2 | S3 not active in production | High | `aws-sdk-s3` gem added, `storage.yml` amazon service configured, `production.rb` switches when `AWS_BUCKET` env var present. **Digital download files will be lost on every Railway deploy until S3 is active.** |
-| 3 | SMTP not active in production | Medium | Config ready. Add `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD` Railway env vars. Needed for password reset, email verification, and Phase 3.7 transactional emails. |
-| 4 | No `libvips` in Dockerfile | Medium | Active Storage variant jobs enqueue but silently fail in production. Add `RUN apt-get install -y libvips` to Dockerfile. |
-| 5 | `Seoable` has no model validators | Low | Columns exist and are wired to `<meta>` tags. Phase 10 adds validators/canonical/OG/JSON-LD. |
+| 1 | SMTP not active in production | High | All email code complete and tested. Add `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD` (+ optional `SMTP_PORT`, `ACTION_MAILER_FROM`) as Railway env vars. **Order confirmation, download-ready, refund receipt, email verification, and password reset emails are all silently dropped until SMTP is configured.** |
+| 2 | S3 not active in production | High | `aws-sdk-s3` gem added, `storage.yml` amazon service configured, `production.rb` switches when `AWS_BUCKET` env var present. **Digital download files will be lost on every Railway deploy until S3 is active.** Add `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_BUCKET`. |
+| 3 | No `libvips` in Dockerfile | Medium | Active Storage variant jobs enqueue but silently fail in production. Add `RUN apt-get install -y libvips` to Dockerfile. |
+| 4 | `Seoable` has no model validators | Low | Columns exist and are wired to `<meta>` tags. Phase 10 adds validators/canonical/OG/JSON-LD. |
 
 ---
 
@@ -224,23 +239,23 @@ cd C:\DEV\VybeDeck\vybedeck_cms
 
 # 2. Confirm green baseline
 ruby bin\rails test
-# Expected: 418 runs, 1040 assertions, 0 failures
+# Expected: 444 runs, 1110 assertions, 0 failures
 
-# 3. Implement Phase 3.7 — Email Notifications
+# 3. Implement Phase 4 — Community & Forum
 ```
 
-**Next phase: Phase 3.7 — Email Notifications**
+**Next phase: Phase 4 — Community & Forum**
 
 Scope:
-1. `OrderMailer` with three mailer actions:
-   - `confirmation(order)` — sent on `payment_intent.succeeded` webhook (or in `CheckoutsController#confirmation`)
-   - `download_ready(order)` — sent alongside confirmation when order has download products
-   - `refund_receipt(order)` — sent from `Admin::OrdersController#refund` after successful Stripe refund
-2. `SendOrderConfirmationJob` (Solid Queue), `SendRefundReceiptJob`
-3. HTML + text templates for each mailer
-4. Wire into existing controllers/webhooks
-5. Tests: `test/mailers/order_mailer_test.rb`, update refund + checkout + webhook integration tests
-6. **Pre-requisite:** SMTP Railway env vars must be set before emails deliver in production
+1. **Core models**: `Forum` (name, slug, description, visibility enum `public`/`members`/`subscribers`, position, icon), `ForumThread` (title, Action Text body, author, pinned, locked, view_count, last_reply_at), `ForumReply` (Action Text body, author, likes_count, is_solution)
+2. **Routes**: `GET /community` (forum index), `GET /community/:forum_slug` (thread list), `GET /community/:forum_slug/:thread_id` (thread show), `POST /community/:forum_slug/threads` (new thread), `POST /community/:forum_slug/:thread_id/replies` (reply)
+3. **Visibility gating**: Pundit — public forums accessible without auth; members-only requires `member` role or above; subscriber-only requires `subscriber` or above
+4. **Turbo Streams**: new replies append to thread without full-page reload
+5. **Moderation**: flag/report → admin moderation queue; `Admin::ForumThreadsController` + `Admin::ForumRepliesController` with approve/remove/lock; `Admin::ForumsController` CRUD
+6. **Notifications** (Phase 4.4): `Notification` model; notify thread author on reply; notification bell in header via Turbo Streams with unread badge
+7. **Tests**: integration tests for all visibility gates, Turbo Stream responses, moderation actions
+
+**Also before this ships:** Set SMTP Railway env vars (see Known Issues #1).
 
 ---
 
@@ -273,6 +288,9 @@ test/test_helpers/stripe_helper.rb           with_stripe_payment_intent / with_s
 
 | Hash | Message |
 |------|---------|
+| `9f28005` | feat(email): Phase 3.7 - order email notifications + Tier 2/3 test debt |
+| `f0ba7d7` | feat(security): Tier 1 - Administrate::Punditize, CategoryPolicy, FriendlyId admin fixes |
+| `699b1d1` | docs: comprehensive documentation audit and update |
 | `56ab9a6` | feat(admin): Phase 3.6 - Refunds & Admin Order Management |
 | `c727281` | feat(downloads): Phase 3.5 — Digital Downloads |
 | `3dd7c24` | feat(checkout): Phase 3.4 — Stripe Payment Element checkout |

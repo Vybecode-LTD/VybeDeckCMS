@@ -52,7 +52,8 @@ e-commerce, and collaborative album production — all inside one deployable mon
 | Checkout | Embedded Stripe Payment Element; `CheckoutsController`; Stimulus `checkout_controller.js`; `POST /checkout` returns `clientSecret`/`orderId`; confirmation page marks order paid + wipes cart |
 | Digital Downloads | `has_many_attached :download_files` on Product; `DownloadsController` serving signed blob URLs; `ProductPolicy#download?` purchase gate; `/account/downloads` page; `ActiveStorageMultiField` Administrate custom field |
 | Refunds & Revenue | `Admin::OrdersController#refund` one-click Stripe refund; custom order show with status pill + formatted money; `Admin::RevenueController` monthly stats via PostgreSQL `DATE_TRUNC`; `LineItemDashboard`; `StripeHelper#with_stripe_refund` |
-| Tests | **418 runs, 1040 assertions, 0 failures**; Minitest throughout; `StripeHelper` with `with_stripe_payment_intent` + `with_stripe_refund` |
+| Email Notifications | `Administrate::Punditize` wired; `CategoryPolicy`; explicit authorize on `Admin::UsersController` + `Admin::MediaController` overrides; FriendlyId `find_resource` in `Admin::PagesController` + `Admin::PostsController`; `OrderMailer` (confirmation/download_ready/refund_receipt); idempotent `SendOrderConfirmationJob` + `SendRefundReceiptJob`; 26 new tests |
+| Tests | **444 runs, 1110 assertions, 0 failures**; Minitest throughout; `StripeHelper` with `with_stripe_payment_intent` + `with_stripe_refund` |
 
 ---
 
@@ -183,18 +184,22 @@ download delivery. Required by the Album Manager in Phase 6.
 - `LineItemDashboard` created (required by `OrderDashboard`'s `Field::HasMany :line_items`)
 - `StripeHelper#with_stripe_refund` added; 11 refund tests + 9 revenue tests; full suite: **418 runs, 1040 assertions**
 
-### 3.7 Email Notifications — **NEXT PHASE**
-- `OrderMailer#confirmation(order)` — order receipt with itemised summary; triggered from `CheckoutsController#confirmation` (or `payment_intent.succeeded` webhook)
-- `OrderMailer#download_ready(order)` — sent alongside confirmation when order contains products with `download_files`; includes signed download links
-- `OrderMailer#refund_receipt(order)` — sent from `Admin::OrdersController#refund` after successful Stripe refund; includes refund amount and reference
-- `SendOrderConfirmationJob` + `SendRefundReceiptJob` (Solid Queue)
-- HTML + text mailer templates with design-system branding
-- Tests: `test/mailers/order_mailer_test.rb`, integration tests for job enqueue
-- **Pre-requisite:** set `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD` Railway env vars before emails deliver in production
+### ~~3.7 Email Notifications~~ ✅ Done (commits `f0ba7d7`, `9f28005`)
+- `Administrate::Punditize` included in `Admin::ApplicationController` — standard CRUD methods auto-enforce Pundit `policy_scope!` / `authorize`
+- `CategoryPolicy` added; explicit `authorize` added to `Admin::UsersController` and `Admin::MediaController` custom overrides; FriendlyId `find_resource` fixed in `Admin::PagesController` and `Admin::PostsController`
+- `OrderMailer#confirmation(order)` — itemised receipt; triggered from `CheckoutsController#confirmation` and `StripeWebhooksController#handle_payment_intent_succeeded` via `SendOrderConfirmationJob`
+- `OrderMailer#download_ready(order)` — sent alongside confirmation when order contains products with `download_files`; links to `/account/downloads` for users
+- `OrderMailer#refund_receipt(order)` — sent from `Admin::OrdersController#refund` after successful Stripe refund via `SendRefundReceiptJob`
+- Both jobs idempotent via `Order.where(id:, *_sent_at: nil).update_all(...)` atomic claim (prevents double-delivery from webhook + controller race)
+- Migration: `confirmation_email_sent_at`, `refund_receipt_sent_at` nullable datetime columns on `orders`
+- HTML + text templates for all three actions
+- 26 new tests: `test/mailers/order_mailer_test.rb`, `test/mailers/user_mailer_test.rb`, `test/mailers/passwords_mailer_test.rb`, `test/jobs/send_order_confirmation_job_test.rb`, `test/jobs/send_refund_receipt_job_test.rb`, `test/jobs/send_email_verification_job_test.rb`
+- Full suite: **444 runs, 1110 assertions, 0 failures**
+- **Remaining:** Set `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD` Railway env vars — email code is complete but delivery is silent until SMTP is configured
 
 ---
 
-## Phase 4 — Community & Forum
+## Phase 4 — Community & Forum  — **NEXT PHASE**
 **Goal:** Add a community discussion layer that is styleable independently of the main
 site and can be set to public, members-only, or subscriber-only per section.
 

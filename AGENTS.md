@@ -8,13 +8,13 @@
 
 ## Last Completed Task
 
-**Phase 3.6 — Refunds & Admin Order Management** (commit `56ab9a6`, 2026-06-09):
-One-click Stripe refund from the admin order show page; monthly revenue summary dashboard; custom order show view with status pill and formatted totals; `LineItemDashboard` for Administrate; `StripeHelper#with_stripe_refund`; 20 new tests. Full suite: **418 runs, 1040 assertions, 0 failures**.
+**Phase 3.7 — Email Notifications** (commits `f0ba7d7`, `9f28005`, 2026-06-09):
+`Administrate::Punditize` wired into `Admin::ApplicationController`; `CategoryPolicy` created; explicit `authorize` calls added to `Admin::UsersController` and `Admin::MediaController` (custom overrides bypass Punditize); FriendlyId `find_resource` fixes in `Admin::PagesController` and `Admin::PostsController`. `OrderMailer` with `confirmation`, `download_ready`, and `refund_receipt` actions; idempotent `SendOrderConfirmationJob` and `SendRefundReceiptJob` (atomic `update_all` lock); HTML + text templates; wired into `CheckoutsController#confirmation`, `StripeWebhooksController#handle_payment_intent_succeeded`, and `Admin::OrdersController#refund`. 26 new tests. Full suite: **444 runs, 1110 assertions, 0 failures**.
 
 ## Active Task
 
-**Phase 3.7 — Email Notifications** (not yet started):
-`OrderMailer` with `confirmation`, `download_ready`, and `refund_receipt` actions; Solid Queue jobs for async delivery; HTML + text templates; wired into existing checkout/refund controllers and stripe webhook handler. Pre-requisite: SMTP Railway env vars must be set before emails deliver in production.
+**Phase 4 — Community & Forum** (not yet started):
+`Forum`, `Thread`, `Reply` models; public `/community` routes; Turbo Stream reply posting; reactions and moderation queue; notification bell in site header. **Pre-requisite:** Set `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD` as Railway env vars before Phase 4 starts — all transactional email code is in place but SMTP is not yet activated in production.
 
 ---
 
@@ -78,7 +78,7 @@ cd C:\DEV\VybeDeck\vybedeck_cms
 Then:
 
 ```powershell
-ruby bin\rails test          # expected: 418 runs, 1040 assertions, 0 failures
+ruby bin\rails test          # expected: 444 runs, 1110 assertions, 0 failures
 ruby bin\rails db:seed       # idempotent — safe to run anytime
 ruby bin\rails server        # dev server on :3000
 ```
@@ -88,7 +88,7 @@ ruby bin\rails server        # dev server on :3000
 ## Current Branch State
 
 - **Branch:** `main`
-- **Last commit:** `56ab9a6` — Phase 3.6 Refunds & Admin Order Management
+- **Last commit:** `9f28005` — Phase 3.7 Email Notifications + test/security remediation
 - **Remote:** `https://github.com/Vybecode-LTD/VybeDeckCMS.git`
 - All Phase 1, 2, and 3 work is committed and on `main`. Nothing pending.
 
@@ -114,6 +114,7 @@ ruby bin\rails server        # dev server on :3000
 | 3.4 Checkout | `3dd7c24` | Stripe Payment Element, CheckoutsController, Stimulus checkout |
 | 3.5 Digital Downloads | `c727281` | has_many_attached download_files, DownloadsController, signed URLs |
 | 3.6 Refunds & Revenue | `56ab9a6` | Admin refund action, RevenueController, LineItemDashboard |
+| 3.7 Email Notifications | `f0ba7d7`, `9f28005` | Administrate::Punditize, CategoryPolicy, FriendlyId fixes, OrderMailer, SendOrderConfirmationJob, SendRefundReceiptJob, 26 tests |
 
 ---
 
@@ -156,5 +157,5 @@ ruby bin\rails server        # dev server on :3000
   - `RAILS_MASTER_KEY`
   - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
   - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_BUCKET`
-  - `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_PORT` (optional), `ACTION_MAILER_FROM` (optional)
+  - `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_PORT` (optional), `ACTION_MAILER_FROM` (optional) — **REQUIRED: all transactional email code is complete but emails are silent until these are set**
   - `ANTHROPIC_API_KEY` (Phase 7, not yet needed)
