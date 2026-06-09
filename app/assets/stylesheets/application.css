@@ -1934,3 +1934,146 @@ textarea.field-unit__input { resize: vertical; min-height: 80px; }
 
 /* Reading time in byline */
 .byline { color: var(--text-muted); font-size: 0.9rem; }
+
+/* ─────────────────────────────────────────────────────
+   AVATARS
+───────────────────────────────────────────────────── */
+
+.avatar {
+  display: block;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--bg-sunken);
+}
+
+.avatar--sm  { width: 32px;  height: 32px;  }
+.avatar--md  { width: 56px;  height: 56px;  }
+.avatar--lg  { width: 80px;  height: 80px;  }
+.avatar--xl  { width: 112px; height: 112px; }
+
+.avatar--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-size: 1.4rem;
+  background: var(--bg-sunken);
+  border: 2px solid var(--border);
+}
+
+.avatar--xl.avatar--placeholder { font-size: 2.2rem; }
+
+/* ─────────────────────────────────────────────────────
+   MEMBER PROFILE PAGE
+───────────────────────────────────────────────────── */
+
+.member-profile {
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+  padding: 56px 0 44px;
+}
+
+.member-profile__meta { flex: 1; min-width: 0; }
+
+.member-profile__name {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  margin-bottom: 10px;
+}
+
+.member-profile__bio {
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 8px;
+  max-width: 540px;
+}
+
+.member-profile__website {
+  font-size: .9rem;
+  margin-bottom: 0;
+}
+
+@media (max-width: 520px) {
+  .member-profile {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 36px 0 32px;
+    gap: 16px;
+  }
+  .member-profile__bio { margin: 0 auto 8px; }
+}
+
+/* ─────────────────────────────────────────────────────
+   SETTINGS PAGE
+───────────────────────────────────────────────────── */
+
+.settings-shell {
+  max-width: 640px;
+  padding-top: 48px;
+  padding-bottom: 80px;
+}
+
+.settings-shell .page-heading {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  margin-bottom: 40px;
+}
+
+.settings-section {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px 28px 24px;
+  margin-bottom: 28px;
+  background: var(--bg-elevated);
+}
+
+.settings-section--danger {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+}
+
+.settings-section__heading {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-section--danger .settings-section__heading {
+  border-bottom-color: var(--accent-border);
+}
+
+.settings-section__desc {
+  color: var(--text-muted);
+  font-size: .9rem;
+  margin-bottom: 14px;
+}
+
+.settings-form { display: flex; flex-direction: column; gap: 0; }
+
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+
+.settings-avatar-preview {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 640px) {
+  .settings-section { padding: 20px 16px 18px; }
+  .settings-shell   { padding-top: 28px; }
+}

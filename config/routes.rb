@@ -26,6 +26,14 @@ Rails.application.routes.draw do
   resources :categories, path: "topics", only: :show, param: :slug
   resources :series, path: "series", only: :show, param: :slug
 
+  # Member profiles (public) — /members/:display_name
+  resources :members, only: :show, param: :display_name
+
+  # Account settings (authenticated) — /settings and /settings/update_password
+  resource :settings, only: %i[show update] do
+    patch :update_password
+  end
+
   # RSS feed
   get "feed.xml", to: "feed#show", as: :feed, defaults: { format: :xml }
 

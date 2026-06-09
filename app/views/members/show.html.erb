@@ -1,0 +1,47 @@
+<% content_for :title, "#{@member.byline} | VybeDeck CMS" %>
+
+<main class="page-shell">
+  <header class="content-hero">
+    <div class="shell">
+      <div class="member-profile">
+        <div class="member-profile__avatar" aria-hidden="true">
+          <% if @member.avatar.attached? %>
+            <%= image_tag url_for(@member.avatar), alt: "", class: "avatar avatar--xl" %>
+          <% else %>
+            <span class="avatar avatar--xl avatar--placeholder">
+              <%= @member.byline.first.upcase %>
+            </span>
+          <% end %>
+        </div>
+
+        <div class="member-profile__meta">
+          <h1 class="member-profile__name"><%= @member.byline %></h1>
+
+          <% if @member.bio.present? %>
+            <p class="member-profile__bio"><%= @member.bio %></p>
+          <% end %>
+
+          <% if @member.website_url.present? %>
+            <p class="member-profile__website">
+              <%= link_to @member.website_url, @member.website_url,
+                    target: "_blank", rel: "noopener noreferrer", class: "link" %>
+            </p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <% if @posts.any? %>
+    <section class="content-band">
+      <div class="shell">
+        <h2 class="section-heading">Posts by <%= @member.byline %></h2>
+        <div class="post-grid">
+          <% @posts.each do |post| %>
+            <%= render "posts/post_card", post: post %>
+          <% end %>
+        </div>
+      </div>
+    </section>
+  <% end %>
+</main>

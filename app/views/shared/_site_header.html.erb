@@ -13,6 +13,11 @@
       <% if Current.user&.editor? || Current.user&.admin? %>
         <%= link_to "Admin", admin_root_path %>
       <% end %>
+      <% if Current.user %>
+        <%= link_to "Settings", settings_path %>
+      <% else %>
+        <%= link_to "Sign in", new_session_path %>
+      <% end %>
     </nav>
 
     <button

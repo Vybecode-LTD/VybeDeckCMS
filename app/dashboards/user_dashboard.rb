@@ -2,21 +2,24 @@ require "administrate/base_dashboard"
 
 class UserDashboard < Administrate::BaseDashboard
   ATTRIBUTE_TYPES = {
-    id: Field::Number,
-    display_name: Field::String,
+    id:            Field::Number,
+    display_name:  Field::String,
     email_address: Field::Email,
-    password: Field::Password,
-    posts: Field::HasMany,
-    role: Field::Select.with_options(
+    password:      Field::Password,
+    bio:           Field::Text,
+    website_url:   Field::String,
+    posts:         Field::HasMany,
+    role:          Field::Select.with_options(
       searchable: false,
       collection: ->(field) { field.resource.class.roles.keys }
     ),
-    created_at: Field::DateTime,
-    updated_at: Field::DateTime
+    created_at:    Field::DateTime,
+    updated_at:    Field::DateTime
   }.freeze
 
   COLLECTION_ATTRIBUTES = %i[
     email_address
+    display_name
     role
     posts
     created_at
@@ -26,6 +29,8 @@ class UserDashboard < Administrate::BaseDashboard
     id
     display_name
     email_address
+    bio
+    website_url
     posts
     role
     created_at
@@ -36,6 +41,8 @@ class UserDashboard < Administrate::BaseDashboard
     display_name
     email_address
     password
+    bio
+    website_url
     role
   ].freeze
 
