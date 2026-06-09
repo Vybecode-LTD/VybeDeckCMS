@@ -4,7 +4,7 @@
 > Keep "Last Completed" and "Immediate Next Session" current at the end of every session.
 
 **Updated:** 2026-06-09
-**Branch:** `main` — Phase 4.1 committed; not yet pushed to Railway
+**Branch:** `main` — Phase 4.1 pushed to GitHub; Railway auto-deploy triggered
 **Last commit:** `40b5ea0` (Phase 4.1 — Community & Forum models, admin, and public UI)
 **Test suite:** `490 runs, 1292 assertions, 0 failures, 0 errors, 0 skips`
 
@@ -18,7 +18,7 @@
 | Rails app | `C:\DEV\VybeDeck\vybedeck_cms` |
 | GitHub | `https://github.com/Vybecode-LTD/VybeDeckCMS.git` |
 | Deployed | Railway (auto-deploy from `main`) |
-| Branch | `main` — Phase 4.1 committed locally; not yet pushed to Railway |
+| Branch | `main` — Phase 4.1 pushed; Railway deploy in progress |
 | Tests | `490 runs, 1292 assertions, 0 failures, 0 errors, 0 skips` |
 
 ---
@@ -265,18 +265,13 @@ cd C:\DEV\VybeDeck\vybedeck_cms
 ruby bin\rails test
 # Expected: 490 runs, 1292 assertions, 0 failures
 
-# 3. Push Phase 4.1 to Railway (triggers auto-deploy + db:migrate)
-git push origin main
-
-# 4. Implement Phase 4.2 — Reactions & Moderation Queue
+# 3. Implement Phase 4.2 or 4.4 (see options below)
 #    OR implement Phase 4.4 — Notification Bell (higher user value)
 ```
 
 **Next phase options (priority order):**
 
-1. **Push to Railway** — Phase 4.1 is committed but not deployed. `git push origin main` triggers Railway auto-deploy; `db:migrate` creates the 3 forum tables on production.
-
-2. **Phase 4.2 — Reactions & Moderation Queue**
+1. **Phase 4.2 — Reactions & Moderation Queue**
    - Add `likes_count` increment via `ForumReply#like!` and a `POST /community/:slug/:id/replies/:reply_id/like` route
    - Add `reported_at` / `report_reason` to ForumReply; `POST /community/:slug/:id/replies/:reply_id/report`
    - Admin moderation queue: `GET /admin/moderation` listing reported replies; approve/remove actions
