@@ -6,6 +6,9 @@ class OrderPolicy < ApplicationPolicy
   def update? = admin_accessible?
   def destroy? = user&.admin?
 
+  # Refunds are admin-only — irreversible financial action.
+  def refund? = user&.admin?
+
   class Scope < Scope
     def resolve
       return scope.all                  if admin_accessible?

@@ -19,7 +19,22 @@
 
 ## Last Completed Task (2026-06-09)
 
-**Phase 3.5 — Digital Downloads** (commit pending):
+**Phase 3.6 — Refunds & Admin Order Management** (commit pending):
+- `OrderPolicy#refund?` = admin only (irreversible financial action).
+- `Admin::OrdersController#refund` (POST /admin/orders/:id/refund): finds order, authorises, guards `paid?` status, calls `Stripe::Refund.create(payment_intent:)`, marks order `:refunded`; rescues `Stripe::StripeError` with flash alert, leaving order unchanged.
+- Custom `app/views/admin/orders/show.html.erb`: renders "Issue Full Refund" button (admin + paid order only, with turbo_confirm dialog), "← All Orders" link, formatted `total_display` instead of raw `total_cents`, status pill badge.
+- `Admin::RevenueController#show` (GET /admin/revenue): monthly stats via `DATE_TRUNC('month', created_at)` PostgreSQL GROUP BY (last 12 months + all-time totals by currency); Pundit gated via `RevenuePolicy`.
+- `RevenuePolicy#show?` = editor or admin.
+- `app/views/admin/revenue/show.html.erb`: all-time summary cards + monthly breakdown table with formatted money.
+- Revenue nav link added to `app/views/admin/application/_navigation.html.erb` (editor/admin only).
+- Routes: `member { post :refund }` on admin orders; `resource :revenue, only: :show, controller: :revenue` (explicit controller to avoid Rails auto-pluralisation to `RevenuesController`).
+- `LineItemDashboard` created (was missing, caused `uninitialized constant` on order show).
+- `StripeHelper#with_stripe_refund` added (same `define_singleton_method` pattern; supports `raises:` kwarg for error simulation).
+- `test/integration/admin_refunds_test.rb`: 11 tests (auth levels, business guards, Stripe error, captured params, show page).
+- `test/integration/admin_revenue_test.rb`: 9 tests (auth levels, content, exclusion of non-paid orders).
+- Full suite: **418 runs, 1040 assertions, 0 failures**.
+
+**Phase 3.5 — Digital Downloads** (commit `c727281`):
 - `Product` gets `has_many_attached :download_files` — zero migrations needed (Active Storage).
 - `User` gets `has_many :orders` — enables `user.orders.paid.joins(:line_items)` purchase check.
 - `ProductPolicy#download?`: admins/editors always allowed; regular users need a paid `Order` containing the product via `LineItem`.
@@ -173,7 +188,7 @@ Previous milestones: Rails 8 foundation → auth/Pundit → Page/Post/Category �
 
 ## Active Task
 
-Phase 3.5 complete. Moving to Phase 3.6 — Refunds &amp; Admin Order Management.
+Phase 3.6 complete. Phase 3 E-Commerce is done. Moving to Phase 4 — Email Notifications.
 
 ## Architecture (rules — never break without explicit owner approval)
 
@@ -217,7 +232,7 @@ ruby bin\rails test
 ## Test Suite
 
 ```
-398 runs, 986 assertions, 0 failures, 0 errors, 0 skips
+418 runs, 1040 assertions, 0 failures, 0 errors, 0 skips
 ```
 
 Key test files:

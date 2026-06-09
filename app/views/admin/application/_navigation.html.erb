@@ -17,4 +17,9 @@
   <% if current_user&.admin? %>
     <%= link_to "Site Settings", admin_settings_path, class: "navigation__link" %>
   <% end %>
+
+  <% if current_user&.admin_accessible? %>
+    <%= link_to "Revenue", admin_revenue_path,
+          class: "navigation__link navigation__link--#{ request.path.start_with?(admin_revenue_path) ? "active" : "inactive" }" %>
+  <% end %>
 </nav>

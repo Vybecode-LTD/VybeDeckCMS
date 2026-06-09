@@ -8,7 +8,11 @@ Rails.application.routes.draw do
     resources :posts
     # Phase 3 commerce
     resources :products
-    resources :orders, only: %i[index show]
+    resources :orders, only: %i[index show] do
+      member { post :refund }
+    end
+    # Rails would infer Admin::RevenuesController; override to Admin::RevenueController.
+    resource :revenue, only: :show, controller: :revenue
     resources :users do
       member do
         patch :ban

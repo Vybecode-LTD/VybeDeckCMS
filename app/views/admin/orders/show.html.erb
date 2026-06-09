@@ -1,0 +1,57 @@
+<%# Custom order show page — extends Administrate's default with a refund action.
+    `page` is an Administrate::Page::Show instance provided by the base controller. %>
+
+<% content_for(:title) { "Order \##{page.resource.id}" } %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title">
+    Order #<%= page.resource.id %>
+    <span class="admin-status-pill admin-status-pill--<%= page.resource.status %>">
+      <%= page.resource.status.capitalize %>
+    </span>
+  </h1>
+
+  <div class="admin-order-actions">
+    <% if page.resource.paid? && policy(page.resource).refund? %>
+      <%= button_to "Issue Full Refund",
+            refund_admin_order_path(page.resource),
+            method: :post,
+            class:  "button button--danger",
+            data:   {
+              turbo_confirm: "Issue a full refund for Order \##{page.resource.id} " \
+                             "(#{page.resource.total_display})? This cannot be undone."
+            } %>
+    <% end %>
+
+    <%= link_to "← All Orders", admin_orders_path, class: "button" %>
+  </div>
+</header>
+
+<section class="main-content__body">
+  <dl>
+    <% page.attributes.each do |title, attributes| %>
+      <fieldset class="<%= "field-unit--nested" if title.present? %>">
+        <% if title.present? %>
+          <legend><%= t "helpers.label.#{page.resource_name}.#{title}", default: title %></legend>
+        <% end %>
+
+        <% attributes.each do |attribute| %>
+          <dt class="attribute-label" id="<%= attribute.name %>">
+            <%= t(
+              "helpers.label.#{resource_name}.#{attribute.name}",
+              default: page.resource.class.human_attribute_name(attribute.name)
+            ) %>
+          </dt>
+          <dd class="attribute-data attribute-data--<%= attribute.html_class %>">
+            <%# Display total_cents as formatted money instead of a raw integer %>
+            <% if attribute.name == :total_cents %>
+              <%= page.resource.total_display %>
+            <% else %>
+              <%= render_field attribute, page: page %>
+            <% end %>
+          </dd>
+        <% end %>
+      </fieldset>
+    <% end %>
+  </dl>
+</section>

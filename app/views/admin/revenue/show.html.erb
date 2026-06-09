@@ -1,0 +1,56 @@
+<%# /admin/revenue — monthly revenue summary for editors and admins %>
+<% content_for(:title) { "Revenue" } %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title">Revenue</h1>
+</header>
+
+<section class="main-content__body">
+
+  <%# ── All-time totals ─────────────────────────────────────────────── %>
+  <div class="revenue-summary-cards">
+    <% @totals_by_currency.each do |row| %>
+      <div class="revenue-card">
+        <p class="revenue-card__label"><%= row.currency.upcase %> (all time)</p>
+        <p class="revenue-card__total"><%= Product.format_money(row.revenue_cents, row.currency) %></p>
+        <p class="revenue-card__meta"><%= row.order_count %> paid order<%= "s" if row.order_count != 1 %></p>
+      </div>
+    <% end %>
+    <% if @totals_by_currency.empty? %>
+      <p class="revenue-empty">No paid orders yet.</p>
+    <% end %>
+  </div>
+
+  <%# ── Monthly breakdown ───────────────────────────────────────────── %>
+  <h2 class="revenue-section-title">Last 12 months</h2>
+
+  <% if @monthly_stats.empty? %>
+    <p class="revenue-empty">No paid orders in the last 12 months.</p>
+  <% else %>
+    <div class="revenue-table-wrap">
+      <table class="revenue-table">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Currency</th>
+            <th>Orders</th>
+            <th class="revenue-table__amount">Revenue</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @monthly_stats.each do |stat| %>
+            <tr>
+              <td><%= stat.month.strftime("%B %Y") %></td>
+              <td><%= stat.currency.upcase %></td>
+              <td><%= stat.order_count %></td>
+              <td class="revenue-table__amount">
+                <%= Product.format_money(stat.revenue_cents, stat.currency) %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+</section>
