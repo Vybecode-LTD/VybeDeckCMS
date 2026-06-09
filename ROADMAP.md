@@ -1,7 +1,7 @@
 # VybeDeck CMS — Product Roadmap
 
 > **Owner:** Vybecode Ltd  
-> **Updated:** 2026-06-08  
+> **Updated:** 2026-06-09  
 > **Branch:** `main`  
 > **Maintained by:** session-orchestrator / memory-updater
 
@@ -46,7 +46,8 @@ e-commerce, and collaborative album production — all inside one deployable mon
 | Self-Service Registration | Email verification (48h token, hard block on unverified sign-in); `SiteSetting` model; invite-only mode; `RegistrationsController` + `SendEmailVerificationJob` + `UserMailer`; admin settings toggle |
 | User Roles Expansion | `member` (3) and `subscriber` (4) roles; self-registration defaults to member; `requires_subscriber` on posts; Pundit policies updated for all 5 roles |
 | User Administration | Ban/unban (no enumeration); Login-as impersonation with DB-based session restore + audit log; bulk role assignment; custom admin user list/show views |
-| Tests | 286 runs, 732 assertions, 0 failures; Minitest throughout |
+| Stripe Integration | `stripe` gem; `Product`, `Price`, `Order`, `LineItem`, `StripeCustomer` models; `StripeWebhooksController`; Pundit policies; Administrate dashboards; webhook tests via `define_singleton_method` (Minitest 6 has no `stub`) |
+| Tests | 334 runs, 822 assertions, 0 failures; Minitest throughout |
 
 ---
 
@@ -134,11 +135,14 @@ purchases, and download gating.
 **Goal:** Full Stripe integration for one-off purchases, a shopping cart, and digital
 download delivery. Required by the Album Manager in Phase 6.
 
-### 3.1 Stripe Integration
-- Add `stripe` gem; store `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` as Railway env vars
-- `StripeWebhooksController` for `checkout.session.completed`, `payment_intent.succeeded`, `charge.refunded`
-- Models: `Product`, `Price`, `Order`, `LineItem`, `StripeCustomer`
-- `Product` is polymorphic: can wrap a `Post` (article paywall), an `Album`, or a standalone item
+### ~~3.1 Stripe Integration~~ ✅ Done
+- `stripe` gem (13.5.1); `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` stored as Railway env vars; `config/initializers/stripe.rb`
+- `StripeWebhooksController`: handles `payment_intent.succeeded`, `payment_intent.payment_failed`, `charge.refunded`; HMAC-verified via `Stripe::Webhook.construct_event`; CSRF-exempt; `allow_unauthenticated_access`
+- Models: `Product` (FriendlyId, status enum, polymorphic productable, `active_price`, `format_money`), `Price`, `Order` (optional user, email normalization), `LineItem`, `StripeCustomer`
+- Pundit policies: `ProductPolicy`, `PricePolicy`, `OrderPolicy`
+- Administrate dashboards: `ProductDashboard`, `PriceDashboard`, `OrderDashboard`; admin routes: `resources :products`, `resources :orders, only: %i[index show]`
+- Webhook tests use `define_singleton_method` to replace `Stripe::Webhook.construct_event` (Minitest 6 removed `#stub`)
+- 48 new tests (8 integration + 40 model); full suite: 334 runs / 822 assertions / 0 failures
 
 ### 3.2 Shop
 - Public shop index at `/shop` — product grid with price, cover image, description

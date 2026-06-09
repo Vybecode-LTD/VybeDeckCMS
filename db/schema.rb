@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_09_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_09_110004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -84,6 +84,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_000001) do
     t.index ["impersonator_session_id"], name: "index_impersonation_logs_on_impersonator_session_id"
   end
 
+  create_table "line_items", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "order_id", null: false
+    t.bigint "price_id", null: false
+    t.bigint "product_id", null: false
+    t.integer "quantity", default: 1, null: false
+    t.integer "unit_amount_cents", null: false
+    t.datetime "updated_at", null: false
+    t.index ["order_id"], name: "index_line_items_on_order_id"
+    t.index ["price_id"], name: "index_line_items_on_price_id"
+    t.index ["product_id"], name: "index_line_items_on_product_id"
+  end
+
   create_table "media", force: :cascade do |t|
     t.string "alt_text"
     t.bigint "byte_size"
@@ -100,6 +113,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_000001) do
     t.index ["file_type"], name: "index_media_on_file_type"
     t.index ["owner_type", "owner_id"], name: "index_media_on_owner"
     t.index ["uploaded_by_id"], name: "index_media_on_uploaded_by_id"
+  end
+
+  create_table "orders", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "currency", default: "gbp", null: false
+    t.string "email", null: false
+    t.integer "status", default: 0, null: false
+    t.string "stripe_customer_id"
+    t.string "stripe_payment_intent_id"
+    t.integer "total_cents", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.index ["email"], name: "index_orders_on_email"
+    t.index ["stripe_payment_intent_id"], name: "index_orders_on_stripe_payment_intent_id", unique: true, where: "(stripe_payment_intent_id IS NOT NULL)"
+    t.index ["user_id", "status"], name: "index_orders_on_user_id_and_status"
+    t.index ["user_id"], name: "index_orders_on_user_id"
   end
 
   create_table "pages", force: :cascade do |t|
@@ -139,6 +168,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_000001) do
     t.index ["slug"], name: "index_posts_on_slug", unique: true
   end
 
+  create_table "prices", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.integer "amount_cents", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", default: "gbp", null: false
+    t.string "nickname"
+    t.bigint "product_id", null: false
+    t.string "stripe_price_id"
+    t.datetime "updated_at", null: false
+    t.index ["product_id", "active"], name: "index_prices_on_product_id_and_active"
+    t.index ["product_id"], name: "index_prices_on_product_id"
+    t.index ["stripe_price_id"], name: "index_prices_on_stripe_price_id", unique: true, where: "(stripe_price_id IS NOT NULL)"
+  end
+
+  create_table "products", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.bigint "productable_id"
+    t.string "productable_type"
+    t.string "slug", null: false
+    t.integer "status", default: 0, null: false
+    t.string "stripe_product_id"
+    t.datetime "updated_at", null: false
+    t.index ["productable_type", "productable_id"], name: "index_products_on_productable"
+    t.index ["slug"], name: "index_products_on_slug", unique: true
+    t.index ["stripe_product_id"], name: "index_products_on_stripe_product_id", unique: true, where: "(stripe_product_id IS NOT NULL)"
+  end
+
   create_table "series", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "description"
@@ -167,6 +225,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_000001) do
     t.text "value"
     t.string "value_type", default: "string", null: false
     t.index ["key"], name: "index_site_settings_on_key", unique: true
+  end
+
+  create_table "stripe_customers", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "stripe_customer_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["stripe_customer_id"], name: "index_stripe_customers_on_stripe_customer_id", unique: true
+    t.index ["user_id"], name: "index_stripe_customers_on_user_id", unique: true
   end
 
   create_table "taggings", force: :cascade do |t|
@@ -201,11 +268,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_000001) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "impersonation_logs", "users", column: "impersonated_id"
   add_foreign_key "impersonation_logs", "users", column: "impersonator_id"
+  add_foreign_key "line_items", "orders"
+  add_foreign_key "line_items", "prices"
+  add_foreign_key "line_items", "products"
   add_foreign_key "media", "users", column: "uploaded_by_id"
+  add_foreign_key "orders", "users"
   add_foreign_key "pages", "pages", column: "parent_id"
   add_foreign_key "posts", "series"
   add_foreign_key "posts", "users", column: "author_id"
+  add_foreign_key "prices", "products"
   add_foreign_key "sessions", "users"
+  add_foreign_key "stripe_customers", "users"
   add_foreign_key "taggings", "categories"
   add_foreign_key "taggings", "posts"
 end
