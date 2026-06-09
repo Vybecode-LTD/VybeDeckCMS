@@ -19,6 +19,17 @@
 
 ## Last Completed Task (2026-06-09)
 
+**Phase 2.4 — User Administration** (commit `ae2a0f4`):
+- `banned_at` on User; `User#banned?`, `#ban!`, `#unban!`.
+- SessionsController blocks banned sign-ins with the same wrong-credentials error (no enumeration).
+- `ImpersonationLog` model stores `impersonator_session_id` (bigint) so the exit action can restore the admin session from DB — no reliance on Rails session or cookie state across the `start_new_session_for` swap.
+- `Admin::ImpersonationsController < ::ApplicationController` — root-namespace prefix prevents Ruby resolving `ApplicationController` to `Admin::ApplicationController`, which would have blocked members from exiting through `authorize_admin_access`.
+- Impersonation banner in layout; audit log table on admin user show page.
+- Bulk role assignment (`PATCH /admin/users/bulk_role`, admin-only).
+- Custom admin user index (search, role/status badges, bulk-role form) and show page.
+- `UserPolicy`: `ban?`, `unban?`, `impersonate?` (admin only, cannot target another admin), `bulk_role?`.
+- 28 new tests (23 integration + 5 model). Full suite: **286 runs, 732 assertions, 0 failures**.
+
 **Phase 2.3 — User Roles Expansion** (commit `673e60e`):
 - Added `member` (3) and `subscriber` (4) to User role enum.
 - Self-registration now defaults to `member` (not `author`); authors are promoted by admin.
@@ -100,7 +111,7 @@ Previous milestones: Rails 8 foundation → auth/Pundit → Page/Post/Category �
 
 ## Active Task
 
-Phase 2.3 complete. Moving to Phase 2.4 — User Administration. See `ROADMAP.md`.
+Phase 2.4 complete (commit `ae2a0f4`). Moving to Phase 2.5 — see `ROADMAP.md` for Phase 3 planning.
 
 ## Architecture (rules — never break without explicit owner approval)
 
@@ -144,7 +155,7 @@ ruby bin\rails test
 ## Test Suite
 
 ```
-258 runs, 649 assertions, 0 failures, 0 errors, 0 skips
+286 runs, 732 assertions, 0 failures, 0 errors, 0 skips
 ```
 
 Key test files:
@@ -156,6 +167,8 @@ Key test files:
 - `test/integration/registration_test.rb`
 - `test/models/site_setting_test.rb`
 - `test/integration/member_access_test.rb`
+- `test/integration/user_administration_test.rb`
+- `test/models/impersonation_log_test.rb`
 
 ## Seeds
 

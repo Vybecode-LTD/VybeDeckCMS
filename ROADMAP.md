@@ -45,7 +45,8 @@ e-commerce, and collaborative album production — all inside one deployable mon
 | User Profile | bio + website_url + avatar on User; `/members/:display_name`; `/settings` with password change |
 | Self-Service Registration | Email verification (48h token, hard block on unverified sign-in); `SiteSetting` model; invite-only mode; `RegistrationsController` + `SendEmailVerificationJob` + `UserMailer`; admin settings toggle |
 | User Roles Expansion | `member` (3) and `subscriber` (4) roles; self-registration defaults to member; `requires_subscriber` on posts; Pundit policies updated for all 5 roles |
-| Tests | 258 runs, 649 assertions, 0 failures; Minitest throughout |
+| User Administration | Ban/unban (no enumeration); Login-as impersonation with DB-based session restore + audit log; bulk role assignment; custom admin user list/show views |
+| Tests | 286 runs, 732 assertions, 0 failures; Minitest throughout |
 
 ---
 
@@ -117,10 +118,15 @@ purchases, and download gating.
 - Migration: `posts.requires_subscriber boolean NOT NULL DEFAULT false`; `PostDashboard` updated
 - 38 new tests (23 model + 15 integration); full suite: 258 runs / 649 assertions / 0 failures
 
-### 2.4 User Administration
-- Administrate `UserDashboard` extended: role picker, ban toggle, verified badge, purchase history
-- Bulk role assignment
-- Login-as (admin impersonation with audit log)
+### ~~2.4 User Administration~~ ✅ Done
+- `banned_at` on User; `ban!`/`unban!`; SessionsController blocks banned users with identical error (no enumeration)
+- `ImpersonationLog` model; `impersonator_session_id` stores admin session ID in DB for reliable restore
+- `Admin::ImpersonationsController < ::ApplicationController` (root prefix prevents member exit being blocked by `authorize_admin_access`)
+- Impersonation banner in layout; audit log on admin user show page
+- Bulk role assignment (`PATCH /admin/users/bulk_role`, Pundit-gated to admin)
+- Custom admin user index (search, role/status badges, bulk-role form) and show page
+- `UserPolicy`: `ban?`, `unban?`, `impersonate?` (admin only, cannot target another admin), `bulk_role?`
+- 28 new tests (23 integration + 5 model); full suite: 286 runs / 732 assertions / 0 failures
 
 ---
 
