@@ -2796,3 +2796,116 @@ body.cart-open { overflow: hidden; }
   }
   .checkout-summary { position: static; }
 }
+
+/* ─────────────────────────────────────────────────────
+   ACCOUNT — Downloads page
+───────────────────────────────────────────────────── */
+
+.downloads-page { max-width: 720px; }
+
+.downloads-empty {
+  text-align: center;
+  padding: 60px 0;
+}
+
+.downloads-empty__message {
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  font-size: 1.05rem;
+}
+
+/* ── Product groups ───────────────────────────────── */
+.download-product-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.download-product {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.download-product__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--accent) 4%, var(--bg-elevated));
+}
+
+.download-product__name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.download-product__count {
+  font-size: .8rem;
+  color: var(--text-muted);
+}
+
+/* ── Individual file rows ─────────────────────────── */
+.download-file-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.download-file {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.download-file:last-child { border-bottom: none; }
+
+.download-file__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.download-file__name {
+  font-weight: 500;
+  font-size: .925rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.download-file__size {
+  font-size: .75rem;
+  color: var(--text-muted);
+}
+
+.download-btn {
+  flex-shrink: 0;
+  font-size: .8rem;
+  padding: 5px 14px;
+}
+
+/* ── Admin file lists (inside Administrate) ───────── */
+.admin-file-list { list-style: none; padding: 0; margin: 0; }
+.admin-file-item { padding: 4px 0; font-size: .875rem; }
+.admin-file-link { color: var(--accent); }
+.admin-file-meta { color: var(--text-muted); font-size: .75rem; margin-left: 6px; }
+.admin-file-empty { color: var(--text-faint); }
+.admin-current-files { margin-bottom: 10px; padding: 10px; background: var(--bg-sunken); border-radius: 6px; }
+.admin-current-files__label { font-size: .75rem; font-weight: 600; color: var(--text-muted); margin: 0 0 6px; }
+.admin-current-files__hint { font-size: .75rem; color: var(--text-muted); margin: 8px 0 0; }
+
+@media (max-width: 600px) {
+  .download-file { flex-wrap: wrap; }
+  .download-file__meta { flex: 1 1 100%; }
+}

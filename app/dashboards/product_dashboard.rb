@@ -11,6 +11,7 @@ class ProductDashboard < Administrate::BaseDashboard
       collection: ->(field) { field.resource.class.statuses.keys }
     ),
     cover_image:      ActiveStorageField,
+    download_files:   ActiveStorageMultiField,
     stripe_product_id: Field::String,
     prices:           Field::HasMany,
     created_at:       Field::DateTime,
@@ -30,6 +31,7 @@ class ProductDashboard < Administrate::BaseDashboard
     slug
     status
     cover_image
+    download_files
     description
     stripe_product_id
     prices
@@ -42,6 +44,7 @@ class ProductDashboard < Administrate::BaseDashboard
     slug
     status
     cover_image
+    download_files
     description
     stripe_product_id
   ].freeze

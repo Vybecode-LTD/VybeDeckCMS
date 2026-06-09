@@ -6,6 +6,15 @@ class ProductPolicy < ApplicationPolicy
   def update?  = admin_accessible?
   def destroy? = user&.admin?
 
+  # Allows downloading the product's downloadable files.
+  # Admins/editors always have access; regular users need a paid order.
+  def download?
+    return true if admin_accessible?
+    return false unless user
+
+    user.orders.paid.joins(:line_items).where(line_items: { product: record }).exists?
+  end
+
   class Scope < Scope
     def resolve
       return scope.all if admin_accessible?

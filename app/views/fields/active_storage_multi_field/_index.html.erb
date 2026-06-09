@@ -1,0 +1,8 @@
+<%# Administrate index/collection partial for ActiveStorageMultiField %>
+<span>
+  <% if field.data.attached? %>
+    <%= field.data.count %> file<%= "s" if field.data.count != 1 %>
+  <% else %>
+    —
+  <% end %>
+</span>

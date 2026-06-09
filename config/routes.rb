@@ -76,6 +76,12 @@ Rails.application.routes.draw do
     delete "items/:id", to: "carts#remove_item"
   end
 
+  # Account — authenticated user area
+  scope "/account", as: :account do
+    get "downloads",     to: "downloads#index", as: :downloads
+    get "downloads/:id", to: "downloads#show",  as: :download
+  end
+
   # Checkout (embedded Stripe Payment Element)
   get  "/checkout",             to: "checkouts#new",          as: :checkout
   post "/checkout",             to: "checkouts#create"

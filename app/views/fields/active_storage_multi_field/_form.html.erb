@@ -1,0 +1,25 @@
+<%# Administrate form partial for ActiveStorageMultiField (has_many_attached) %>
+<div class="field-unit__label">
+  <%= f.label field.attribute %>
+</div>
+<div class="field-unit__field">
+  <% if field.data.attached? %>
+    <div class="admin-current-files">
+      <p class="admin-current-files__label">Current files:</p>
+      <ul class="admin-file-list">
+        <% field.data.each do |attachment| %>
+          <li class="admin-file-item">
+            <%= attachment.filename %>
+            <span class="admin-file-meta">
+              (<%= number_to_human_size(attachment.blob.byte_size) %>)
+            </span>
+          </li>
+        <% end %>
+      </ul>
+      <p class="admin-current-files__hint">
+        Uploading new files will add to existing ones (not replace).
+      </p>
+    </div>
+  <% end %>
+  <%= f.file_field field.attribute, multiple: true %>
+</div>

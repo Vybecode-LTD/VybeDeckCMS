@@ -1,0 +1,54 @@
+<% content_for :title, "My Downloads | VybeDeck CMS" %>
+
+<main class="page-shell">
+  <section class="list-heading">
+    <div class="shell">
+      <p class="eyebrow">Account</p>
+      <h1>My Downloads</h1>
+    </div>
+  </section>
+
+  <section class="content-band">
+    <div class="shell downloads-page">
+
+      <% if @purchased_products.empty? %>
+        <div class="downloads-empty">
+          <p class="downloads-empty__message">You haven't purchased any downloadable products yet.</p>
+          <%= link_to "Visit the Shop", shop_path, class: "btn" %>
+        </div>
+      <% else %>
+        <ul class="download-product-list" aria-label="Purchased products with downloads">
+          <% @purchased_products.each do |product| %>
+            <li class="download-product">
+              <div class="download-product__header">
+                <h2 class="download-product__name"><%= product.name %></h2>
+                <span class="download-product__count">
+                  <%= product.download_files.count %>
+                  file<%= "s" if product.download_files.count != 1 %>
+                </span>
+              </div>
+
+              <ul class="download-file-list">
+                <% product.download_files.each do |attachment| %>
+                  <li class="download-file">
+                    <div class="download-file__meta">
+                      <span class="download-file__name"><%= attachment.filename %></span>
+                      <span class="download-file__size">
+                        <%= number_to_human_size(attachment.blob.byte_size) %>
+                      </span>
+                    </div>
+                    <%= link_to "Download",
+                          account_download_path(attachment.blob.signed_id),
+                          class: "btn btn--sm download-btn",
+                          data: { turbo: false } %>
+                  </li>
+                <% end %>
+              </ul>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+
+    </div>
+  </section>
+</main>

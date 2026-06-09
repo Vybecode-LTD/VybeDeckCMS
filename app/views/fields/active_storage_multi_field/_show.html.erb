@@ -1,0 +1,18 @@
+<%# Administrate show-page partial for ActiveStorageMultiField (has_many_attached) %>
+<% if field.data.attached? %>
+  <ul class="admin-file-list">
+    <% field.data.each do |attachment| %>
+      <li class="admin-file-item">
+        <%= link_to attachment.filename.to_s,
+              rails_blob_path(attachment.blob, disposition: "attachment"),
+              class: "admin-file-link" %>
+        <span class="admin-file-meta">
+          (<%= number_to_human_size(attachment.blob.byte_size) %> &middot;
+          <%= attachment.blob.content_type %>)
+        </span>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <span class="admin-file-empty">—</span>
+<% end %>

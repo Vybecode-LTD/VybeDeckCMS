@@ -5,7 +5,8 @@ class Product < ApplicationRecord
   has_many   :prices,     dependent: :destroy
   has_many   :line_items, dependent: :nullify
   belongs_to :productable, polymorphic: true, optional: true
-  has_one_attached :cover_image
+  has_one_attached  :cover_image
+  has_many_attached :download_files
 
   # draft (0) — not visible publicly
   # active (1) — on sale
