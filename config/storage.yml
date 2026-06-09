@@ -7,13 +7,18 @@ local:
   root: <%= Rails.root.join("storage") %>
 
 # Activated when AWS_BUCKET is set in Railway env vars.
-# Required: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_BUCKET
+# For AWS S3: set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_BUCKET
+# For Cloudflare R2: set the same vars PLUS AWS_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+#   AWS_REGION should be "auto" for R2
 amazon:
   service: S3
   access_key_id: <%= ENV.fetch("AWS_ACCESS_KEY_ID", "") %>
   secret_access_key: <%= ENV.fetch("AWS_SECRET_ACCESS_KEY", "") %>
   region: <%= ENV.fetch("AWS_REGION", "us-east-1") %>
   bucket: <%= ENV.fetch("AWS_BUCKET", "") %>
+<% if ENV["AWS_ENDPOINT"].present? %>
+  endpoint: <%= ENV.fetch("AWS_ENDPOINT") %>
+<% end %>
 
 # Remember not to checkin your GCS keyfile to a repository
 # google:
