@@ -40,6 +40,20 @@
   </head>
 
   <body>
+    <%# Impersonation warning — only visible when an admin is browsing as another user %>
+    <% if impersonating? %>
+      <div class="impersonation-banner">
+        <span class="impersonation-banner__label">
+          &#9888; Impersonating <strong><%= Current.user&.byline %></strong>
+        </span>
+        <%= button_to "Exit impersonation",
+              admin_impersonation_path,
+              method: :delete,
+              class: "button button--sm button--danger",
+              data: { turbo_confirm: "End impersonation and return to your admin account?" } %>
+      </div>
+    <% end %>
+
     <%= render "shared/site_header" %>
 
     <% if notice.present? %>

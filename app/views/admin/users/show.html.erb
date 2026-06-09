@@ -1,0 +1,147 @@
+<% content_for(:title) { @user.byline } %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title">
+    <%= @user.byline %>
+    <% if @user.banned? %>
+      <span class="status-badge status-badge--banned">Banned</span>
+    <% end %>
+    <% if @user.email_verified? %>
+      <span class="status-badge status-badge--verified">&#10003; Verified</span>
+    <% end %>
+  </h1>
+
+  <div class="user-show-actions">
+    <%= link_to "Edit", edit_admin_user_path(@user), class: "button button--secondary" %>
+
+    <%# Ban / Unban toggle — admin only %>
+    <% if policy(@user).ban? || policy(@user).unban? %>
+      <% if @user.banned? %>
+        <%= button_to "Unban", unban_admin_user_path(@user),
+              method: :patch,
+              class: "button button--secondary",
+              data: { turbo_confirm: "Unban #{@user.byline} and restore their access?" } %>
+      <% else %>
+        <%= button_to "Ban", ban_admin_user_path(@user),
+              method: :patch,
+              class: "button button--danger",
+              data: { turbo_confirm: "Ban #{@user.byline}? They will not be able to sign in." } %>
+      <% end %>
+    <% end %>
+
+    <%# Impersonate (Login-as) — admin only, not for other admins %>
+    <% if policy(@user).impersonate? %>
+      <%= button_to "Login as #{@user.byline}",
+            impersonate_admin_user_path(@user),
+            method: :post,
+            class: "button button--warning",
+            data: { turbo_confirm: "Browse the site as #{@user.byline}? You can exit via the banner." } %>
+    <% end %>
+
+    <%= button_to "Delete", admin_user_path(@user),
+          method: :delete,
+          class: "button button--danger",
+          data: { turbo_confirm: "Permanently delete #{@user.byline}?" } if policy(@user).destroy? %>
+  </div>
+</header>
+
+<section class="main-content__body">
+  <%# Core user attributes %>
+  <div class="user-show-grid">
+    <dl class="user-attr-list">
+      <dt>Email</dt>
+      <dd><%= @user.email_address %></dd>
+
+      <dt>Display name</dt>
+      <dd><%= @user.display_name.presence || "—" %></dd>
+
+      <dt>Role</dt>
+      <dd>
+        <span class="role-badge role-badge--<%= @user.role %>"><%= @user.role %></span>
+      </dd>
+
+      <dt>Bio</dt>
+      <dd><%= @user.bio.presence || "—" %></dd>
+
+      <dt>Website</dt>
+      <dd>
+        <% if @user.website_url.present? %>
+          <%= link_to @user.website_url, @user.website_url, target: "_blank", rel: "noopener" %>
+        <% else %>
+          —
+        <% end %>
+      </dd>
+
+      <dt>Email verified</dt>
+      <dd>
+        <% if @user.email_verified? %>
+          <%= @user.email_verified_at.strftime("%-d %b %Y at %H:%M") %>
+        <% else %>
+          <span class="status-badge status-badge--unverified">Not verified</span>
+        <% end %>
+      </dd>
+
+      <dt>Banned</dt>
+      <dd>
+        <% if @user.banned? %>
+          <%= @user.banned_at.strftime("%-d %b %Y at %H:%M") %>
+        <% else %>
+          <span class="status-badge status-badge--active">Active</span>
+        <% end %>
+      </dd>
+
+      <dt>Joined</dt>
+      <dd><%= @user.created_at.strftime("%-d %b %Y at %H:%M") %></dd>
+    </dl>
+
+    <%# Recent posts %>
+    <div class="user-show-posts">
+      <h2 class="user-show-section-heading">Recent posts</h2>
+      <% if @recent_posts.empty? %>
+        <p class="empty-state--inline">No posts yet.</p>
+      <% else %>
+        <ul class="user-show-post-list">
+          <% @recent_posts.each do |post| %>
+            <li>
+              <%= link_to post.title, admin_post_path(post) %>
+              <span class="tag-chip tag-chip--<%= post.status %>"><%= post.status %></span>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Impersonation audit log %>
+  <% if @impersonation_logs.any? %>
+    <div class="user-show-audit">
+      <h2 class="user-show-section-heading">Impersonation history</h2>
+      <table class="user-table user-table--compact">
+        <thead>
+          <tr>
+            <th>Admin</th>
+            <th>Started</th>
+            <th>Ended</th>
+            <th>Duration</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @impersonation_logs.each do |log| %>
+            <tr>
+              <td><%= link_to log.impersonator.byline, admin_user_path(log.impersonator) %></td>
+              <td><%= log.started_at.strftime("%-d %b %Y %H:%M") %></td>
+              <td><%= log.ended_at&.strftime("%-d %b %Y %H:%M") || "Active" %></td>
+              <td>
+                <% if log.ended_at %>
+                  <%= distance_of_time_in_words(log.started_at, log.ended_at) %>
+                <% else %>
+                  —
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</section>

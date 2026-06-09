@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_08_230000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_09_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -69,6 +69,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_230000) do
     t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true
     t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
     t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
+  end
+
+  create_table "impersonation_logs", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "ended_at"
+    t.bigint "impersonated_id", null: false
+    t.bigint "impersonator_id", null: false
+    t.bigint "impersonator_session_id"
+    t.datetime "started_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["impersonated_id"], name: "index_impersonation_logs_on_impersonated_id"
+    t.index ["impersonator_id"], name: "index_impersonation_logs_on_impersonator_id"
+    t.index ["impersonator_session_id"], name: "index_impersonation_logs_on_impersonator_session_id"
   end
 
   create_table "media", force: :cascade do |t|
@@ -167,6 +180,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_230000) do
   end
 
   create_table "users", force: :cascade do |t|
+    t.datetime "banned_at"
     t.text "bio"
     t.datetime "created_at", null: false
     t.string "display_name"
@@ -185,6 +199,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_230000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "impersonation_logs", "users", column: "impersonated_id"
+  add_foreign_key "impersonation_logs", "users", column: "impersonator_id"
   add_foreign_key "media", "users", column: "uploaded_by_id"
   add_foreign_key "pages", "pages", column: "parent_id"
   add_foreign_key "posts", "series"

@@ -12,6 +12,11 @@ class SessionsController < ApplicationController
         return redirect_to verify_email_registration_path,
           alert: "Please verify your email address before signing in."
       end
+      # Banned users receive the same generic error as wrong credentials to
+      # prevent leaking account status to potential attackers.
+      if user.banned?
+        return redirect_to new_session_path, alert: "Try another email address or password."
+      end
       start_new_session_for user
       redirect_to after_authentication_url
     else

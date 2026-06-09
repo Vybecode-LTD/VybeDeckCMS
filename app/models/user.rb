@@ -53,6 +53,19 @@ class User < ApplicationRecord
     email_verified_at.present?
   end
 
+  # Ban helpers — nil banned_at means active; a timestamp means banned.
+  def banned?
+    banned_at.present?
+  end
+
+  def ban!
+    update!(banned_at: Time.current)
+  end
+
+  def unban!
+    update!(banned_at: nil)
+  end
+
   # Generates a fresh verification token, persists it, and returns the raw token.
   def generate_email_verification_token!
     token = SecureRandom.urlsafe_base64(32)

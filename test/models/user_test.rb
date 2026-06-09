@@ -103,4 +103,36 @@ class UserTest < ActiveSupport::TestCase
     user = User.new(email_verified_at: Time.current)
     assert user.email_verified?
   end
+
+  # ── Ban helpers ─────────────────────────────────────────────────────────────
+
+  test "banned? returns false when banned_at is nil" do
+    user = User.new
+    assert_not user.banned?
+  end
+
+  test "banned? returns true when banned_at is set" do
+    user = User.new(banned_at: Time.current)
+    assert user.banned?
+  end
+
+  test "ban! sets banned_at" do
+    user = User.create!(email_address: "ban-#{SecureRandom.hex(4)}@test.com", password: "password")
+    assert_not user.banned?
+    user.ban!
+    assert user.banned?
+    assert_not_nil user.banned_at
+  end
+
+  test "unban! clears banned_at" do
+    user = User.create!(
+      email_address: "unban-#{SecureRandom.hex(4)}@test.com",
+      password:      "password",
+      banned_at:     Time.current
+    )
+    assert user.banned?
+    user.unban!
+    assert_not user.banned?
+    assert_nil user.reload.banned_at
+  end
 end

@@ -1,46 +1,81 @@
 module Admin
+  # Extends Administrate's default CRUD (inherited via Admin::ApplicationController)
+  # with ban/unban, impersonation (Login-as), and bulk role assignment.
   class UsersController < Admin::ApplicationController
-    # Overwrite any of the RESTful controller actions to implement custom behavior
-    # For example, you may want to send an email after a foo is updated.
-    #
-    # def update
-    #   super
-    #   send_foo_updated_email(requested_resource)
-    # end
+    # Override index for a search-friendly query and Pagy pagination.
+    def index
+      @search = params[:search].to_s.strip
+      scope = User.order(created_at: :desc)
+      if @search.present?
+        scope = scope.where(
+          "email_address ILIKE :q OR display_name ILIKE :q",
+          q: "%#{@search}%"
+        )
+      end
+      @pagy, @users = pagy(scope)
+    end
 
-    # Override this method to specify custom lookup behavior.
-    # This will be used to set the resource for the `show`, `edit`, and `update`
-    # actions.
-    #
-    # def find_resource(param)
-    #   Foo.find_by!(slug: param)
-    # end
+    # Override show to load audit data alongside the user record.
+    def show
+      @user = User.find(params[:id])
+      @recent_posts = @user.posts.order(created_at: :desc).limit(10)
+      @impersonation_logs = ImpersonationLog
+        .where(impersonated: @user)
+        .order(started_at: :desc)
+        .limit(10)
+    end
 
-    # The result of this lookup will be available as `requested_resource`
+    # PATCH /admin/users/:id/ban
+    def ban
+      @user = User.find(params[:id])
+      authorize @user, :ban?
+      @user.ban!
+      redirect_to admin_user_path(@user), notice: "#{@user.byline} has been banned."
+    end
 
-    # Override this if you have certain roles that require a subset
-    # this will be used to set the records shown on the `index` action.
-    #
-    # def scoped_resource
-    #   if current_user.super_admin?
-    #     resource_class
-    #   else
-    #     resource_class.with_less_stuff
-    #   end
-    # end
+    # PATCH /admin/users/:id/unban
+    def unban
+      @user = User.find(params[:id])
+      authorize @user, :unban?
+      @user.unban!
+      redirect_to admin_user_path(@user), notice: "#{@user.byline} has been unbanned."
+    end
 
-    # Override `resource_params` if you want to transform the submitted
-    # data before it's persisted. For example, the following would turn all
-    # empty values into nil values. It uses other APIs such as `resource_class`
-    # and `dashboard`:
-    #
-    # def resource_params
-    #   params.require(resource_class.model_name.param_key).
-    #     permit(dashboard.permitted_attributes(action_name)).
-    #     transform_values { |value| value == "" ? nil : value }
-    # end
+    # POST /admin/users/:id/impersonate
+    def impersonate
+      @target = User.find(params[:id])
+      authorize @target, :impersonate?
 
-    # See https://administrate-demo.herokuapp.com/customizing_controller_actions
-    # for more information
+      # Record the impersonation, storing the admin's Session ID directly on the
+      # log row so ImpersonationsController#destroy can restore it from the DB
+      # rather than relying on the Rails session (which may be opaque after the
+      # session_id cookie swap below).
+      log = ImpersonationLog.create!(
+        impersonator:            current_user,
+        impersonated:            @target,
+        started_at:              Time.current,
+        impersonator_session_id: Current.session.id
+      )
+
+      # Create a real session for the target user (overwrites the session_id cookie).
+      start_new_session_for @target
+      redirect_to main_app.root_path,
+        notice: "You are now impersonating #{@target.byline}. " \
+                "Use the banner at the top to exit."
+    end
+
+    # PATCH /admin/users/bulk_role
+    def bulk_role
+      authorize User, :bulk_role?
+
+      role = params[:role].to_s
+      ids  = Array(params[:user_ids]).map(&:to_i).reject(&:zero?)
+
+      return redirect_to admin_users_path, alert: "No users selected."   if ids.empty?
+      return redirect_to admin_users_path, alert: "Invalid role."         unless User.roles.key?(role)
+
+      count = User.where(id: ids).update_all(role: User.roles[role])
+      redirect_to admin_users_path, notice: "Updated #{count} user(s) to the #{role} role."
+    end
   end
 end

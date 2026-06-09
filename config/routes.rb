@@ -6,7 +6,16 @@ Rails.application.routes.draw do
     resources :categories
     resources :pages
     resources :posts
-    resources :users
+    resources :users do
+      member do
+        patch :ban
+        patch :unban
+        post  :impersonate
+      end
+      collection do
+        patch :bulk_role
+      end
+    end
 
     resources :series
 
@@ -15,6 +24,9 @@ Rails.application.routes.draw do
 
     # Site-wide settings (invite_only toggle etc.) — admin role only
     resource :settings, only: %i[show update], controller: "site_settings"
+
+    # End an active impersonation session (Login-as exit)
+    resource :impersonation, only: :destroy
 
     root to: "pages#index"
   end

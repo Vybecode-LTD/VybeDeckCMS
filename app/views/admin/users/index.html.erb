@@ -1,0 +1,90 @@
+<% content_for(:title) { "Users" } %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title">Users</h1>
+  <%= link_to "New user", new_admin_user_path, class: "button" %>
+</header>
+
+<section class="main-content__body">
+  <%# Search form %>
+  <%= form_with url: admin_users_path, method: :get, class: "media-search-form" do %>
+    <%= search_field_tag :search, @search, placeholder: "Search by email or display name…", class: "media-search-input" %>
+  <% end %>
+
+  <%# Bulk role form wraps the table %>
+  <%= form_with url: bulk_role_admin_users_path, method: :patch, id: "bulk-role-form" do |f| %>
+    <% if @users.empty? %>
+      <p class="empty-state">No users found.</p>
+    <% else %>
+      <div class="user-table-wrapper">
+        <table class="user-table">
+          <thead>
+            <tr>
+              <th class="user-table__check"></th>
+              <th>Email</th>
+              <th>Display name</th>
+              <th>Role</th>
+              <th>Verified</th>
+              <th>Status</th>
+              <th>Joined</th>
+              <th class="user-table__actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @users.each do |user| %>
+              <tr class="<%= "user-table__row--banned" if user.banned? %>">
+                <td class="user-table__check">
+                  <input type="checkbox" name="user_ids[]" value="<%= user.id %>"
+                         class="user-table__checkbox">
+                </td>
+                <td>
+                  <%= link_to user.email_address, admin_user_path(user) %>
+                </td>
+                <td><%= user.display_name.presence || "—" %></td>
+                <td>
+                  <span class="role-badge role-badge--<%= user.role %>"><%= user.role %></span>
+                </td>
+                <td>
+                  <% if user.email_verified? %>
+                    <span class="status-badge status-badge--verified" title="Verified <%= user.email_verified_at&.strftime("%b %-d, %Y") %>">&#10003; Verified</span>
+                  <% else %>
+                    <span class="status-badge status-badge--unverified">Unverified</span>
+                  <% end %>
+                </td>
+                <td>
+                  <% if user.banned? %>
+                    <span class="status-badge status-badge--banned">Banned</span>
+                  <% else %>
+                    <span class="status-badge status-badge--active">Active</span>
+                  <% end %>
+                </td>
+                <td class="user-table__date"><%= user.created_at.strftime("%-d %b %Y") %></td>
+                <td class="user-table__actions">
+                  <%= link_to "View", admin_user_path(user), class: "button button--xs button--secondary" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <%# Bulk role bar %>
+      <div class="media-bulk-bar">
+        <%= f.select :role,
+              User.roles.keys.map { |r| [r.humanize, r] },
+              { prompt: "Set role…" },
+              class: "form-select" %>
+        <button type="submit" class="button button--sm"
+                data-turbo-confirm="Update the role for all selected users?">
+          Apply to selected
+        </button>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if @pagy.pages > 1 %>
+    <div class="pagy-nav shell">
+      <%= pagy_nav(@pagy) %>
+    </div>
+  <% end %>
+</section>
