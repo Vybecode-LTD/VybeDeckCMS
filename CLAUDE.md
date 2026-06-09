@@ -19,7 +19,7 @@
 
 ## Last Completed Task (2026-06-09)
 
-**Phase 3.1 — Stripe Integration Foundation** (commit pending):
+**Phase 3.1 — Stripe Integration Foundation** (commit `e1966ad`):
 - `stripe` gem (13.5.1) added; `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` are Railway env vars only — not committed.
 - `config/initializers/stripe.rb`: sets `Stripe.api_key` from env.
 - Models: `Product` (FriendlyId slugged+history, draft/active/archived enum, polymorphic productable, `active_price`, `display_price`, `format_money`), `Price` (amount_cents, currency, active flag), `Order` (optional user for guest checkout, email normalization, pending/paid/failed/refunded enum), `LineItem`, `StripeCustomer` (one-per-user unique index).
