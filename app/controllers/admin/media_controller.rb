@@ -3,16 +3,20 @@ module Admin
     before_action :set_medium, only: %i[show edit update destroy]
 
     def index
+      authorize Medium, :index?
       scope = Medium.includes(:uploaded_by, file_attachment: :blob)
       scope = scope.public_send(params[:filter]) if valid_filter?
       scope = scope.where("title ILIKE ?", "%#{params[:search]}%") if params[:search].present?
       @pagy, @media = pagy(scope.order(created_at: :desc), items: 24)
     end
 
-    def show; end
+    def show
+      authorize @medium, :show?
+    end
 
     def new
       @medium = Medium.new
+      authorize @medium, :create?
     end
 
     def create
@@ -20,6 +24,7 @@ module Admin
       @medium.uploaded_by = current_user
       auto_set_file_type
       auto_set_title
+      authorize @medium, :create?
       if @medium.save
         redirect_to admin_media_path, notice: "#{@medium.title} uploaded."
       else
@@ -27,9 +32,12 @@ module Admin
       end
     end
 
-    def edit; end
+    def edit
+      authorize @medium, :update?
+    end
 
     def update
+      authorize @medium, :update?
       if @medium.update(update_params)
         redirect_to admin_medium_path(@medium), notice: "Updated."
       else
@@ -38,11 +46,13 @@ module Admin
     end
 
     def destroy
+      authorize @medium, :destroy?
       @medium.destroy!
       redirect_to admin_media_path, notice: "Deleted."
     end
 
     def bulk_destroy
+      authorize Medium, :destroy?
       ids = (params[:medium_ids] || []).map(&:to_i)
       Medium.where(id: ids).find_each(&:destroy)
       redirect_to admin_media_path, notice: "#{ids.size} file(s) deleted."

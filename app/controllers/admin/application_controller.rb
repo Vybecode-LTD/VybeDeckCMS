@@ -7,7 +7,7 @@
 module Admin
   class ApplicationController < Administrate::ApplicationController
     include Authentication
-    include Pundit::Authorization
+    include Administrate::Punditize
     include Pagy::Backend
     helper Pagy::Frontend
 

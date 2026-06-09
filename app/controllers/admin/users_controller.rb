@@ -4,6 +4,7 @@ module Admin
   class UsersController < Admin::ApplicationController
     # Override index for a search-friendly query and Pagy pagination.
     def index
+      authorize User, :index?
       @search = params[:search].to_s.strip
       scope = User.order(created_at: :desc)
       if @search.present?
@@ -18,6 +19,7 @@ module Admin
     # Override show to load audit data alongside the user record.
     def show
       @user = User.find(params[:id])
+      authorize @user, :show?
       @recent_posts = @user.posts.order(created_at: :desc).limit(10)
       @impersonation_logs = ImpersonationLog
         .where(impersonated: @user)
