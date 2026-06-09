@@ -4,9 +4,9 @@
 > Keep "Last Completed" and "Immediate Next Session" current at the end of every session.
 
 **Updated:** 2026-06-09
-**Branch:** `main` — all Phase 3 work committed and on main; auto-deploys to Railway
-**Last commit:** `9f28005` (Phase 3.7 — Email Notifications + security/test remediation)
-**Test suite:** `444 runs, 1110 assertions, 0 failures, 0 errors, 0 skips`
+**Branch:** `main` — Phase 4.1 committed; not yet pushed to Railway
+**Last commit:** `40b5ea0` (Phase 4.1 — Community & Forum models, admin, and public UI)
+**Test suite:** `490 runs, 1292 assertions, 0 failures, 0 errors, 0 skips`
 
 ---
 
@@ -18,8 +18,8 @@
 | Rails app | `C:\DEV\VybeDeck\vybedeck_cms` |
 | GitHub | `https://github.com/Vybecode-LTD/VybeDeckCMS.git` |
 | Deployed | Railway (auto-deploy from `main`) |
-| Branch | `main` — all work merged and committed; nothing pending |
-| Tests | `444 runs, 1110 assertions, 0 failures, 0 errors, 0 skips` |
+| Branch | `main` — Phase 4.1 committed locally; not yet pushed to Railway |
+| Tests | `490 runs, 1292 assertions, 0 failures, 0 errors, 0 skips` |
 
 ---
 
@@ -117,6 +117,26 @@ ruby bin\rails server        # dev server on :3000
 - Impersonation banner in site layout; audit log table on admin user show page
 - Bulk role assignment: `PATCH /admin/users/bulk_role`, Pundit admin-only
 - Custom admin user index (search, role badges, status badges, bulk-role form) and show page
+
+---
+
+### Phase 4 — Community & Forum (commit `40b5ea0`)
+
+**4.1 Forum Core** (`40b5ea0`)
+- `Forum` (FriendlyId, visibility enum open/members_only/subscribers_only, position, icon); `ForumThread` (title, Action Text body, author, forum, pinned, locked, view_count, reply_count counter_cache, last_reply_at); `ForumReply` (Action Text body, author, forum_thread, likes_count, is_solution); 3 migrations
+- `ForumPolicy` — scope filters visible forums per role; `show?` gates by visibility; `ForumThreadPolicy` — `lock?`/`pin?` editor/admin only; `ForumReplyPolicy` — `create?` blocked on locked threads; all three policies add `index?`/`show?` for Administrate
+- Admin: `ForumDashboard`, `ForumThreadDashboard`, `ForumReplyDashboard`; `Admin::ForumThreadsController` — PATCH `:lock` and `:pin` member actions toggle locked/pinned with flash notice
+- `CommunityController`: `allow_unauthenticated_access` + `before_action :resume_session` (required so `Current.user` is populated for signed-in visitors on public pages, same pattern as `PostsController`); write actions gated via `require_authentication`; Turbo Stream reply response (`create_reply.turbo_stream.erb`)
+- **Known bug fixed:** `authorize @forum` in `forum` action derived action name → called nonexistent `forum?` on ForumPolicy; corrected to `authorize @forum, :show?`
+- **Known bug fixed:** `ForumReply#reset_thread_last_reply_at` crashed during cascade delete because parent thread was already destroyed; guarded with `return if forum_thread.destroyed?`
+- Routes: `/community/*` ordered before `/*id` page catch-all; admin namespace extended
+- 46 new integration tests covering visibility gates, auth gates, Turbo Stream reply, locked-thread guard, view-count increment, admin CRUD, lock/pin toggle
+
+**Remaining Phase 4 sub-phases (not started):**
+- 4.2 — Reactions & Moderation Queue (reply likes; report flag → admin queue; approve/remove)
+- 4.3 — Per-reply admin delete (placeholder comment already in `_reply.html.erb`)
+- 4.4 — Notification bell (`Notification` model; thread-reply notifications; Turbo Stream unread badge)
+- 4.5 — Per-forum accent colour (`colour_hex` column; applied to forum card/thread headers)
 
 ---
 
@@ -243,23 +263,28 @@ cd C:\DEV\VybeDeck\vybedeck_cms
 
 # 2. Confirm green baseline
 ruby bin\rails test
-# Expected: 444 runs, 1110 assertions, 0 failures
+# Expected: 490 runs, 1292 assertions, 0 failures
 
-# 3. Implement Phase 4 — Community & Forum
+# 3. Push Phase 4.1 to Railway (triggers auto-deploy + db:migrate)
+git push origin main
+
+# 4. Implement Phase 4.2 — Reactions & Moderation Queue
+#    OR implement Phase 4.4 — Notification Bell (higher user value)
 ```
 
-**Next phase: Phase 4 — Community & Forum**
+**Next phase options (priority order):**
 
-Scope:
-1. **Core models**: `Forum` (name, slug, description, visibility enum `public`/`members`/`subscribers`, position, icon), `ForumThread` (title, Action Text body, author, pinned, locked, view_count, last_reply_at), `ForumReply` (Action Text body, author, likes_count, is_solution)
-2. **Routes**: `GET /community` (forum index), `GET /community/:forum_slug` (thread list), `GET /community/:forum_slug/:thread_id` (thread show), `POST /community/:forum_slug/threads` (new thread), `POST /community/:forum_slug/:thread_id/replies` (reply)
-3. **Visibility gating**: Pundit — public forums accessible without auth; members-only requires `member` role or above; subscriber-only requires `subscriber` or above
-4. **Turbo Streams**: new replies append to thread without full-page reload
-5. **Moderation**: flag/report → admin moderation queue; `Admin::ForumThreadsController` + `Admin::ForumRepliesController` with approve/remove/lock; `Admin::ForumsController` CRUD
-6. **Notifications** (Phase 4.4): `Notification` model; notify thread author on reply; notification bell in header via Turbo Streams with unread badge
-7. **Tests**: integration tests for all visibility gates, Turbo Stream responses, moderation actions
+1. **Push to Railway** — Phase 4.1 is committed but not deployed. `git push origin main` triggers Railway auto-deploy; `db:migrate` creates the 3 forum tables on production.
 
-**Also before this ships:** Set SMTP Railway env vars (see Known Issues #1).
+2. **Phase 4.2 — Reactions & Moderation Queue**
+   - Add `likes_count` increment via `ForumReply#like!` and a `POST /community/:slug/:id/replies/:reply_id/like` route
+   - Add `reported_at` / `report_reason` to ForumReply; `POST /community/:slug/:id/replies/:reply_id/report`
+   - Admin moderation queue: `GET /admin/moderation` listing reported replies; approve/remove actions
+
+3. **Phase 4.4 — Notification Bell** (higher UX value, can skip 4.2/4.3)
+   - `Notification` model: `recipient` (User), `actor` (User), `notifiable` (polymorphic), `read_at`
+   - `after_create_commit` on ForumReply: creates Notification for thread author (if different from reply author)
+   - Notification bell in site header: counter badge; `GET /notifications` list page; mark-as-read Turbo Stream action
 
 ---
 
@@ -292,6 +317,7 @@ test/test_helpers/stripe_helper.rb           with_stripe_payment_intent / with_s
 
 | Hash | Message |
 |------|---------|
+| `40b5ea0` | feat(community): Phase 4.1 — Forum models, admin, and public UI |
 | `9f28005` | feat(email): Phase 3.7 - order email notifications + Tier 2/3 test debt |
 | `f0ba7d7` | feat(security): Tier 1 - Administrate::Punditize, CategoryPolicy, FriendlyId admin fixes |
 | `699b1d1` | docs: comprehensive documentation audit and update |
