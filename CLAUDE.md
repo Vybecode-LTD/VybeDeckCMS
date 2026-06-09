@@ -19,6 +19,17 @@
 
 ## Last Completed Task (2026-06-08)
 
+**Phase 2.1 — User Profile** (commit `23cb868`):
+- Migration: `bio` (text) + `website_url` (string) on users; partial unique index `LOWER(display_name)`.
+- User model: `has_one_attached :avatar`; validates bio ≤ 280 chars, website_url http/https format, display_name case-insensitive unique ≤ 50 chars; avatar image-only < 10 MB.
+- `UserPolicy#show_profile?` = true (public); `SettingPolicy` gates settings to authenticated users.
+- `MembersController` — `GET /members/:display_name`; case-insensitive lookup; 404 for missing; shows up to 6 published posts by that author.
+- `SettingsController` — `GET /settings` + `PATCH /settings` (profile + email) + `PATCH /settings/update_password` (with current-password verification, 12-char min).
+- Site header: "Settings" link for authenticated users, "Sign in" link for guests.
+- `UserDashboard` updated with bio + website_url for Administrate.
+- 143 lines of new CSS: `.avatar` sizes, `.member-profile`, `.settings-section`, `.settings-form`.
+- 38 new tests (15 model + 23 integration). Full suite: **178 runs, 488 assertions, 0 failures**.
+
 **Phase 1.5 — Blog System Enhancements** (commit `f906f4b`):
 - `Post#reading_time` (words ÷ 200, min 1 minute) displayed in post byline.
 - Related posts: `PostsController#show` loads up to 3 live posts sharing any category; rendered as compact grid below body.
@@ -63,7 +74,7 @@ Previous milestones: Rails 8 foundation → auth/Pundit → Page/Post/Category �
 
 ## Active Task
 
-Phase 1 complete. Moving to Phase 2 — User Accounts & Profiles. See `ROADMAP.md`.
+Phase 2.1 complete. Moving to Phase 2.2 — Self-Service Registration. See `ROADMAP.md`.
 
 ## Architecture (rules — never break without explicit owner approval)
 
@@ -107,7 +118,7 @@ ruby bin\rails test
 ## Test Suite
 
 ```
-140 runs, 398 assertions, 0 failures, 0 errors, 0 skips
+178 runs, 488 assertions, 0 failures, 0 errors, 0 skips
 ```
 
 Key test files:

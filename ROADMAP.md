@@ -42,7 +42,8 @@ e-commerce, and collaborative album production — all inside one deployable mon
 | Video Player | Stimulus controller, shared partial, screen-click, fullscreen, 12 new tests |
 | Embed Widgets | EmbedParser PORO (5 providers), admin preview endpoint, Stimulus picker, CSP |
 | Blog Enhancements | Reading time, related posts, RSS feed (/feed.xml), Post Series model + landing page |
-| Tests | 140 runs, 398 assertions, 0 failures; Minitest throughout |
+| User Profile | bio + website_url + avatar on User; `/members/:display_name`; `/settings` with password change |
+| Tests | 178 runs, 488 assertions, 0 failures; Minitest throughout |
 
 ---
 
@@ -89,10 +90,11 @@ on top of it. Everything in later phases depends on rich media working reliably.
 **Goal:** Expand auth into a real membership system. Required foundation for forums,
 purchases, and download gating.
 
-### 2.1 User Profile
-- `display_name`, `avatar` (Active Storage), `bio` (plain text, 280 chars), `website_url`
-- Public profile page at `/members/:display_name`
-- Settings page for profile, password, email, notifications
+### ~~2.1 User Profile~~ ✅ Done
+- `bio` (text, 280 chars) + `website_url` (http/https) added to users; `avatar` via Active Storage
+- Public profile page at `/members/:display_name` (case-insensitive lookup, 404 on miss)
+- Settings page at `/settings`: profile form + password change; Pundit-gated; "Sign in" / "Settings" in header
+- 38 new tests (15 model + 23 integration); full suite: 178 runs / 488 assertions / 0 failures
 
 ### 2.2 Self-Service Registration
 - New `RegistrationsController` (separate from admin-only `Users` dashboard)
