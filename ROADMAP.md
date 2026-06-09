@@ -43,7 +43,8 @@ e-commerce, and collaborative album production — all inside one deployable mon
 | Embed Widgets | EmbedParser PORO (5 providers), admin preview endpoint, Stimulus picker, CSP |
 | Blog Enhancements | Reading time, related posts, RSS feed (/feed.xml), Post Series model + landing page |
 | User Profile | bio + website_url + avatar on User; `/members/:display_name`; `/settings` with password change |
-| Tests | 178 runs, 488 assertions, 0 failures; Minitest throughout |
+| Self-Service Registration | Email verification (48h token, hard block on unverified sign-in); `SiteSetting` model; invite-only mode; `RegistrationsController` + `SendEmailVerificationJob` + `UserMailer`; admin settings toggle |
+| Tests | 220 runs, 592 assertions, 0 failures; Minitest throughout |
 
 ---
 
@@ -96,11 +97,14 @@ purchases, and download gating.
 - Settings page at `/settings`: profile form + password change; Pundit-gated; "Sign in" / "Settings" in header
 - 38 new tests (15 model + 23 integration); full suite: 178 runs / 488 assertions / 0 failures
 
-### 2.2 Self-Service Registration
-- New `RegistrationsController` (separate from admin-only `Users` dashboard)
-- Email verification on sign-up (token in Solid Queue email job)
-- Invite-only mode toggle (admin setting): hides public registration when on
-- "Forgot password" email already implemented; wire up SMTP in production
+### ~~2.2 Self-Service Registration~~ ✅ Done
+- `RegistrationsController`: `GET/POST /register` (invite-only gate, role-locked to author), `GET /register/verify?token=` (48h expiry, auto-sign-in), `POST /register/resend` (enumeration-safe)
+- `SiteSetting` model: typed get/set/invite_only? API with DEFAULTS; `site_settings` table
+- `SendEmailVerificationJob` + `UserMailer#email_verification` (HTML + text)
+- Hard block in `SessionsController#create` for unverified users
+- `Admin::SiteSettingsController`: admin-only invite_only toggle at `/admin/settings`
+- Auth layout CSP nonce; Administrate nav "Site Settings" link
+- 42 new tests (14 model + 28 integration); full suite: 220 runs / 592 assertions / 0 failures
 
 ### 2.3 User Roles Expansion
 - Add `member` role (authenticated public commenter/buyer, no admin access)
