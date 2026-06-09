@@ -1,56 +1,160 @@
-# AGENTS.md - VybeDeck CMS
+# AGENTS.md — VybeDeck CMS
 
-> Project context for Codex and AGENTS.md-compatible agents. New sessions read this first. Keep "Last Completed Task" current at the end of every work session.
+> Project context for Codex and AGENTS.md-compatible agents.
+> New sessions read this file first, then `CLAUDE.md` and `HANDOFF.md`.
+> Keep "Last Completed Task" and "Active Task" current at the end of every session.
+
+---
 
 ## Last Completed Task
-Public Hotwire site baseline complete on branch `codex/public-hotwire-site`: page, blog, post, and topic templates render through the public content model; VybeDeck CMS naming and VybeCod.ing styling are applied; seed content is idempotent and media-backed; Active Storage named variants enqueue background transform jobs. Next: review/commit this branch, then start deployment hardening.
+
+**Phase 3.6 — Refunds & Admin Order Management** (commit `56ab9a6`, 2026-06-09):
+One-click Stripe refund from the admin order show page; monthly revenue summary dashboard; custom order show view with status pill and formatted totals; `LineItemDashboard` for Administrate; `StripeHelper#with_stripe_refund`; 20 new tests. Full suite: **418 runs, 1040 assertions, 0 failures**.
+
+## Active Task
+
+**Phase 3.7 — Email Notifications** (not yet started):
+`OrderMailer` with `confirmation`, `download_ready`, and `refund_receipt` actions; Solid Queue jobs for async delivery; HTML + text templates; wired into existing checkout/refund controllers and stripe webhook handler. Pre-requisite: SMTP Railway env vars must be set before emails deliver in production.
+
+---
 
 ## Overview
-VybeDeck CMS is a Rails 8 content management system with its own PostgreSQL database, own authentication, public site, and editorial admin. It is an island app and must not share tables or authorization rules with another app.
+
+VybeDeck CMS is a Rails 8.1 monolith and database island. It is a full-featured creative-industry publishing and e-commerce platform targeting music labels, artists, and creative agencies. It has its own PostgreSQL database, its own authentication, a public Hotwire site, an Administrate admin panel, and a Stripe-powered shop with digital downloads.
+
+**Do not** share this database with another app. **Do not** add Devise. **Do not** add React. **Do not** add Redis.
+
+---
 
 ## Architecture
-- Rails 8 monolith.
-- PostgreSQL primary database.
-- Solid Queue, Solid Cache, and Solid Cable use their own Rails 8 databases/migration paths.
-- No Redis.
-- Server-rendered Hotwire public site. No React frontend.
-- Administrate admin.
-- Rails 8 generated authentication.
-- Pundit authorization with `User.role`: `author`, `editor`, `admin`.
-- Kamal 2 deployment target.
+
+- **Framework:** Rails 8.1, Ruby 3.4
+- **Database:** PostgreSQL 17 (primary). Solid Queue, Solid Cache, and Solid Cable all share the same `DATABASE_URL` connection in production (Railway single-Postgres constraint). No separate queue/cache databases.
+- **No Redis.** Solid trio handles all async needs.
+- **Asset pipeline:** Propshaft (not Sprockets). CSS `@import` is browser-resolved, not bundled.
+- **JavaScript:** Importmap + Stimulus. No Webpack, no Node build step.
+- **Public site:** Server-rendered Hotwire/Turbo. No React frontend.
+- **Admin panel:** Administrate 1.0, namespace `admin/`.
+- **Auth:** Rails 8 generated authentication (`SessionsController`, `PasswordsController`, token-based `Session` model).
+- **Authorisation:** Pundit policies on every controller action. No shortcuts that bypass policy classes.
+- **Payments:** Stripe only (`stripe` gem 13.5.1). Embedded Payment Element (no Stripe-hosted redirect).
+- **File storage:** Active Storage. Local disk in development. Production switches to S3 (`:amazon`) when `AWS_BUCKET` env var is set.
+- **Deployment:** Railway PaaS — auto-deploys from `main` via Dockerfile. Not Kamal. Not VPS.
+- **AI integration:** Phase 7+ will use Anthropic/Claude. Not OpenAI.
+
+### User Roles (integer enum on `User#role`)
+
+| Value | Name | Description |
+|-------|------|-------------|
+| 0 | `author` | Content creator — can create/edit/publish posts |
+| 1 | `editor` | Content creator + admin panel access (non-destructive) |
+| 2 | `admin` | Full access — ban, impersonate, refunds, site settings |
+| 3 | `member` | Self-registered public user — can sign in, buy, download |
+| 4 | `subscriber` | Paid member — member access + subscriber-only content |
+
+Self-registration defaults to `member`. Promotion to higher roles is admin-only.
+
+---
 
 ## Content Rules
-- Pages and posts are separate models and tables. Never merge them with STI or a `type` column.
-- Shared publishing/SEO behavior belongs in concerns.
-- Slugs use FriendlyId.
-- Active Storage variants must be preprocessed/backgrounded. Do not call `.processed` in request views.
-- Public views use the VybeCod.ing design system: `#0a0a0a`, `#e8440a`, JetBrains Mono, OKLCH tokens.
+
+- `Page` and `Post` are **separate models and separate tables**. Never merge with STI or a `type` column.
+- Shared publishing/SEO behaviour lives in `Publishable` and `Seoable` concerns.
+- Slugs use FriendlyId with slug history.
+- Active Storage variants are backgrounded — **never call `.processed` in a request context** (it will block).
+- All new UI uses the existing CSS custom properties from `application.css`. No hard-coded colours or fonts.
+
+---
 
 ## Build, Test, Run
+
 Use this PATH prefix in PowerShell first:
 
 ```powershell
 $env:PATH='C:\DEV\VybeDeck\.tools\Ruby34\bin;C:\DEV\VybeDeck\.tools\Ruby34\msys64\ucrt64\bin;C:\DEV\VybeDeck\.tools\Ruby34\msys64\usr\bin;C:\DEV\VybeDeck\.tools\PostgreSQL17\bin;' + $env:PATH
+cd C:\DEV\VybeDeck\vybedeck_cms
 ```
 
 Then:
 
 ```powershell
-ruby bin\rails test
-ruby bin\rails db:seed
-ruby bin\rails server
+ruby bin\rails test          # expected: 418 runs, 1040 assertions, 0 failures
+ruby bin\rails db:seed       # idempotent — safe to run anytime
+ruby bin\rails server        # dev server on :3000
 ```
 
-## Current Branch State
-- Branch: `codex/public-hotwire-site`.
-- Based on `main` at `f51fd8e`.
-- Remote: `https://github.com/Vybecode-LTD/VybeDeckCMS.git`.
-- Public site work is implemented and verified but not committed, merged, or pushed.
-- See `CLAUDE.md`, `HANDOFF.md`, and `ROADMAP.md` for full details.
+---
 
-## Gotchas
-- Switch to `structure.sql` as soon as custom PostgreSQL features are added.
-- Do not fold Solid trio migrations into `db/migrate`.
-- Production Active Storage local files need a mounted persistent volume and backups.
-- Production image variants need libvips or ImageMagick available.
-- If this app ever stops being a database island, read the `rails-supabase-rls-bridge` skill before connecting anything.
+## Current Branch State
+
+- **Branch:** `main`
+- **Last commit:** `56ab9a6` — Phase 3.6 Refunds & Admin Order Management
+- **Remote:** `https://github.com/Vybecode-LTD/VybeDeckCMS.git`
+- All Phase 1, 2, and 3 work is committed and on `main`. Nothing pending.
+
+---
+
+## Completed Phase History
+
+| Phase | Commit | Summary |
+|-------|--------|---------|
+| Foundation | `9ef92be` | Rails 8, auth, Pundit, Page/Post/Category, Administrate, public site, design system, Railway |
+| 1.1 Media Manager | `06a7d2f` | `Medium` model, admin grid, drag-drop upload |
+| 1.2 Audio Player | `44b5b56` | Stimulus audio controller, shared partial |
+| 1.3 Video Player | `088e824` | Stimulus video controller, fullscreen |
+| 1.4 Embed Widgets | `950a827` | EmbedParser PORO, CSP, Trix embed picker |
+| 1.5 Blog Enhancements | `f906f4b` | Reading time, related posts, RSS feed, Series model |
+| 2.1 User Profile | `23cb868` | bio/avatar/website_url, /members, /settings |
+| 2.2 Registration | `fc38a88` | Email verification, SiteSetting, invite-only mode |
+| 2.3 Roles Expansion | `673e60e` | member + subscriber roles, subscriber-gated posts |
+| 2.4 User Admin | `ae2a0f4` | Ban/unban, Login-as impersonation, bulk role assignment |
+| 3.1 Stripe Foundation | `e1966ad` | Product/Price/Order/LineItem/StripeCustomer, webhooks |
+| 3.2 Public Shop | `4980bf9` | /shop, ShopController, product cards |
+| 3.3 Shopping Cart | `a704a09` | Cart/CartItem, session merge, Turbo Stream drawer |
+| 3.4 Checkout | `3dd7c24` | Stripe Payment Element, CheckoutsController, Stimulus checkout |
+| 3.5 Digital Downloads | `c727281` | has_many_attached download_files, DownloadsController, signed URLs |
+| 3.6 Refunds & Revenue | `56ab9a6` | Admin refund action, RevenueController, LineItemDashboard |
+
+---
+
+## Gotchas & Hard-Won Knowledge
+
+1. **Minitest 6 removed `Object#stub`.** All Stripe class method replacement uses `define_singleton_method` + `.method()` save/restore in `ensure`. See `test/test_helpers/stripe_helper.rb` for the canonical pattern (`with_stripe_payment_intent`, `with_stripe_refund`).
+
+2. **Rails route pluralization on singular resources.** `resource :revenue` auto-infers `Admin::RevenuesController` (pluralized), not `Admin::RevenueController`. Always add `controller: :revenue` explicitly: `resource :revenue, only: :show, controller: :revenue`.
+
+3. **Cart session capture order on login.** The anonymous `cart_id` must be read from `session[:cart_id]` **before** calling `start_new_session_for` — the session is wiped on login. See `SessionsController#create`.
+
+4. **Administrate `has_many_attached` strong params.** The default `Administrate::Field::Base.permitted_attribute` returns just `attr` (a symbol). For `has_many_attached`, you must override it to return `{ attr => [] }`. See `app/fields/active_storage_multi_field.rb`.
+
+5. **`LineItemDashboard` must exist.** `OrderDashboard` declares `line_items: Field::HasMany`. Administrate looks up `LineItemDashboard` when rendering the order show page. A missing dashboard causes `uninitialized constant LineItemDashboard`.
+
+6. **`Administrate::Field::Base` template lookup.** Custom field templates live at `app/views/fields/<field_type>/` where `field_type = ClassName.to_s.split("::").last.underscore` → `"active_storage_multi_field"` for `ActiveStorageMultiField`.
+
+7. **`require "ostruct"` in Ruby 3.4.** `OpenStruct` is not auto-loaded. `test/test_helpers/stripe_helper.rb` has `require "ostruct"` at the top. All Stripe test doubles are `OpenStruct` instances.
+
+8. **Active Storage `blob.signed_id` vs `blob.id`.** The download controller uses `ActiveStorage::Blob.find_signed!(params[:id])` with the signed ID (from `blob.signed_id`). Do not expose raw blob IDs in URLs.
+
+9. **`Admin::ImpersonationsController < ::ApplicationController`** (root namespace, not `Admin::ApplicationController`). The root prefix is intentional — it prevents members from being blocked by `authorize_admin_access` when they exit an impersonation session.
+
+10. **S3 is not yet active.** `download_files` attachments will be lost on every Railway deploy until `AWS_BUCKET` (and related) env vars are set. Do not add significant production download content before activating S3.
+
+11. **No `libvips` in Dockerfile.** Active Storage variant jobs enqueue but the transforms silently fail in production. Add `RUN apt-get install -y libvips` to `Dockerfile` before relying on image variants.
+
+12. **`Propshaft` + `@import`.** CSS `@import` statements in `application.css` are resolved by the browser, not Propshaft. Do not expect Propshaft to inline/bundle imported files.
+
+---
+
+## Deployment
+
+- **Platform:** Railway PaaS (not Kamal, not a VPS)
+- **Auto-deploy:** push to `main` triggers Railway build + deploy
+- **`railway.toml`:** `PORT=80` — **CRITICAL, do not remove** (Thruster requires it)
+- **`bin/docker-entrypoint`:** runs `db:migrate` with a 12-retry loop before Puma starts
+- **All 4 DB configs** (`primary`, `cache`, `queue`, `cable`) share `DATABASE_URL` in production
+- **Secrets (Railway env vars only — never commit):**
+  - `RAILS_MASTER_KEY`
+  - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+  - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_BUCKET`
+  - `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_PORT` (optional), `ACTION_MAILER_FROM` (optional)
+  - `ANTHROPIC_API_KEY` (Phase 7, not yet needed)

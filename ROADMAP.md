@@ -49,7 +49,10 @@ e-commerce, and collaborative album production — all inside one deployable mon
 | Stripe Integration | `stripe` gem; `Product`, `Price`, `Order`, `LineItem`, `StripeCustomer` models; `StripeWebhooksController`; Pundit policies; Administrate dashboards; webhook tests via `define_singleton_method` (Minitest 6 has no `stub`) |
 | Public Shop | `ShopController`; `/shop` index + `/shop/:slug` product detail; product card partial; FriendlyId admin override; design-system CSS |
 | Shopping Cart | `Cart`/`CartItem` models; `CartManagement` concern; session-keyed anonymous + user carts; merge on login; Turbo Stream drawer in layout; `cart_controller.js` Stimulus |
-| Tests | 373 runs, 911 assertions, 0 failures; Minitest throughout |
+| Checkout | Embedded Stripe Payment Element; `CheckoutsController`; Stimulus `checkout_controller.js`; `POST /checkout` returns `clientSecret`/`orderId`; confirmation page marks order paid + wipes cart |
+| Digital Downloads | `has_many_attached :download_files` on Product; `DownloadsController` serving signed blob URLs; `ProductPolicy#download?` purchase gate; `/account/downloads` page; `ActiveStorageMultiField` Administrate custom field |
+| Refunds & Revenue | `Admin::OrdersController#refund` one-click Stripe refund; custom order show with status pill + formatted money; `Admin::RevenueController` monthly stats via PostgreSQL `DATE_TRUNC`; `LineItemDashboard`; `StripeHelper#with_stripe_refund` |
+| Tests | **418 runs, 1040 assertions, 0 failures**; Minitest throughout; `StripeHelper` with `with_stripe_payment_intent` + `with_stripe_refund` |
 
 ---
 
@@ -157,22 +160,37 @@ download delivery. Required by the Album Manager in Phase 6.
 - Line item quantity update and remove
 - Cart persists to DB on login, merges anonymous + authenticated carts
 
-### 3.4 Checkout
-- Stripe Checkout Session for hosted payment page
-- OR embedded Stripe Payment Element (in-page, no redirect)
-- Post-purchase redirect to order confirmation page
-- Order confirmation email (Solid Queue, Action Mailer)
+### ~~3.4 Checkout~~ ✅ Done (commit `3dd7c24`)
+- Embedded Stripe Payment Element (in-page — no redirect to Stripe-hosted page)
+- `CheckoutsController`: `new` (GET, redirects on empty cart), `create` (POST JSON — builds Order + LineItems, creates Stripe PaymentIntent, returns `{clientSecret, orderId}`), `confirmation` (GET — retrieves PI status, marks order paid, wipes cart)
+- Stimulus `checkout_controller.js`: validates email, POSTs for `clientSecret`, mounts Payment Element, calls `stripe.confirmPayment({ redirect: "if_required" })`
+- Two-column responsive layout (payment form + order summary sidebar)
+- 13 integration tests in `test/integration/checkout_test.rb`; full suite: **386 runs, 954 assertions**
 
-### 3.5 Digital Downloads & Payment Gating
-- `Download` model: file (Active Storage), associated Order, expiry timestamp, download count
-- Time-limited signed URLs (Active Storage `blob.url` with expiry)
+### ~~3.5 Digital Downloads~~ ✅ Done (commit `c727281`)
+- `Product` gets `has_many_attached :download_files` — no migrations needed (Active Storage)
+- `ProductPolicy#download?`: admins/editors always allowed; regular users need a paid `Order` containing the product via `LineItem`
+- `DownloadsController`: `index` lists purchased products with download files; `show` serves blob via signed ID → `ActiveStorage::Attachment` bridge → Pundit authorize → `rails_blob_path(blob, disposition: "attachment")`
 - User download history at `/account/downloads`
-- Gated content: any `Post` or `Page` can be marked `requires_purchase: true`; non-buyers see a paywall with a "Unlock for $X" CTA
+- `ActiveStorageMultiField` Administrate custom field: `self.permitted_attribute` returns `{ attr => [] }` for `has_many_attached` strong-params support
+- 12 integration tests in `test/integration/downloads_test.rb`; full suite: **398 runs, 986 assertions**
 
-### 3.6 Refunds & Order Management
-- Admin order list: search by email, date, product, status
-- One-click refund (calls Stripe API, updates order status, revokes download)
-- Monthly revenue summary card on admin dashboard
+### ~~3.6 Refunds & Admin Order Management~~ ✅ Done (commit `56ab9a6`)
+- `Admin::OrdersController#refund` (POST `member { post :refund }`): guards `paid?` status, calls `Stripe::Refund.create(payment_intent:)`, marks order `:refunded`; rescues `Stripe::StripeError` with flash alert
+- Custom `app/views/admin/orders/show.html.erb`: status pill badge (CSS class per status), "Issue Full Refund" button (admin + paid only, `turbo_confirm`), `total_display` formatted money
+- `Admin::RevenueController#show`: monthly stats via `DATE_TRUNC('month', created_at)` grouped by month+currency (last 12 months); all-time totals by currency; `RevenuePolicy#show?` (editor/admin)
+- Revenue link in admin navigation for editor/admin
+- `LineItemDashboard` created (required by `OrderDashboard`'s `Field::HasMany :line_items`)
+- `StripeHelper#with_stripe_refund` added; 11 refund tests + 9 revenue tests; full suite: **418 runs, 1040 assertions**
+
+### 3.7 Email Notifications — **NEXT PHASE**
+- `OrderMailer#confirmation(order)` — order receipt with itemised summary; triggered from `CheckoutsController#confirmation` (or `payment_intent.succeeded` webhook)
+- `OrderMailer#download_ready(order)` — sent alongside confirmation when order contains products with `download_files`; includes signed download links
+- `OrderMailer#refund_receipt(order)` — sent from `Admin::OrdersController#refund` after successful Stripe refund; includes refund amount and reference
+- `SendOrderConfirmationJob` + `SendRefundReceiptJob` (Solid Queue)
+- HTML + text mailer templates with design-system branding
+- Tests: `test/mailers/order_mailer_test.rb`, integration tests for job enqueue
+- **Pre-requisite:** set `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD` Railway env vars before emails deliver in production
 
 ---
 

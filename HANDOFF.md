@@ -1,11 +1,12 @@
 # VybeDeck CMS — Session Handoff
 
-> New agents read this file first, then `ROADMAP.md`.
-> Keep "Last Completed" current at the end of every session.
+> New agents read this file first (after `CLAUDE.md`), then `ROADMAP.md`.
+> Keep "Last Completed" and "Immediate Next Session" current at the end of every session.
 
-**Updated:** 2026-06-08  
-**Branch:** `main`  
-**Last commit:** gaps-close session (uncommitted) — all seven pre-Phase-1 gaps resolved; tests 33/148 green
+**Updated:** 2026-06-09
+**Branch:** `main` — all Phase 3 work committed and on main; auto-deploys to Railway
+**Last commit:** `56ab9a6` (Phase 3.6 — Refunds & Admin Order Management)
+**Test suite:** `418 runs, 1040 assertions, 0 failures, 0 errors, 0 skips`
 
 ---
 
@@ -17,8 +18,8 @@
 | Rails app | `C:\DEV\VybeDeck\vybedeck_cms` |
 | GitHub | `https://github.com/Vybecode-LTD/VybeDeckCMS.git` |
 | Deployed | Railway (auto-deploy from `main`) |
-| Branch | `main` — everything is merged and pushed |
-| Tests | `33 runs, 148 assertions, 0 failures, 0 errors, 0 skips` |
+| Branch | `main` — all work merged and committed; nothing pending |
+| Tests | `418 runs, 1040 assertions, 0 failures, 0 errors, 0 skips` |
 
 ---
 
@@ -41,94 +42,180 @@ ruby bin\rails server        # dev server on :3000
 
 ---
 
-## What Is Built
+## What Is Built (Phase-by-Phase)
 
-### Foundation
-- Rails 8.1 monolith — PostgreSQL primary; Solid Queue/Cache/Cable share the same PG connection in production (required by Railway single-Postgres constraint)
-- Propshaft asset pipeline; Importmap for JS
-- No Redis; no Webpack; no Node build step
+### Foundation (pre-Phase-1)
 
-### Auth & Roles
-- Rails 8 generated authentication — `SessionsController`, `PasswordsController`
-- `User` model with `role` enum: `author` (0), `editor` (1), `admin` (2)
-- Pundit policies on all admin and public controllers
+- **Rails 8.1 monolith** — PostgreSQL primary; Solid Queue/Cache/Cable all share the same `DATABASE_URL` connection in production (Railway single-Postgres constraint)
+- **Propshaft** asset pipeline; Importmap for JS; no Webpack; no Node build step; no Redis
+- **Rails 8 generated authentication** — `SessionsController`, `PasswordsController`, token-based sessions
+- **Pundit** for all authorisation — every controller action has a policy check
+- **Content model** — separate `Page` and `Post` (no STI); `Category`; `Publishable` + `Seoable` concerns; FriendlyId slugs throughout
+- **Administrate 1.0** admin panel — `PageDashboard`, `PostDashboard`, `CategoryDashboard`, `UserDashboard`; Pundit-gated
+- **Public Hotwire site** — `/`, `/blog`, `/topics/:slug`, `/series/:slug`, shared header/footer
+- **Design system** — Inter variable font; light/dark OKLCH token themes; `[data-color-scheme]` + `@media prefers-color-scheme`; no-flash localStorage theme script; glass header
+- **Railway deployment** — Dockerfile; `railway.toml` (PORT=80 is critical); `bin/docker-entrypoint` with 12-retry `db:migrate` loop; all four DB configs share `DATABASE_URL`
 
-### Content
-- `Page` — standalone/hierarchical. Has `parent`, `children`, Action Text `body`, `hero_image` (Active Storage), SEO fields, `status`, FriendlyId slug, `show_in_nav`, `position`
-- `Post` — dated editorial. Has `author`, `categories`, Action Text `body`, `cover_image` + `gallery` (Active Storage), `excerpt`, SEO fields, `status`, FriendlyId slug history
-- `Category` — FriendlyId taxonomy for posts
-- Concerns: `Publishable` (status enum, `live` scope, `published_at` auto-set), `Seoable` (meta fields present but not yet wired to view output)
+---
 
-### Admin Panel
-- Administrate 1.0, namespace `admin/`
-- Dashboards: `PageDashboard`, `PostDashboard`, `CategoryDashboard`, `UserDashboard`
-- Custom `ActiveStorageField` (own implementation — Administrate 1.0 has no built-in)
-- `app/views/admin/application/_form.html.erb` overrides default form with `multipart: true`
-- View-on-site / Preview-draft buttons on Page and Post show pages
-- Collection filters: draft / published / archived on Page and Post
+### Phase 1 — Content & Media Foundation (commits `06a7d2f` → `f906f4b`)
 
-### Public Site
-- `PagesController#show` routes `/` → `home` slug and `/:id` → any slug
-- `PostsController#index` at `/blog`, `#show` at `/blog/:id`
-- `CategoriesController#show` at `/topics/:id`
-- Shared partials: `_site_header.html.erb`, `_site_footer.html.erb`
-- `ApplicationHelper`: `public_nav_pages`, `page_title`, `status_label`, `readable_date`
+**1.1 Media Manager** (`06a7d2f`)
+- `Medium` model: polymorphic `owner`, enum `media_type` (image/audio/video/document), 200 MB cap, content-type allow-list, `byte_size` cached via `after_create_commit`
+- `Admin::MediaController`: grid index with filter tabs, search, Pagy 24/page, CRUD, `bulk_destroy`
+- Stimulus `upload_controller.js`: drag-and-drop zone, multi-file Fetch API loop with progress
+- Pundit policy: editors upload/edit; admin-only delete
 
-### Content Quality & UX Fixes
-- `User#display_name` column + `User#byline` helper (falls back to `email_address`)
-- `<meta name="description">` emitted from layout via `content_for(:description)`; set on all public show/index views
-- Empty states on blog index and category show pages
-- Pagy pagination (12/page, nav renders only when pages > 1) on `PostsController#index` and `CategoriesController#show`
-- SMTP config in `production.rb` reads `SMTP_*` Railway env vars — silent until added
-- `aws-sdk-s3` gem added; `storage.yml` has amazon service; production auto-switches to S3 when `AWS_BUCKET` set
+**1.2 Audio Player** (`44b5b56`)
+- Stimulus `audio_player_controller.js`: play/pause, seek scrubber with CSS gradient progress track, volume slider, playback speed select (0.5×–2×), tabular time display, full aria attribute support
+- Shared partial `app/views/shared/_audio_player.html.erb`; wired into admin media show for audio files
 
-### Design System
-- **Font:** Inter (variable, Google Fonts `@import` in CSS)
-- **Light theme:** `--bg #f8f7f5`, white cards, `--text #18150e`, accent `#e8440a`
-- **Dark theme:** `--bg #0f0e0d`, `#1a1816` cards, `--text #f0ece4`, same accent
-- **Switching:** `@media (prefers-color-scheme: dark)` for system pref; `[data-color-scheme="dark"]` attribute for manual; no-flash `localStorage` read in `<head>`
-- **Auth layout** (`layouts/auth.html.erb`): centred card, brand at top, no nav/footer
-- **Theme toggle** in site header: sun/moon SVG, persists to `localStorage`
+**1.3 Video Player** (`088e824`)
+- Stimulus `video_player_controller.js`: same lifecycle as audio; screen-click play/pause toggle; fullscreen via `requestFullscreen()` on the container with `:-webkit-full-screen` CSS fallback
+- Shared partial `app/views/shared/_video_player.html.erb` with `poster_url` and `show_download` locals
 
-### Deployment
-- **Platform:** Railway (PaaS — not Kamal/VPS)
-- **`railway.toml`:** `PORT=80`, `healthcheckTimeout=600`, `restartPolicyType=on_failure`
-- **`bin/docker-entrypoint`:** runs `db:migrate` with 12-retry loop before server start; no seeds on boot
-- **`config/database.yml`:** all four DB configs (`primary`, `cache`, `queue`, `cable`) point to `DATABASE_URL`
-- **Secrets:** `RAILS_MASTER_KEY` set as Railway env var — never committed
+**1.4 Third-Party Embed Widgets** (`950a827`)
+- `EmbedParser` PORO: YouTube (watch/youtu.be/playlist), Vimeo, Spotify (track/album/playlist/artist), SoundCloud, Apple Music
+- `Admin::EmbedsController#preview` — `GET /admin/embeds/preview?url=URL`; editor/admin only; Stimulus `embed_picker_controller.js` adds "Embed" button to Trix toolbar
+- **CSP enabled**: `frame-src` enforced for 5 providers; nonce-based `script-src` with `strict-dynamic`
+
+**1.5 Blog System Enhancements** (`f906f4b`)
+- `Post#reading_time` (words ÷ 200, min 1 minute) shown in byline
+- Related posts: up to 3 live posts sharing any category, rendered below body
+- RSS 2.0 feed at `/feed.xml` — 20 most recent published posts, public, no auth
+- `Series` model (FriendlyId, has_many :posts ordered by `series_position`); `/series/:slug` public route + landing page; `SeriesDashboard`
+
+---
+
+### Phase 2 — User Accounts & Profiles (commits `23cb868` → `ae2a0f4`)
+
+**2.1 User Profile** (`23cb868`)
+- `bio` (text, 280 chars), `website_url` (http/https validated), Active Storage `avatar` added to User
+- `display_name`: case-insensitive unique partial index (`LOWER(display_name)`), ≤ 50 chars
+- Public profile at `/members/:display_name` (`MembersController`) — shows up to 6 published posts by that author
+- Settings at `/settings` + `/settings/update_password` — Pundit-gated to authenticated user
+
+**2.2 Self-Service Registration** (`fc38a88`)
+- `RegistrationsController`: `GET/POST /register` (invite-only gate, role locked to `member`), `GET /register/verify?token=` (48h expiry, auto-sign-in), `POST /register/resend` (enumeration-safe)
+- `SiteSetting` model with typed `get`/`set`/`invite_only?` API; `site_settings` table
+- `SendEmailVerificationJob` + `UserMailer#email_verification` (HTML + text)
+- `SessionsController#create` hard-blocks unverified users — redirects to verify page
+- `Admin::SiteSettingsController`: admin-only invite_only toggle at `/admin/settings`
+- CSP nonce added to auth layout inline script
+
+**2.3 User Roles Expansion** (`673e60e`)
+- Added `member` (3) and `subscriber` (4) to User role enum. Self-registration now defaults to `member`
+- `User#admin_accessible?`, `#content_creator?` instance helpers
+- `ApplicationPolicy` private helpers: `admin_accessible?`, `content_creator?`, `subscriber_or_above?`
+- `PostPolicy`: `create?` restricted to content creators; `show?` + `Scope` gate subscriber-only posts via `requires_subscriber` column
+- Migration: `posts.requires_subscriber boolean NOT NULL DEFAULT false`
+
+**2.4 User Administration** (`ae2a0f4`)
+- `banned_at` on User; `ban!`/`unban!`; `SessionsController` blocks banned sign-ins with identical wrong-credentials error (no enumeration)
+- `ImpersonationLog` model: stores `impersonator_session_id` (bigint) in DB — admin session is retrievable on impersonation exit regardless of cookie state
+- `Admin::ImpersonationsController < ::ApplicationController` — root-namespace prefix prevents `authorize_admin_access` from blocking member-role users when they exit impersonation
+- Impersonation banner in site layout; audit log table on admin user show page
+- Bulk role assignment: `PATCH /admin/users/bulk_role`, Pundit admin-only
+- Custom admin user index (search, role badges, status badges, bulk-role form) and show page
+
+---
+
+### Phase 3 — E-Commerce & Payments (commits `e1966ad` → `56ab9a6`)
+
+**3.1 Stripe Integration Foundation** (`e1966ad`)
+- `stripe` gem (13.5.1); `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` stored as Railway env vars — never committed
+- `config/initializers/stripe.rb` sets `Stripe.api_key` from env
+- Models: `Product` (FriendlyId slugged+history, `draft`/`active`/`archived` enum, polymorphic `productable`, `active_price`, `display_price`, `format_money`), `Price` (amount_cents, currency, active flag), `Order` (optional user for guest checkout, email normalization, `pending`/`paid`/`failed`/`refunded` enum, `total_display`), `LineItem`, `StripeCustomer` (one-per-user unique index)
+- 5 migrations: `stripe_customers`, `products`, `prices`, `orders`, `line_items`
+- Pundit policies: `ProductPolicy`, `PricePolicy`, `OrderPolicy` with Scope classes
+- Administrate dashboards: `ProductDashboard`, `PriceDashboard`, `OrderDashboard` (read-only form)
+- `StripeWebhooksController` at root: CSRF-exempt, `allow_unauthenticated_access`; handles `payment_intent.succeeded`, `payment_intent.payment_failed`, `charge.refunded`; rescues `JSON::ParserError` and `Stripe::SignatureVerificationError` with 400
+- **Minitest 6 note:** `Object#stub` was removed in Minitest 6. All Stripe class method replacement uses `define_singleton_method` + `.method()` save/restore in `ensure`. This pattern is used consistently in `StripeHelper` and inline webhook tests.
+
+**3.2 Public Shop UI** (`4980bf9`)
+- `ShopController`: `policy_scope` on index (hides non-active for non-admins); FriendlyId-aware `show` with graceful slug-redirect; `Admin::ProductsController` with `find_resource` override
+- Routes: `GET /shop`, `GET /shop/:slug` — must come before the `/*id` page catch-all
+- Views: `shop/index`, `shop/show`, `_product_card` partial; placeholder cover image fallback
+- CSS: `.product-grid`, `.product-card`, `.product-detail` using design-system tokens
+
+**3.3 Shopping Cart** (`a704a09`)
+- Migrations: `carts` (optional `user_id` with partial unique index `WHERE user_id IS NOT NULL`), `cart_items` (cart+product+price+quantity, unique on cart+product)
+- `CartManagement` concern: `set_cart_data` before_action (skips DB if no session), `current_cart`, `merge_session_cart_for`; included in `ApplicationController`
+- `SessionsController#create` captures anonymous `cart_id` from session **before** `start_new_session_for` (session is wiped on login — must save ID first)
+- `CartsController`: `show`, `add_item`, `update_item`, `remove_item`; respond to HTML and Turbo Stream
+- Cart drawer in layout: fixed sliding panel, overlay, Stimulus `cart_controller.js` (open/close + Escape key)
+- `#cart-badge` and `#cart-panel-body` DOM IDs updated via Turbo Streams on mutations
+
+**3.4 Stripe Payment Element Checkout** (`3dd7c24`)
+- `CheckoutsController#create` (POST JSON): builds `Order` + `LineItems`, calls `Stripe::PaymentIntent.create`, returns `{clientSecret, orderId}`
+- `CheckoutsController#confirmation`: retrieves PaymentIntent status, marks order `:paid`, wipes cart
+- Stimulus `checkout_controller.js`: validates email, POSTs for `clientSecret`, mounts Stripe Payment Element, calls `stripe.confirmPayment({ redirect: "if_required" })`
+- Two-column checkout layout (Payment Element + order summary sidebar); responsive mobile collapse
+- Routes: `GET/POST /checkout`, `GET /checkout/confirmation`
+
+**3.5 Digital Downloads** (`c727281`)
+- `Product` gets `has_many_attached :download_files` — zero migrations needed (Active Storage)
+- `User` gets `has_many :orders, dependent: :nullify` — enables `user.orders.paid.joins(:line_items)` purchase check
+- `ProductPolicy#download?`: admins/editors always allowed; regular users need a paid `Order` containing the product via `LineItem`
+- `DownloadsController`: `index` lists products from paid orders that have files attached; `show` looks up blob by `ActiveStorage::Blob.find_signed!(params[:id])`, verifies ownership via `ActiveStorage::Attachment`, authorises via `ProductPolicy#download?`, redirects to `rails_blob_path(blob, disposition: "attachment")`
+- `ActiveStorageMultiField` Administrate custom field: overrides `self.permitted_attribute` to return `{ attr => [] }` (required for `has_many_attached` strong-params in Administrate)
+- Templates at `app/views/fields/active_storage_multi_field/` — `_form`, `_show`, `_index`
+- `ProductDashboard` updated with `download_files: ActiveStorageMultiField`
+
+**3.6 Refunds & Admin Order Management** (`56ab9a6`)
+- `Admin::OrdersController#refund` (POST): guards `paid?` status, calls `Stripe::Refund.create(payment_intent:)`, marks order `:refunded`; rescues `Stripe::StripeError` with flash alert leaving order unchanged
+- Custom `app/views/admin/orders/show.html.erb`: status pill badge (CSS class by status), "Issue Full Refund" button visible to admin+paid only (with `turbo_confirm` dialog), `total_display` formatted money, `← All Orders` breadcrumb
+- `Admin::RevenueController#show`: monthly stats via `DATE_TRUNC('month', created_at)` grouped by month+currency (last 12 months); all-time totals by currency; Pundit via `RevenuePolicy#show?` (editor/admin)
+- `app/views/admin/revenue/show.html.erb`: all-time summary cards + monthly breakdown table
+- Revenue link in admin navigation (editor/admin only)
+- `resource :revenue, only: :show, controller: :revenue` — explicit `controller:` option required because Rails auto-pluralises `revenue` → `revenues` → `Admin::RevenuesController` even for singular resources
+- `LineItemDashboard` created — required because `OrderDashboard` declares `line_items: Field::HasMany` (Administrate looks up `LineItemDashboard` when rendering the order show page)
+- `StripeHelper#with_stripe_refund` added to `test/test_helpers/stripe_helper.rb`
 
 ---
 
 ## Seeds
 
-Admin user created by `db/seeds.rb` (idempotent):
+`ruby bin\rails db:seed` is idempotent:
 
 | Field | Value |
 |-------|-------|
-| Email | `admin@vybedeck.test` |
-| Password | `password` |
-| Role | `admin` |
+| Admin email | `admin@vybedeck.test` |
+| Admin password | `password` |
+| Admin role | `admin` |
 
-Categories: `Announcements`, `Field Notes`  
-Pages: `home`, `about`  
-Posts: `launch-notes` (published), `editorial-workflow` (published), `private-draft` (draft)
+Also seeds: `Announcements` and `Field Notes` categories; `home` and `about` pages; `launch-notes` (published) + `editorial-workflow` (published) + `private-draft` (draft) posts.
+
+---
+
+## Architecture Rules (never break)
+
+- **`Page` ≠ `Post`.** Separate models, separate tables. No STI. No `type` column. Ever.
+- **Pundit only.** No `before_action :authorize` shortcuts that bypass policy classes.
+- **No secrets in the repo.** `RAILS_MASTER_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `AWS_*`, `SMTP_*`, `ANTHROPIC_API_KEY` — all Railway env vars.
+- **Minitest, not RSpec.** Do not migrate. All Stripe mocking uses `define_singleton_method` (no `#stub` in Minitest 6).
+- **Propshaft, not Sprockets.** CSS `@import` is browser-resolved, not bundled.
+- **No Redis.** Solid Queue/Cache/Cable for all async.
+- **No React.** Public site is Hotwire/Turbo. Admin is Administrate.
+- **One release creator.** Railway auto-deploys from `main`. Never `git push --force` to main.
+- **Database is a Rails island.** No other app shares this PostgreSQL instance.
+- Commits: `type(scope): message` conventional format. Never `git add -A` blindly. Never commit `storage/`, `tmp/`, `log/`, or any credential file.
 
 ---
 
 ## Known Issues & Gaps
 
-| Issue | Severity | Notes |
-|-------|----------|-------|
-| S3 not yet active | Medium | `aws-sdk-s3` gem added, `storage.yml` and production config ready. Add `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_BUCKET` Railway env vars to activate. |
-| SMTP not yet active | Low | Config ready in `production.rb`. Add `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD` Railway env vars to activate password-reset email. |
-| No `alt_text` field on media | Low | All `image_tag` calls use `alt: ""` — will be addressed in Phase 1 Media Manager |
-| SEO deferred | Intentional | Owner requested: complete features first, then Phase 10 SEO |
+| # | Issue | Severity | Notes |
+|---|-------|----------|-------|
+| 1 | No order confirmation / download / refund emails | High | Phase 3.7. Infrastructure ready (Solid Queue, Action Mailer, `UserMailer` pattern). Needs `OrderMailer`. |
+| 2 | S3 not active in production | High | `aws-sdk-s3` gem added, `storage.yml` amazon service configured, `production.rb` switches when `AWS_BUCKET` env var present. **Digital download files will be lost on every Railway deploy until S3 is active.** |
+| 3 | SMTP not active in production | Medium | Config ready. Add `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD` Railway env vars. Needed for password reset, email verification, and Phase 3.7 transactional emails. |
+| 4 | No `libvips` in Dockerfile | Medium | Active Storage variant jobs enqueue but silently fail in production. Add `RUN apt-get install -y libvips` to Dockerfile. |
+| 5 | `Seoable` has no model validators | Low | Columns exist and are wired to `<meta>` tags. Phase 10 adds validators/canonical/OG/JSON-LD. |
 
 ---
 
 ## Immediate Next Session Checklist
-
-Run this before starting new work:
 
 ```powershell
 # 1. Set PATH
@@ -137,55 +224,68 @@ cd C:\DEV\VybeDeck\vybedeck_cms
 
 # 2. Confirm green baseline
 ruby bin\rails test
+# Expected: 418 runs, 1040 assertions, 0 failures
 
-# 3. Start work on Phase 1 — Media Manager
+# 3. Implement Phase 3.7 — Email Notifications
 ```
 
-**Next recommended phase:** Phase 1 — Media Manager (see `ROADMAP.md`)
+**Next phase: Phase 3.7 — Email Notifications**
 
-Suggested start order inside Phase 1:
-1. `Medium` model + admin media library grid (Pagy already wired)
-2. Drag-and-drop Stimulus upload controller
-3. Inline "pick from library" modal on Page/Post forms
-4. Add AWS env vars to Railway → S3 becomes live (code already deployed)
+Scope:
+1. `OrderMailer` with three mailer actions:
+   - `confirmation(order)` — sent on `payment_intent.succeeded` webhook (or in `CheckoutsController#confirmation`)
+   - `download_ready(order)` — sent alongside confirmation when order has download products
+   - `refund_receipt(order)` — sent from `Admin::OrdersController#refund` after successful Stripe refund
+2. `SendOrderConfirmationJob` (Solid Queue), `SendRefundReceiptJob`
+3. HTML + text templates for each mailer
+4. Wire into existing controllers/webhooks
+5. Tests: `test/mailers/order_mailer_test.rb`, update refund + checkout + webhook integration tests
+6. **Pre-requisite:** SMTP Railway env vars must be set before emails deliver in production
 
 ---
 
-## Architecture Rules (never break these)
-
-- `Page` and `Post` are **separate models, separate tables**. No STI. No `type` column.
-- Authorization lives **only in Pundit policies** — no `before_action :authorize` shortcuts that skip policies.
-- Database is a **Rails island** — no other app shares this PostgreSQL instance.
-- **No secrets in the repo.** `RAILS_MASTER_KEY` and all API keys are Railway env vars.
-- **One release creator.** CI (Railway) builds and deploys. Never `git push --force` to main.
-- Commits use **conventional format:** `type(scope): message` — `feat`, `fix`, `docs`, `refactor`, `test`, `chore`.
-
----
-
-## File Map (things that are unusual or easy to forget)
+## File Map (unusual or easy-to-forget)
 
 ```
-app/fields/active_storage_field.rb          Custom Administrate field (no built-in in v1.0)
-app/views/fields/active_storage/            _form and _show partials for above
-app/views/admin/application/_form.html.erb  Overrides default form to add multipart:true
-app/views/admin/pages/show.html.erb         cms_page alias avoids clash with Administrate presenter
-app/views/layouts/auth.html.erb             Separate auth layout (no nav, centred card)
-app/assets/stylesheets/application.css      All design tokens, light+dark themes, components
-bin/docker-entrypoint                       Retry loop for db:migrate before server starts
-railway.toml                                PORT=80 is CRITICAL — do not remove
-config/database.yml (production)            All 4 DB configs share DATABASE_URL
+app/fields/active_storage_field.rb           Custom Administrate field for has_one_attached
+app/fields/active_storage_multi_field.rb     Custom Administrate field for has_many_attached
+app/views/fields/active_storage/             _form and _show partials for single attachment
+app/views/fields/active_storage_multi_field/ _form, _show, _index partials for multi-attachment
+app/views/admin/application/_form.html.erb   Overrides default Administrate form to add multipart:true
+app/views/admin/application/_navigation.html.erb  Custom nav — adds Media, Revenue links
+app/views/admin/orders/show.html.erb         Custom order show: status pill, refund button, total_display
+app/views/admin/pages/show.html.erb          `cms_page` alias avoids clash with Administrate presenter class
+app/views/layouts/auth.html.erb              Separate auth layout: centred card, no nav
+app/assets/stylesheets/application.css       ALL design tokens, themes, component CSS (single file — Propshaft)
+app/dashboards/line_item_dashboard.rb        Required by OrderDashboard HasMany field — read-only, no routes
+app/policies/download_policy.rb             DownloadPolicy — index? for any authenticated user
+app/policies/revenue_policy.rb              RevenuePolicy — show? for editor/admin
+config/initializers/stripe.rb               Sets Stripe.api_key from env
+bin/docker-entrypoint                        12-retry db:migrate loop before Puma starts
+railway.toml                                 PORT=80 is CRITICAL — Thruster needs it; do not remove
+config/database.yml (production)             All 4 DB configs share DATABASE_URL
+test/test_helpers/stripe_helper.rb           with_stripe_payment_intent / with_stripe_refund helpers
 ```
 
 ---
 
-## Commit History (this session)
+## Recent Commit History
 
 | Hash | Message |
 |------|---------|
-| `9ef92be` | feat(design): complete light/dark design system with Inter font and auth layout |
-| `34be6b6` | feat(admin): Phase 3 admin UX polish |
-| `7306d7c` | fix(deploy): pin PORT=80 for Thruster in railway.toml |
-| `8cb8289` | fix(deploy): retry db:migrate on boot, 600s healthcheck, fix vendor copy |
-| `4670757` | fix(deploy): increase healthcheck timeout to 300s for large image |
-| `b5a56e4` | fix(deploy): use db:migrate in entrypoint instead of db:prepare |
-| `4b054e5` | feat(deploy): configure Railway deployment |
+| `56ab9a6` | feat(admin): Phase 3.6 - Refunds & Admin Order Management |
+| `c727281` | feat(downloads): Phase 3.5 — Digital Downloads |
+| `3dd7c24` | feat(checkout): Phase 3.4 — Stripe Payment Element checkout |
+| `a704a09` | feat(cart): Phase 3.3 — session-based shopping cart with drawer UI |
+| `4980bf9` | feat(shop): Phase 3.2 — public shop UI and admin product CRUD |
+| `96206c9` | docs: update CLAUDE.md with Phase 3.1 commit hash |
+| `e1966ad` | feat(commerce): Phase 3.1 — Stripe integration foundation |
+| `ae2a0f4` | feat(admin): Phase 2.4 - User Administration |
+| `673e60e` | feat(auth): Phase 2.3 - User Roles Expansion |
+| `fc38a88` | feat(auth): Phase 2.2 - Self-Service Registration |
+| `23cb868` | feat(users): Phase 2.1 - User Profile |
+| `f906f4b` | feat(blog): Phase 1.5 - Blog System Enhancements |
+| `950a827` | feat(media): Phase 1.4 — Third-Party Embed Widgets |
+| `088e824` | feat(media): Phase 1.3 — Video Player |
+| `44b5b56` | feat(media): Phase 1.2 — Audio Player |
+| `06a7d2f` | feat(media): Phase 1.1 — Medium model, admin media library, drag-drop upload |
