@@ -1,0 +1,58 @@
+<% content_for :title, "#{@product.name} | Shop | VybeDeck CMS" %>
+
+<main class="page-shell">
+  <article class="product-detail">
+    <div class="shell product-detail__inner">
+
+      <div class="product-detail__media">
+        <% if @product.cover_image.attached? %>
+          <%= image_tag url_for(@product.cover_image),
+                alt: @product.name,
+                class: "product-detail__cover" %>
+        <% else %>
+          <div class="product-detail__cover product-detail__cover--placeholder" aria-hidden="true">
+            <span>&#9835;</span>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="product-detail__info">
+        <% unless @product.active? %>
+          <span class="status-pill status-pill--draft">
+            <%= @product.status.capitalize %>
+          </span>
+        <% end %>
+
+        <h1><%= @product.name %></h1>
+
+        <% if @price %>
+          <p class="product-detail__price"><%= @product.display_price %></p>
+        <% else %>
+          <p class="product-detail__price product-detail__price--free">Free</p>
+        <% end %>
+
+        <% if @product.description.present? %>
+          <div class="product-detail__description">
+            <%= simple_format(@product.description) %>
+          </div>
+        <% end %>
+
+        <%# Cart and checkout added in Phase 3.3 / 3.4 %>
+        <div class="product-detail__actions">
+          <button class="btn" disabled aria-label="Add to cart — coming soon">
+            Add to Cart
+          </button>
+          <button class="btn btn--secondary" disabled aria-label="Buy now — coming soon">
+            Buy Now
+          </button>
+        </div>
+        <p class="product-detail__coming-soon">
+          Checkout available soon.
+        </p>
+
+        <%= link_to "← Back to Shop", shop_path, class: "link product-detail__back" %>
+      </div>
+
+    </div>
+  </article>
+</main>

@@ -64,6 +64,10 @@ Rails.application.routes.draw do
   # RSS feed
   get "feed.xml", to: "feed#show", as: :feed, defaults: { format: :xml }
 
+  # Public shop — must come before the page catch-all
+  get "/shop",       to: "shop#index", as: :shop
+  get "/shop/:slug", to: "shop#show",  as: :shop_product
+
   get "up" => "rails/health#show", as: :rails_health_check
 
   # Page catch-all must be last so it does not swallow /blog, /topics, etc.

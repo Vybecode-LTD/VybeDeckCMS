@@ -1,0 +1,21 @@
+<% content_for :title, "Shop | VybeDeck CMS" %>
+<% content_for :description, "Browse our catalogue of albums and digital downloads." %>
+
+<main class="page-shell">
+  <section class="list-heading">
+    <div class="shell">
+      <p class="eyebrow">VybeDeck CMS</p>
+      <h1>Shop</h1>
+    </div>
+  </section>
+
+  <section class="content-band">
+    <div class="shell product-grid">
+      <% if @products.empty? %>
+        <p class="empty-state">No products available yet. Check back soon.</p>
+      <% else %>
+        <%= render partial: "product_card", collection: @products, as: :product %>
+      <% end %>
+    </div>
+  </section>
+</main>

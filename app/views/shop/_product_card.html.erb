@@ -1,0 +1,23 @@
+<article class="product-card">
+  <% if product.cover_image.attached? %>
+    <%= link_to shop_product_path(product.slug), class: "product-card__media", aria: { label: product.name } do %>
+      <%= image_tag url_for(product.cover_image), alt: "" %>
+    <% end %>
+  <% else %>
+    <%= link_to shop_product_path(product.slug), class: "product-card__media product-card__media--placeholder", aria: { label: product.name } do %>
+      <span aria-hidden="true">&#9835;</span>
+    <% end %>
+  <% end %>
+
+  <div class="product-card__body">
+    <h2><%= link_to product.name, shop_product_path(product.slug) %></h2>
+    <% if product.description.present? %>
+      <p><%= truncate(product.description, length: 110) %></p>
+    <% end %>
+    <% if (price_display = product.display_price) %>
+      <p class="product-card__price"><%= price_display %></p>
+    <% else %>
+      <p class="product-card__price product-card__price--free">Free</p>
+    <% end %>
+  </div>
+</article>
