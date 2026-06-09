@@ -1,0 +1,46 @@
+<% content_for :title, "Community — VybeDeck" %>
+
+<main class="shell community-page">
+  <header class="page-header">
+    <h1 class="page-header__title">Community</h1>
+    <p class="page-header__lead">Discussions, announcements, and conversation.</p>
+  </header>
+
+  <% if @forums.any? %>
+    <div class="forum-list" role="list">
+      <% @forums.each do |forum| %>
+        <article class="forum-card" role="listitem">
+          <div class="forum-card__icon" aria-hidden="true">
+            <%= forum.icon.presence || "💬" %>
+          </div>
+          <div class="forum-card__body">
+            <h2 class="forum-card__name">
+              <%= link_to forum.name, community_forum_path(forum.slug), class: "forum-card__link" %>
+              <% unless forum.open? %>
+                <span class="forum-badge forum-badge--<%= forum.visibility %>">
+                  <%= forum.members_only? ? "Members" : "Subscribers" %>
+                </span>
+              <% end %>
+            </h2>
+            <% if forum.description.present? %>
+              <p class="forum-card__description"><%= forum.description %></p>
+            <% end %>
+          </div>
+          <div class="forum-card__stats">
+            <span class="forum-stat"><strong><%= forum.forum_threads.count %></strong> threads</span>
+            <% latest = forum.latest_thread %>
+            <% if latest %>
+              <span class="forum-stat forum-stat--latest">
+                Last post <%= time_ago_in_words(latest.last_reply_at || latest.created_at) %> ago
+              </span>
+            <% end %>
+          </div>
+        </article>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <p>No forums yet. Check back soon.</p>
+    </div>
+  <% end %>
+</main>

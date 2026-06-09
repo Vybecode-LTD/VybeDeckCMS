@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_09_165539) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_09_210002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -78,6 +78,52 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_165539) do
     t.string "slug"
     t.datetime "updated_at", null: false
     t.index ["slug"], name: "index_categories_on_slug", unique: true
+  end
+
+  create_table "forum_replies", force: :cascade do |t|
+    t.bigint "author_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "forum_thread_id", null: false
+    t.boolean "is_solution", default: false, null: false
+    t.integer "likes_count", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_forum_replies_on_author_id"
+    t.index ["forum_thread_id", "created_at"], name: "index_forum_replies_on_forum_thread_id_and_created_at"
+    t.index ["forum_thread_id"], name: "index_forum_replies_on_forum_thread_id"
+    t.index ["is_solution"], name: "index_forum_replies_on_is_solution"
+  end
+
+  create_table "forum_threads", force: :cascade do |t|
+    t.bigint "author_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "forum_id", null: false
+    t.datetime "last_reply_at"
+    t.boolean "locked", default: false, null: false
+    t.boolean "pinned", default: false, null: false
+    t.integer "reply_count", default: 0, null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.integer "view_count", default: 0, null: false
+    t.index ["author_id"], name: "index_forum_threads_on_author_id"
+    t.index ["forum_id", "pinned", "last_reply_at"], name: "index_forum_threads_on_forum_id_and_pinned_and_last_reply_at"
+    t.index ["forum_id"], name: "index_forum_threads_on_forum_id"
+    t.index ["last_reply_at"], name: "index_forum_threads_on_last_reply_at"
+    t.index ["locked"], name: "index_forum_threads_on_locked"
+    t.index ["pinned"], name: "index_forum_threads_on_pinned"
+  end
+
+  create_table "forums", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "icon"
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.string "slug", null: false
+    t.datetime "updated_at", null: false
+    t.integer "visibility", default: 0, null: false
+    t.index ["position"], name: "index_forums_on_position"
+    t.index ["slug"], name: "index_forums_on_slug", unique: true
+    t.index ["visibility"], name: "index_forums_on_visibility"
   end
 
   create_table "friendly_id_slugs", force: :cascade do |t|
@@ -292,6 +338,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_165539) do
   add_foreign_key "cart_items", "prices"
   add_foreign_key "cart_items", "products"
   add_foreign_key "carts", "users"
+  add_foreign_key "forum_replies", "forum_threads"
+  add_foreign_key "forum_replies", "users", column: "author_id"
+  add_foreign_key "forum_threads", "forums"
+  add_foreign_key "forum_threads", "users", column: "author_id"
   add_foreign_key "impersonation_logs", "users", column: "impersonated_id"
   add_foreign_key "impersonation_logs", "users", column: "impersonator_id"
   add_foreign_key "line_items", "orders"

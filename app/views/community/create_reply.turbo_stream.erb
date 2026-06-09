@@ -1,0 +1,15 @@
+<%# Append the new reply to the list (create the replies section if this is the first reply) %>
+<%= turbo_stream.append "replies" do %>
+  <%= render "community/reply", reply: @reply %>
+<% end %>
+
+<%# Replace the reply form with a fresh empty one %>
+<%= turbo_stream.replace "reply-form" do %>
+  <div id="reply-form">
+    <%= render "community/reply_form",
+               forum: @forum, thread: @thread,
+               reply: ForumReply.new(forum_thread: @thread) %>
+  </div>
+<% end %>
+
+<%# Update the reply count in the page header if it exists %>

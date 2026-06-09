@@ -10,6 +10,7 @@
         <%= link_to page.title, page_path(page) %>
       <% end %>
       <%= link_to "Journal", posts_path %>
+      <%= link_to "Community", community_path %>
       <% if Current.user&.editor? || Current.user&.admin? %>
         <%= link_to "Admin", admin_root_path %>
       <% end %>

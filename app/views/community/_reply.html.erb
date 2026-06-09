@@ -1,0 +1,20 @@
+<article class="forum-post" id="reply-<%= reply.id %>">
+  <div class="forum-post__avatar">
+    <span class="forum-post__initials"><%= reply.author.byline.first.upcase %></span>
+  </div>
+  <div class="forum-post__content">
+    <div class="forum-post__header">
+      <strong class="forum-post__author"><%= reply.author.byline %></strong>
+      <time class="forum-post__time" datetime="<%= reply.created_at.iso8601 %>">
+        <%= reply.created_at.strftime("%b %d, %Y at %H:%M") %>
+      </time>
+      <% if reply.is_solution? %>
+        <span class="solution-badge">✓ Solution</span>
+      <% end %>
+    </div>
+    <div class="forum-post__body trix-content">
+      <%= reply.body %>
+    </div>
+    <%# Phase 4.3 will add per-reply moderation controls here %>
+  </div>
+</article>

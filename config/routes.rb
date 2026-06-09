@@ -6,6 +6,15 @@ Rails.application.routes.draw do
     resources :categories
     resources :pages
     resources :posts
+    # Phase 4 community
+    resources :forums
+    resources :forum_threads, only: %i[index show edit update destroy] do
+      member do
+        patch :lock
+        patch :pin
+      end
+    end
+    resources :forum_replies, only: %i[index show destroy]
     # Phase 3 commerce
     resources :products
     resources :orders, only: %i[index show] do
@@ -92,6 +101,14 @@ Rails.application.routes.draw do
   get  "/checkout/confirmation", to: "checkouts#confirmation", as: :checkout_confirmation
 
   get "up" => "rails/health#show", as: :rails_health_check
+
+  # Community — must be before the page catch-all
+  get  "/community",                       to: "community#index",         as: :community
+  get  "/community/:slug/new",             to: "community#new_thread",    as: :new_community_thread
+  post "/community/:slug/threads",         to: "community#create_thread", as: :community_threads
+  get  "/community/:slug/:id",             to: "community#thread",        as: :community_thread
+  post "/community/:slug/:id/replies",     to: "community#create_reply",  as: :community_thread_replies
+  get  "/community/:slug",                 to: "community#forum",         as: :community_forum
 
   # Page catch-all must be last so it does not swallow /blog, /topics, etc.
   get "/*id", to: "pages#show", as: :page

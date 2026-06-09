@@ -1,0 +1,38 @@
+<article class="thread-row <%= "thread-row--pinned" if thread.pinned? %> <%= "thread-row--locked" if thread.locked? %>"
+         role="listitem">
+  <div class="thread-row__meta-icons" aria-label="Thread status">
+    <% if thread.pinned? %>
+      <span class="thread-badge thread-badge--pinned" title="Pinned">📌</span>
+    <% end %>
+    <% if thread.locked? %>
+      <span class="thread-badge thread-badge--locked" title="Locked">🔒</span>
+    <% end %>
+  </div>
+
+  <div class="thread-row__body">
+    <h3 class="thread-row__title">
+      <%= link_to thread.title, community_thread_path(@forum.slug, thread),
+            class: "thread-row__link" %>
+    </h3>
+    <p class="thread-row__byline">
+      by <strong><%= thread.author.byline %></strong>
+      &middot; <%= time_ago_in_words(thread.created_at) %> ago
+    </p>
+  </div>
+
+  <div class="thread-row__stats">
+    <span class="thread-stat" title="Replies">
+      <%= thread.reply_count %>
+      <span class="thread-stat__label">replies</span>
+    </span>
+    <span class="thread-stat" title="Views">
+      <%= thread.view_count %>
+      <span class="thread-stat__label">views</span>
+    </span>
+    <% if thread.last_reply_at %>
+      <span class="thread-stat thread-stat--last-reply" title="Last reply">
+        <%= time_ago_in_words(thread.last_reply_at) %> ago
+      </span>
+    <% end %>
+  </div>
+</article>

@@ -1,0 +1,41 @@
+<% content_for :title, "New Thread — #{@forum.name} — VybeDeck" %>
+
+<main class="shell community-page">
+  <header class="page-header">
+    <div class="page-header__back">
+      <%= link_to "← #{@forum.name}", community_forum_path(@forum.slug), class: "back-link" %>
+    </div>
+    <h1 class="page-header__title">New Thread</h1>
+  </header>
+
+  <%= form_with model: @thread,
+                url: community_threads_path(@forum.slug),
+                class: "thread-form" do |f| %>
+
+    <% if @thread.errors.any? %>
+      <div class="form-errors">
+        <p><%= @thread.errors.count %> error(s) prevented this thread from being saved:</p>
+        <ul>
+          <% @thread.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="field">
+      <%= f.label :title, "Title" %>
+      <%= f.text_field :title, placeholder: "What's on your mind?", autofocus: true %>
+    </div>
+
+    <div class="field">
+      <%= f.label :body, "Body" %>
+      <%= f.rich_text_area :body, class: "trix-content" %>
+    </div>
+
+    <div class="form-actions">
+      <%= f.submit "Post Thread", class: "button" %>
+      <%= link_to "Cancel", community_forum_path(@forum.slug), class: "button button--alt" %>
+    </div>
+  <% end %>
+</main>

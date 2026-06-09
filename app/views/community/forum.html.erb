@@ -1,0 +1,38 @@
+<% content_for :title, "#{@forum.name} — Community — VybeDeck" %>
+
+<main class="shell community-page">
+  <header class="page-header">
+    <div class="page-header__back">
+      <%= link_to "← Community", community_path, class: "back-link" %>
+    </div>
+    <h1 class="page-header__title">
+      <span aria-hidden="true"><%= @forum.icon.presence || "💬" %></span>
+      <%= @forum.name %>
+    </h1>
+    <% if @forum.description.present? %>
+      <p class="page-header__lead"><%= @forum.description %></p>
+    <% end %>
+
+    <% if Current.user %>
+      <%= link_to "New Thread", new_community_thread_path(@forum.slug),
+            class: "button", "aria-label": "Start a new thread in #{@forum.name}" %>
+    <% else %>
+      <%= link_to "Sign in to post", new_session_path, class: "button button--alt" %>
+    <% end %>
+  </header>
+
+  <% if @threads.any? %>
+    <div class="thread-list" role="list">
+      <%= render partial: "community/thread_row", collection: @threads, as: :thread %>
+    </div>
+    <%== pagy_nav(@pagy) if @pagy.pages > 1 %>
+  <% else %>
+    <div class="empty-state">
+      <p>No threads yet.
+        <% if Current.user %>
+          <%= link_to "Start the first one!", new_community_thread_path(@forum.slug) %>
+        <% end %>
+      </p>
+    </div>
+  <% end %>
+</main>

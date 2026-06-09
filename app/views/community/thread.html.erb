@@ -1,0 +1,55 @@
+<% content_for :title, "#{@thread.title} — #{@forum.name} — VybeDeck" %>
+
+<main class="shell community-page">
+  <header class="page-header">
+    <div class="page-header__back">
+      <%= link_to "← #{@forum.name}", community_forum_path(@forum.slug), class: "back-link" %>
+    </div>
+    <h1 class="page-header__title">
+      <% if @thread.pinned? %>
+        <span class="thread-badge thread-badge--pinned" title="Pinned">📌</span>
+      <% end %>
+      <% if @thread.locked? %>
+        <span class="thread-badge thread-badge--locked" title="Locked">🔒</span>
+      <% end %>
+      <%= @thread.title %>
+    </h1>
+    <p class="page-header__byline">
+      by <strong><%= @thread.author.byline %></strong>
+      &middot; <%= time_ago_in_words(@thread.created_at) %> ago
+      &middot; <%= pluralize(@thread.reply_count, "reply") %>
+      &middot; <%= pluralize(@thread.view_count, "view") %>
+    </p>
+  </header>
+
+  <%# Original post %>
+  <article class="forum-post forum-post--op" id="post-op">
+    <div class="forum-post__avatar">
+      <span class="forum-post__initials"><%= @thread.author.byline.first.upcase %></span>
+    </div>
+    <div class="forum-post__content">
+      <div class="forum-post__header">
+        <strong class="forum-post__author"><%= @thread.author.byline %></strong>
+        <time class="forum-post__time" datetime="<%= @thread.created_at.iso8601 %>">
+          <%= @thread.created_at.strftime("%b %d, %Y at %H:%M") %>
+        </time>
+      </div>
+      <div class="forum-post__body trix-content">
+        <%= @thread.body %>
+      </div>
+    </div>
+  </article>
+
+  <%# Replies %>
+  <% if @replies.any? %>
+    <section class="reply-list" id="replies" aria-label="Replies">
+      <%= render partial: "community/reply", collection: @replies, as: :reply %>
+    </section>
+  <% end %>
+
+  <%# Reply form (or locked/login prompt) %>
+  <div id="reply-form">
+    <%= render "community/reply_form",
+               forum: @forum, thread: @thread, reply: @reply %>
+  </div>
+</main>
