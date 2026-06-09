@@ -17,7 +17,18 @@
 | Stack | Rails 8.1, Ruby 3.4, PostgreSQL 17, Propshaft, Importmap, Minitest |
 | Last commit | `9ef92be` |
 
-## Last Completed Task (2026-06-08)
+## Last Completed Task (2026-06-09)
+
+**Phase 2.3 — User Roles Expansion** (commit `673e60e`):
+- Added `member` (3) and `subscriber` (4) to User role enum.
+- Self-registration now defaults to `member` (not `author`); authors are promoted by admin.
+- `User#admin_accessible?` and `#content_creator?` instance helpers.
+- `ApplicationPolicy`: shared private helpers `admin_accessible?`, `content_creator?`, `subscriber_or_above?`.
+- `PostPolicy`: `create?` restricted to content creators; `show?` and `Scope` gate subscriber-only posts by `requires_subscriber` column.
+- `PagePolicy`: `index?/create?/update?` tightened to `admin_accessible?`.
+- Migration: `posts.requires_subscriber boolean NOT NULL DEFAULT false`.
+- `PostDashboard`: `requires_subscriber` field on show/form pages.
+- 38 new tests (23 model + 15 integration). Full suite: **258 runs, 649 assertions, 0 failures**.
 
 **Phase 2.2 — Self-Service Registration** (commit `fc38a88`):
 - Migrations: `email_verified_at`, `email_verification_token`, `email_verification_sent_at` on users (partial unique index on token); `site_settings` table (key/value/value_type/description).
@@ -89,7 +100,7 @@ Previous milestones: Rails 8 foundation → auth/Pundit → Page/Post/Category �
 
 ## Active Task
 
-Phase 2.2 complete. Moving to Phase 2.3 — User Roles Expansion. See `ROADMAP.md`.
+Phase 2.3 complete. Moving to Phase 2.4 — User Administration. See `ROADMAP.md`.
 
 ## Architecture (rules — never break without explicit owner approval)
 
@@ -133,7 +144,7 @@ ruby bin\rails test
 ## Test Suite
 
 ```
-220 runs, 592 assertions, 0 failures, 0 errors, 0 skips
+258 runs, 649 assertions, 0 failures, 0 errors, 0 skips
 ```
 
 Key test files:
@@ -144,6 +155,7 @@ Key test files:
 - `test/models/active_storage_variant_test.rb`
 - `test/integration/registration_test.rb`
 - `test/models/site_setting_test.rb`
+- `test/integration/member_access_test.rb`
 
 ## Seeds
 

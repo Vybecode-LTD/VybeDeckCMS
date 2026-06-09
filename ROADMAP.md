@@ -44,7 +44,8 @@ e-commerce, and collaborative album production — all inside one deployable mon
 | Blog Enhancements | Reading time, related posts, RSS feed (/feed.xml), Post Series model + landing page |
 | User Profile | bio + website_url + avatar on User; `/members/:display_name`; `/settings` with password change |
 | Self-Service Registration | Email verification (48h token, hard block on unverified sign-in); `SiteSetting` model; invite-only mode; `RegistrationsController` + `SendEmailVerificationJob` + `UserMailer`; admin settings toggle |
-| Tests | 220 runs, 592 assertions, 0 failures; Minitest throughout |
+| User Roles Expansion | `member` (3) and `subscriber` (4) roles; self-registration defaults to member; `requires_subscriber` on posts; Pundit policies updated for all 5 roles |
+| Tests | 258 runs, 649 assertions, 0 failures; Minitest throughout |
 
 ---
 
@@ -98,7 +99,7 @@ purchases, and download gating.
 - 38 new tests (15 model + 23 integration); full suite: 178 runs / 488 assertions / 0 failures
 
 ### ~~2.2 Self-Service Registration~~ ✅ Done
-- `RegistrationsController`: `GET/POST /register` (invite-only gate, role-locked to author), `GET /register/verify?token=` (48h expiry, auto-sign-in), `POST /register/resend` (enumeration-safe)
+- `RegistrationsController`: `GET/POST /register` (invite-only gate, role-locked to member), `GET /register/verify?token=` (48h expiry, auto-sign-in), `POST /register/resend` (enumeration-safe)
 - `SiteSetting` model: typed get/set/invite_only? API with DEFAULTS; `site_settings` table
 - `SendEmailVerificationJob` + `UserMailer#email_verification` (HTML + text)
 - Hard block in `SessionsController#create` for unverified users
@@ -106,10 +107,15 @@ purchases, and download gating.
 - Auth layout CSP nonce; Administrate nav "Site Settings" link
 - 42 new tests (14 model + 28 integration); full suite: 220 runs / 592 assertions / 0 failures
 
-### 2.3 User Roles Expansion
-- Add `member` role (authenticated public commenter/buyer, no admin access)
-- Add `subscriber` role (paid member, unlocks gated content)
-- Pundit policies updated for all new roles
+### ~~2.3 User Roles Expansion~~ ✅ Done
+- `member` (3): self-registered public user; can sign in, browse, buy (Phase 3), comment (Phase 4); no editorial or admin access
+- `subscriber` (4): paid member (promoted in Phase 3); same as member + access to `requires_subscriber` content
+- `User#admin_accessible?` and `#content_creator?` helpers on the model
+- `ApplicationPolicy` private helpers: `admin_accessible?`, `content_creator?`, `subscriber_or_above?`
+- `PostPolicy`: `create?` restricted to content creators; `show?` + `Scope` gate subscriber posts behind `requires_subscriber` flag
+- `PagePolicy`: `index?/create?/update?` tightened to `admin_accessible?`
+- Migration: `posts.requires_subscriber boolean NOT NULL DEFAULT false`; `PostDashboard` updated
+- 38 new tests (23 model + 15 integration); full suite: 258 runs / 649 assertions / 0 failures
 
 ### 2.4 User Administration
 - Administrate `UserDashboard` extended: role picker, ban toggle, verified badge, purchase history
