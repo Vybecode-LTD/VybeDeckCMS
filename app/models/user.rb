@@ -7,6 +7,8 @@ class User < ApplicationRecord
   enum :role, { author: 0, editor: 1, admin: 2 }, default: :author
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
+
+  validates :email_address, presence: true, uniqueness: { case_sensitive: false }
   normalizes :display_name,  with: ->(d) { d.strip }
   normalizes :website_url,   with: ->(u) { u.strip }
 
@@ -30,6 +32,29 @@ class User < ApplicationRecord
 
   def byline
     display_name.presence || email_address
+  end
+
+  def email_verified?
+    email_verified_at.present?
+  end
+
+  # Generates a fresh verification token, persists it, and returns the raw token.
+  def generate_email_verification_token!
+    token = SecureRandom.urlsafe_base64(32)
+    update!(
+      email_verification_token:   token,
+      email_verification_sent_at: Time.current
+    )
+    token
+  end
+
+  # Marks the email as verified and invalidates the token.
+  def verify_email!
+    update!(
+      email_verified_at:          Time.current,
+      email_verification_token:   nil,
+      email_verification_sent_at: nil
+    )
   end
 
   private

@@ -1,0 +1,63 @@
+<% content_for :title, "Create account — VybeDeck CMS" %>
+
+<div class="auth-card">
+  <div class="auth-card__header">
+    <h1>Create an account</h1>
+    <p>Join VybeDeck CMS.</p>
+  </div>
+
+  <% if flash[:alert].present? %>
+    <div class="flash flash--alert" style="margin-bottom:20px"><%= flash[:alert] %></div>
+  <% end %>
+
+  <%= form_with model: @user, url: registrations_path, class: "auth-form" do |f| %>
+    <% if @user.errors.any? %>
+      <div class="flash-inline flash-inline--error">
+        <ul>
+          <% @user.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="form-field">
+      <%= f.label :email_address, "Email address" %>
+      <%= f.email_field :email_address,
+            required:     true,
+            autofocus:    true,
+            autocomplete: "email",
+            placeholder:  "you@example.com" %>
+    </div>
+
+    <div class="form-field">
+      <%= f.label :display_name, "Display name" %>
+      <%= f.text_field :display_name,
+            autocomplete: "nickname",
+            placeholder:  "Optional" %>
+    </div>
+
+    <div class="form-field">
+      <%= f.label :password, "Password" %>
+      <%= f.password_field :password,
+            required:     true,
+            autocomplete: "new-password",
+            placeholder:  "At least 12 characters",
+            minlength:    12 %>
+    </div>
+
+    <div class="form-field">
+      <%= f.label :password_confirmation, "Confirm password" %>
+      <%= f.password_field :password_confirmation,
+            required:     true,
+            autocomplete: "new-password",
+            placeholder:  "••••••••" %>
+    </div>
+
+    <%= f.submit "Create account", class: "btn btn--full" %>
+  <% end %>
+
+  <div class="auth-footer">
+    Already have an account? <%= link_to "Sign in", new_session_path %>
+  </div>
+</div>

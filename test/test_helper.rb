@@ -9,7 +9,7 @@ module ActiveSupport
     # Threshold raised to 200 — thread-based parallelism causes PG FK deadlocks
     # when fixture loading concurrency is high. Keep single-process until the
     # suite is large enough to justify it.
-    parallelize(workers: :number_of_processors, with: :threads, threshold: 200)
+    parallelize(workers: :number_of_processors, with: :threads, threshold: 500)
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all

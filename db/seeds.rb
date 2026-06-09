@@ -33,7 +33,16 @@ end
 
 admin = User.find_or_initialize_by(email_address: "admin@vybedeck.test")
 admin.assign_attributes(role: :admin, password: "password", display_name: "VybeDeck Admin")
+# Seed admin is pre-verified; preserve existing verified_at if already set.
+admin.email_verified_at ||= Time.current
 admin.save!
+
+# Site settings defaults (idempotent)
+SiteSetting.find_or_create_by!(key: "invite_only") do |s|
+  s.value       = "false"
+  s.value_type  = "boolean"
+  s.description = "When enabled, new user registration is disabled. Existing users can still sign in."
+end
 
 announcements = Category.find_or_create_by!(name: "Announcements")
 field_notes = Category.find_or_create_by!(name: "Field Notes")

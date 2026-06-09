@@ -8,6 +8,10 @@ class SessionsController < ApplicationController
 
   def create
     if user = User.authenticate_by(params.permit(:email_address, :password))
+      unless user.email_verified?
+        return redirect_to verify_email_registration_path,
+          alert: "Please verify your email address before signing in."
+      end
       start_new_session_for user
       redirect_to after_authentication_url
     else
