@@ -46,9 +46,7 @@
           <% else %>
             <button class="btn" disabled>Add to Cart</button>
           <% end %>
-          <button class="btn btn--secondary" disabled aria-label="Buy now — checkout in Phase 3.4">
-            Buy Now
-          </button>
+          <%= link_to "Buy Now", checkout_path, class: "btn btn--secondary" %>
         </div>
         <p class="product-detail__coming-soon">
           Secure checkout coming soon.

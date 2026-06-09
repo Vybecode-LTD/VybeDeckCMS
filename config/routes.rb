@@ -76,6 +76,11 @@ Rails.application.routes.draw do
     delete "items/:id", to: "carts#remove_item"
   end
 
+  # Checkout (embedded Stripe Payment Element)
+  get  "/checkout",             to: "checkouts#new",          as: :checkout
+  post "/checkout",             to: "checkouts#create"
+  get  "/checkout/confirmation", to: "checkouts#confirmation", as: :checkout_confirmation
+
   get "up" => "rails/health#show", as: :rails_health_check
 
   # Page catch-all must be last so it does not swallow /blog, /topics, etc.

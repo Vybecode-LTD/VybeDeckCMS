@@ -13,8 +13,6 @@
     <strong><%= cart&.total_display || Product.format_money(0, "gbp") %></strong>
   </div>
   <div class="cart-checkout-row">
-    <%= link_to "Proceed to Checkout", "#", class: "btn btn--full",
-          data: { disabled_reason: "checkout-phase-3-4" } %>
-    <p class="cart-checkout-soon">Full checkout coming soon.</p>
+    <%= link_to "Proceed to Checkout", checkout_path, class: "btn btn--full" %>
   </div>
 <% end %>

@@ -1,0 +1,44 @@
+<% content_for :title, "Order Confirmed | VybeDeck CMS" %>
+
+<main class="page-shell">
+  <section class="content-band">
+    <div class="shell checkout-confirmation">
+      <% if @order.paid? %>
+        <div class="confirmation-icon" aria-hidden="true">&#10003;</div>
+        <h1>Payment confirmed!</h1>
+        <p class="confirmation-subhead">
+          Thank you for your purchase.
+          A receipt will be sent to <strong><%= @order.email %></strong>.
+        </p>
+
+        <div class="confirmation-details">
+          <p class="confirmation-ref">Order #<%= @order.id %></p>
+          <ul class="confirmation-items">
+            <% @order.line_items.includes(:product).each do |item| %>
+              <li>
+                <span><%= item.product.name %> &times; <%= item.quantity %></span>
+                <span><%= item.total_display %></span>
+              </li>
+            <% end %>
+          </ul>
+          <div class="confirmation-total">
+            <span>Total paid</span>
+            <strong><%= @order.total_display %></strong>
+          </div>
+        </div>
+
+        <%= link_to "Continue Shopping", shop_path, class: "btn" %>
+
+      <% else %>
+        <div class="confirmation-icon confirmation-icon--pending" aria-hidden="true">&#9201;</div>
+        <h1>Payment processing&hellip;</h1>
+        <p>Your payment is being verified. This page will update automatically once confirmed.</p>
+        <p class="confirmation-ref">Order reference: #<%= @order.id %></p>
+        <%# Meta refresh as a no-JS fallback while webhook updates the status %>
+        <% content_for :head do %>
+          <meta http-equiv="refresh" content="5">
+        <% end %>
+      <% end %>
+    </div>
+  </section>
+</main>

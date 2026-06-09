@@ -1,0 +1,92 @@
+<% content_for :title, "Checkout | VybeDeck CMS" %>
+<% content_for :head do %>
+  <%# Stripe.js must load before the Stimulus controller runs %>
+  <script src="https://js.stripe.com/v3/" nonce="<%= content_security_policy_nonce %>"></script>
+<% end %>
+
+<main class="page-shell">
+  <section class="list-heading">
+    <div class="shell">
+      <p class="eyebrow">VybeDeck CMS</p>
+      <h1>Checkout</h1>
+    </div>
+  </section>
+
+  <section class="content-band">
+    <div class="shell checkout-layout">
+
+      <%# ── Left column: email + payment element ──────────────────────────── %>
+      <div class="checkout-form"
+           data-controller="checkout"
+           data-checkout-confirmation-url-value="<%= checkout_confirmation_path %>"
+           data-checkout-publishable-key-value="<%= @stripe_publishable_key %>">
+
+        <div class="checkout-section">
+          <h2 class="checkout-section__title">Contact</h2>
+          <div class="form-group">
+            <label for="checkout-email" class="form-label">Email address</label>
+            <input type="email"
+                   id="checkout-email"
+                   placeholder="you@example.com"
+                   value="<%= @prefilled_email %>"
+                   class="form-input"
+                   data-checkout-target="emailInput"
+                   required
+                   autocomplete="email">
+          </div>
+        </div>
+
+        <div class="checkout-section">
+          <h2 class="checkout-section__title">Payment</h2>
+          <%# Stripe Payment Element mounts here when the user clicks Pay Now %>
+          <div id="stripe-payment-element" data-checkout-target="paymentMount"></div>
+        </div>
+
+        <div class="checkout-error"
+             data-checkout-target="errorMessage"
+             role="alert"
+             hidden></div>
+
+        <button type="button"
+                class="btn btn--full"
+                data-checkout-target="payButton"
+                data-action="click->checkout#pay">
+          Pay Now — <%= @cart.total_display %>
+        </button>
+
+        <p class="checkout-secure-note">
+          &#128274; Secure payment powered by
+          <a href="https://stripe.com" rel="noopener noreferrer" target="_blank">Stripe</a>.
+        </p>
+      </div>
+
+      <%# ── Right column: order summary ────────────────────────────────────── %>
+      <aside class="checkout-summary">
+        <h2 class="checkout-section__title">Order summary</h2>
+        <ul class="checkout-item-list">
+          <% @cart.cart_items.includes(:product, :price).each do |item| %>
+            <li class="checkout-item">
+              <div class="checkout-item__thumb">
+                <% if item.product.cover_image.attached? %>
+                  <%= image_tag url_for(item.product.cover_image), alt: "" %>
+                <% else %>
+                  <span aria-hidden="true">&#9835;</span>
+                <% end %>
+              </div>
+              <div class="checkout-item__info">
+                <p class="checkout-item__name"><%= item.product.name %></p>
+                <p class="checkout-item__qty">Qty: <%= item.quantity %></p>
+              </div>
+              <p class="checkout-item__price"><%= item.total_display %></p>
+            </li>
+          <% end %>
+        </ul>
+        <div class="checkout-total-row">
+          <span>Total</span>
+          <strong><%= @cart.total_display %></strong>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+</main>
