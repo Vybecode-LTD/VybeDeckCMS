@@ -334,11 +334,14 @@ Key test files:
 
 ## Known Gaps (priority order)
 
-All pre-Phase-1 gaps closed. Phase 3 E-Commerce complete. Remaining items:
+All pre-Phase-1 gaps closed. Phase 3 E-Commerce complete. All production infrastructure active. Remaining items:
 
-1. **SMTP not yet active** — `OrderMailer`, `UserMailer`, and `PasswordsMailer` code is complete and tested. Add `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD` (and optionally `SMTP_PORT`, `ACTION_MAILER_FROM`) as Railway env vars. **All transactional emails (order confirmation, download-ready, refund receipt, email verification, password reset) are silently dropped in production until SMTP is configured.**
-2. **S3 not yet active** — code is ready (`aws-sdk-s3` gem, `storage.yml` amazon service, `production.rb` switches when `AWS_BUCKET` env var is present). Add `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_BUCKET` as Railway env vars. **Required before digital downloads are durable in production** — local disk storage is wiped on every Railway deploy.
-3. **`Seoable` concern has no model-level validations** — `meta_title` and `meta_description` are DB columns wired to `<meta>` via layout, but the concern itself has no length/presence validators. Low priority — add in Phase 10 SEO pass.
+1. **`Seoable` concern has no model-level validations** — `meta_title` and `meta_description` are DB columns wired to `<meta>` via layout, but the concern itself has no length/presence validators. Low priority — add in Phase 10 SEO pass.
+
+### Resolved (2026-06-09)
+- ~~SMTP~~ ✅ Active — Resend SMTP via `smtp.resend.com`; sending domain `send.vybedeck.com` verified; `ACTION_MAILER_FROM=no-reply@send.vybedeck.com`
+- ~~S3/Storage~~ ✅ Active — Cloudflare R2, bucket `vybedeck-production`; `storage.yml` supports `AWS_ENDPOINT` override for non-AWS providers
+- ~~libvips~~ ✅ Already installed in Dockerfile (was a false gap in the docs)
 
 ## Session Protocol
 
