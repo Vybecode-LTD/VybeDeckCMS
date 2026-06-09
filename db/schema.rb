@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_08_174854) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_08_200000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -112,12 +112,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_174854) do
     t.text "meta_description"
     t.string "meta_title"
     t.datetime "published_at"
+    t.bigint "series_id"
+    t.integer "series_position"
     t.string "slug"
     t.integer "status", default: 0, null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["author_id"], name: "index_posts_on_author_id"
+    t.index ["series_id", "series_position"], name: "index_posts_on_series_id_and_series_position"
+    t.index ["series_id"], name: "index_posts_on_series_id"
     t.index ["slug"], name: "index_posts_on_slug", unique: true
+  end
+
+  create_table "series", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.integer "post_count", default: 0, null: false
+    t.string "slug", default: "", null: false
+    t.string "title", default: "", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_series_on_created_at"
+    t.index ["slug"], name: "index_series_on_slug", unique: true
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -153,6 +168,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_174854) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "media", "users", column: "uploaded_by_id"
   add_foreign_key "pages", "pages", column: "parent_id"
+  add_foreign_key "posts", "series"
   add_foreign_key "posts", "users", column: "author_id"
   add_foreign_key "sessions", "users"
   add_foreign_key "taggings", "categories"

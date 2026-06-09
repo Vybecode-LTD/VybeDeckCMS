@@ -1,0 +1,45 @@
+<% content_for :title, @series.title %>
+
+<main class="page-shell">
+  <header class="content-hero content-hero--thin">
+    <div class="shell content-hero__grid content-hero__grid--centered">
+      <div class="content-hero__copy">
+        <div class="eyebrow">Series</div>
+        <h1><%= @series.title %></h1>
+        <% if @series.description.present? %>
+          <p class="lede"><%= @series.description %></p>
+        <% end %>
+        <p class="text-muted"><%= @posts.size %> <%= "post".pluralize(@posts.size) %></p>
+      </div>
+    </div>
+  </header>
+
+  <section class="content-band">
+    <div class="shell">
+      <% if @posts.any? %>
+        <ol class="series-list">
+          <% @posts.each_with_index do |post, index| %>
+            <li class="series-list__item">
+              <span class="series-list__num"><%= (post.series_position || index + 1).to_s.rjust(2, "0") %></span>
+              <div class="series-list__body">
+                <h2><%= link_to post.title, post_path(post) %></h2>
+                <% if post.excerpt.present? %>
+                  <p class="text-muted"><%= post.excerpt %></p>
+                <% end %>
+                <p class="eyebrow">
+                  <%= readable_date(post.published_at || post.created_at) %>
+                  &middot; <%= post.reading_time %>&nbsp;min&nbsp;read
+                  <% unless post.published? %>
+                    &middot; <span class="status-pill"><%= published_label(post) %></span>
+                  <% end %>
+                </p>
+              </div>
+            </li>
+          <% end %>
+        </ol>
+      <% else %>
+        <p class="empty-state">No posts in this series yet.</p>
+      <% end %>
+    </div>
+  </section>
+</main>

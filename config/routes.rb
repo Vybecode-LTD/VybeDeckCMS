@@ -8,6 +8,8 @@ Rails.application.routes.draw do
     resources :posts
     resources :users
 
+    resources :series
+
     # Embed widget preview — returns rendered iframe partial for a given URL
     get "embeds/preview", to: "embeds#preview", as: :embed_preview
 
@@ -22,6 +24,10 @@ Rails.application.routes.draw do
 
   resources :posts, path: "blog", only: %i[index show], param: :slug
   resources :categories, path: "topics", only: :show, param: :slug
+  resources :series, path: "series", only: :show, param: :slug
+
+  # RSS feed
+  get "feed.xml", to: "feed#show", as: :feed, defaults: { format: :xml }
 
   get "up" => "rails/health#show", as: :rails_health_check
 

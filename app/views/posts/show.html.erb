@@ -16,7 +16,19 @@
           <% if @post.excerpt.present? %>
             <p class="lede"><%= @post.excerpt %></p>
           <% end %>
-          <p class="byline"><%= @post.author.byline %></p>
+          <p class="byline">
+            <%= @post.author.byline %>
+            &middot; <%= @post.reading_time %>&nbsp;min&nbsp;read
+          </p>
+          <% if @post.series %>
+            <p class="series-badge">
+              Part of:
+              <%= link_to @post.series.title, series_path(@post.series), class: "link" %>
+              <% if @post.series_position %>
+                &middot; #<%= @post.series_position %>
+              <% end %>
+            </p>
+          <% end %>
           <% if @post.categories.any? %>
             <div class="topic-list" aria-label="Topics">
               <% @post.categories.each do |category| %>
@@ -39,5 +51,18 @@
         <%= @post.body %>
       </div>
     </section>
+
+    <% if @related_posts.any? %>
+      <section class="content-band content-band--muted">
+        <div class="shell">
+          <h2 class="section-heading">Related posts</h2>
+          <div class="post-grid post-grid--compact">
+            <% @related_posts.each do |post| %>
+              <%= render "posts/post_card", post: post %>
+            <% end %>
+          </div>
+        </div>
+      </section>
+    <% end %>
   </article>
 </main>

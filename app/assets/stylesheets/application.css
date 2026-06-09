@@ -1843,3 +1843,94 @@ textarea.field-unit__input { resize: vertical; min-height: 80px; }
   white-space: nowrap;
   padding: 0 8px;
 }
+
+/* ─────────────────────────────────────────────────────
+   BLOG ENHANCEMENTS (Phase 1.5)
+───────────────────────────────────────────────────── */
+
+/* Series badge in post header */
+.series-badge {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+.series-badge .link {
+  color: var(--accent);
+}
+
+/* Related posts section */
+.content-band--muted {
+  background: var(--bg-sunken);
+  border-top: 1px solid var(--border);
+}
+
+.section-heading {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--text);
+}
+
+.post-grid--compact {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+/* Series list (series show page) */
+.series-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.series-list__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: border-color 0.15s;
+}
+.series-list__item:hover {
+  border-color: var(--border-strong);
+}
+
+.series-list__num {
+  flex-shrink: 0;
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text-faint);
+  line-height: 1;
+  padding-top: 0.15rem;
+}
+
+.series-list__body {
+  flex: 1;
+  min-width: 0;
+}
+.series-list__body h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+.series-list__body h2 a {
+  color: var(--text);
+  text-decoration: none;
+}
+.series-list__body h2 a:hover {
+  color: var(--accent);
+}
+.series-list__body p {
+  margin: 0.2rem 0;
+  font-size: 0.875rem;
+}
+
+/* Reading time in byline */
+.byline { color: var(--text-muted); font-size: 0.9rem; }
