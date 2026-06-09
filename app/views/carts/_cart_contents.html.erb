@@ -1,0 +1,20 @@
+<%# Rendered inside #cart-panel-body — used by both the show page and Turbo Streams %>
+<% cart_items ||= @cart_items %>
+<% cart      ||= @cart %>
+
+<% if cart_items.empty? %>
+  <p class="cart-empty">Your cart is empty.</p>
+<% else %>
+  <ul class="cart-item-list" aria-label="Cart items">
+    <%= render partial: "carts/cart_item", collection: cart_items, as: :cart_item %>
+  </ul>
+  <div class="cart-total">
+    <span>Total</span>
+    <strong><%= cart&.total_display || Product.format_money(0, "gbp") %></strong>
+  </div>
+  <div class="cart-checkout-row">
+    <%= link_to "Proceed to Checkout", "#", class: "btn btn--full",
+          data: { disabled_reason: "checkout-phase-3-4" } %>
+    <p class="cart-checkout-soon">Full checkout coming soon.</p>
+  </div>
+<% end %>

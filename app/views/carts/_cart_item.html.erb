@@ -1,0 +1,38 @@
+<li class="cart-item" id="cart-item-<%= cart_item.id %>">
+  <div class="cart-item__thumb">
+    <% if cart_item.product.cover_image.attached? %>
+      <%= image_tag url_for(cart_item.product.cover_image), alt: "" %>
+    <% else %>
+      <span class="cart-item__thumb--empty" aria-hidden="true">&#9835;</span>
+    <% end %>
+  </div>
+
+  <div class="cart-item__details">
+    <p class="cart-item__name">
+      <%= link_to cart_item.product.name, shop_product_path(cart_item.product.slug) %>
+    </p>
+    <p class="cart-item__price"><%= cart_item.total_display %></p>
+  </div>
+
+  <div class="cart-item__qty">
+    <%= button_to "−",
+          cart_item_path(cart_item),
+          method: :patch,
+          params: { quantity: cart_item.quantity - 1 },
+          class: "qty-btn",
+          aria: { label: "Decrease quantity" } %>
+    <span class="qty-value"><%= cart_item.quantity %></span>
+    <%= button_to "+",
+          cart_item_path(cart_item),
+          method: :patch,
+          params: { quantity: cart_item.quantity + 1 },
+          class: "qty-btn",
+          aria: { label: "Increase quantity" } %>
+  </div>
+
+  <%= button_to "✕",
+        cart_item_path(cart_item),
+        method: :delete,
+        class: "cart-item__remove",
+        aria: { label: "Remove #{cart_item.product.name} from cart" } %>
+</li>

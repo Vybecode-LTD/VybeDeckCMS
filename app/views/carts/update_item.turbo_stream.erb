@@ -1,0 +1,4 @@
+<%= turbo_stream.update "cart-badge", @cart_count.to_s %>
+<%= turbo_stream.update "cart-panel-body" do %>
+  <%= render "carts/cart_contents", cart: @cart, cart_items: @cart_items %>
+<% end %>

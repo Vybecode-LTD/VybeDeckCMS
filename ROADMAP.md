@@ -47,7 +47,9 @@ e-commerce, and collaborative album production — all inside one deployable mon
 | User Roles Expansion | `member` (3) and `subscriber` (4) roles; self-registration defaults to member; `requires_subscriber` on posts; Pundit policies updated for all 5 roles |
 | User Administration | Ban/unban (no enumeration); Login-as impersonation with DB-based session restore + audit log; bulk role assignment; custom admin user list/show views |
 | Stripe Integration | `stripe` gem; `Product`, `Price`, `Order`, `LineItem`, `StripeCustomer` models; `StripeWebhooksController`; Pundit policies; Administrate dashboards; webhook tests via `define_singleton_method` (Minitest 6 has no `stub`) |
-| Tests | 334 runs, 822 assertions, 0 failures; Minitest throughout |
+| Public Shop | `ShopController`; `/shop` index + `/shop/:slug` product detail; product card partial; FriendlyId admin override; design-system CSS |
+| Shopping Cart | `Cart`/`CartItem` models; `CartManagement` concern; session-keyed anonymous + user carts; merge on login; Turbo Stream drawer in layout; `cart_controller.js` Stimulus |
+| Tests | 373 runs, 911 assertions, 0 failures; Minitest throughout |
 
 ---
 
@@ -144,12 +146,12 @@ download delivery. Required by the Album Manager in Phase 6.
 - Webhook tests use `define_singleton_method` to replace `Stripe::Webhook.construct_event` (Minitest 6 removed `#stub`)
 - 48 new tests (8 integration + 40 model); full suite: 334 runs / 822 assertions / 0 failures
 
-### 3.2 Shop
+### ~~3.2 Shop~~ ✅ Done
 - Public shop index at `/shop` — product grid with price, cover image, description
 - Product show page with "Add to cart" and "Buy it now" buttons
 - Admin product management dashboard (CRUD, stock toggle, image, description, price)
 
-### 3.3 Shopping Cart
+### ~~3.3 Shopping Cart~~ ✅ Done
 - Session-based cart (anonymous or authenticated)
 - Cart drawer (Turbo Frame, slides in from right)
 - Line item quantity update and remove

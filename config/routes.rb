@@ -68,6 +68,14 @@ Rails.application.routes.draw do
   get "/shop",       to: "shop#index", as: :shop
   get "/shop/:slug", to: "shop#show",  as: :shop_product
 
+  # Shopping cart
+  resource  :cart, only: :show
+  scope "/cart" do
+    post   "items",     to: "carts#add_item",    as: :cart_items
+    patch  "items/:id", to: "carts#update_item", as: :cart_item
+    delete "items/:id", to: "carts#remove_item"
+  end
+
   get "up" => "rails/health#show", as: :rails_health_check
 
   # Page catch-all must be last so it does not swallow /blog, /topics, etc.

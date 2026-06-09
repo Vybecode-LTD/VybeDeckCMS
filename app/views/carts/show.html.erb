@@ -1,0 +1,19 @@
+<% content_for :title, "Cart | VybeDeck CMS" %>
+
+<main class="page-shell">
+  <section class="list-heading">
+    <div class="shell">
+      <p class="eyebrow">VybeDeck CMS</p>
+      <h1>Your Cart</h1>
+    </div>
+  </section>
+
+  <section class="content-band">
+    <div class="shell cart-page">
+      <div id="cart-panel-body">
+        <%= render "carts/cart_contents", cart: @cart, cart_items: @cart_items %>
+      </div>
+      <p><%= link_to "← Continue Shopping", shop_path, class: "link" %></p>
+    </div>
+  </section>
+</main>

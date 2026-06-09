@@ -17,7 +17,9 @@ class SessionsController < ApplicationController
       if user.banned?
         return redirect_to new_session_path, alert: "Try another email address or password."
       end
+      anon_cart_id = session[:cart_id]  # capture before session may change
       start_new_session_for user
+      merge_session_cart_for(user, anon_cart_id)
       redirect_to after_authentication_url
     else
       redirect_to new_session_path, alert: "Try another email address or password."

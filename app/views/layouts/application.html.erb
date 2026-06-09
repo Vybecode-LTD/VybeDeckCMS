@@ -39,7 +39,7 @@
     </script>
   </head>
 
-  <body>
+  <body data-controller="cart" data-action="keydown->cart#keydown@window">
     <%# Impersonation warning — only visible when an admin is browsing as another user %>
     <% if impersonating? %>
       <div class="impersonation-banner">
@@ -70,5 +70,33 @@
     <%= yield %>
 
     <%= render "shared/site_footer" %>
+
+    <%# ── Cart sidebar drawer ─────────────────────────────────────────────── %>
+    <%# Overlay (click to close) %>
+    <div class="cart-overlay"
+         data-cart-target="overlay"
+         data-action="click->cart#close"
+         aria-hidden="true"></div>
+
+    <%# Sliding panel %>
+    <aside class="cart-panel"
+           data-cart-target="panel"
+           aria-label="Shopping cart"
+           aria-hidden="true"
+           tabindex="-1">
+      <div class="cart-panel__header">
+        <h2 class="cart-panel__title">
+          Cart
+          <span class="cart-badge" id="cart-badge"><%= @cart_count %></span>
+        </h2>
+        <button class="cart-close-btn"
+                data-action="click->cart#close"
+                aria-label="Close cart">✕</button>
+      </div>
+      <div class="cart-panel__body" id="cart-panel-body">
+        <%= render "carts/cart_contents",
+              cart: @cart, cart_items: @cart_items %>
+      </div>
+    </aside>
   </body>
 </html>

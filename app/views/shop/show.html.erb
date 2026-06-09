@@ -37,17 +37,21 @@
           </div>
         <% end %>
 
-        <%# Cart and checkout added in Phase 3.3 / 3.4 %>
         <div class="product-detail__actions">
-          <button class="btn" disabled aria-label="Add to cart — coming soon">
-            Add to Cart
-          </button>
-          <button class="btn btn--secondary" disabled aria-label="Buy now — coming soon">
+          <% if @price %>
+            <%= button_to "Add to Cart",
+                  cart_items_path(product_id: @product.slug),
+                  method: :post,
+                  class: "btn" %>
+          <% else %>
+            <button class="btn" disabled>Add to Cart</button>
+          <% end %>
+          <button class="btn btn--secondary" disabled aria-label="Buy now — checkout in Phase 3.4">
             Buy Now
           </button>
         </div>
         <p class="product-detail__coming-soon">
-          Checkout available soon.
+          Secure checkout coming soon.
         </p>
 
         <%= link_to "← Back to Shop", shop_path, class: "link product-detail__back" %>
