@@ -1,0 +1,11 @@
+Order confirmed — #<%= @order.id %>
+
+Thank you for your order.
+
+<% @line_items.each do |item| %>
+- <%= item.product.name %> x<%= item.quantity %>
+<% end %>
+
+Total: <%= @order.total_display %>
+
+Questions? Reply to this email.

@@ -12,6 +12,7 @@ module Admin
 
       Stripe::Refund.create(payment_intent: @order.stripe_payment_intent_id)
       @order.update!(status: :refunded)
+      SendRefundReceiptJob.perform_later(@order.id)
 
       redirect_to [:admin, @order],
                   notice: "Refund of #{@order.total_display} issued successfully."

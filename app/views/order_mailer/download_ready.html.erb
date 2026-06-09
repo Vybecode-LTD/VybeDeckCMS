@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1>Your downloads are ready</h1>
+    <p>Your payment for order #<%= @order.id %> has been confirmed and your files are available.</p>
+    <% if @order.user %>
+      <p><a href="<%= account_downloads_url %>">Access your downloads</a></p>
+    <% else %>
+      <p>Sign in to your account at any time to access your purchases under <strong>Downloads</strong>.</p>
+    <% end %>
+    <ul>
+      <% @line_items.each do |item| %>
+        <li><%= item.product.name %></li>
+      <% end %>
+    </ul>
+  </body>
+</html>

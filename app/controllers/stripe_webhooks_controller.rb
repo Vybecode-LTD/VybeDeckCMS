@@ -36,7 +36,7 @@ class StripeWebhooksController < ApplicationController
     return unless order
 
     order.update!(status: :paid)
-    # Phase 3.5: trigger download / subscriber-unlock fulfillment here
+    SendOrderConfirmationJob.perform_later(order.id)
   end
 
   def handle_payment_intent_failed(payment_intent)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_09_130001) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_09_165539) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -136,9 +136,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_130001) do
   end
 
   create_table "orders", force: :cascade do |t|
+    t.datetime "confirmation_email_sent_at"
     t.datetime "created_at", null: false
     t.string "currency", default: "gbp", null: false
     t.string "email", null: false
+    t.datetime "refund_receipt_sent_at"
     t.integer "status", default: 0, null: false
     t.string "stripe_customer_id"
     t.string "stripe_payment_intent_id"

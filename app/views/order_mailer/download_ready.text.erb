@@ -1,0 +1,14 @@
+Your downloads are ready — order #<%= @order.id %>
+
+Your payment has been confirmed and your files are available.
+
+<% if @order.user %>
+Access your downloads: <%= account_downloads_url %>
+<% else %>
+Sign in to your account to access your purchases under Downloads.
+<% end %>
+
+Products:
+<% @line_items.each do |item| %>
+- <%= item.product.name %>
+<% end %>

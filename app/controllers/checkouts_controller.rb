@@ -83,6 +83,7 @@ class CheckoutsController < ApplicationController
         pi = Stripe::PaymentIntent.retrieve(pi_id)
         if pi.status == "succeeded"
           @order.update!(status: :paid)
+          SendOrderConfirmationJob.perform_later(@order.id)
           wipe_cart
         end
       rescue Stripe::StripeError

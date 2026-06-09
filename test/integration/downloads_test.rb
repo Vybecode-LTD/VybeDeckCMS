@@ -138,6 +138,13 @@ class DownloadsIntegrationTest < ActionDispatch::IntegrationTest
     assert_no_match "attachment", response.headers.to_s.downcase
   end
 
+  # ── ActiveStorageMultiField unit ────────────────────────────────────────────
+
+  test "ActiveStorageMultiField.permitted_attribute returns nested array for has_many_attached" do
+    result = ActiveStorageMultiField.permitted_attribute(:download_files)
+    assert_equal({ download_files: [] }, result)
+  end
+
   private
 
   def sign_in_as(user)
