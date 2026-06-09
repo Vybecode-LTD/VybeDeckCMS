@@ -338,8 +338,7 @@ All pre-Phase-1 gaps closed. Phase 3 E-Commerce complete. Remaining items:
 
 1. **SMTP not yet active** — `OrderMailer`, `UserMailer`, and `PasswordsMailer` code is complete and tested. Add `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD` (and optionally `SMTP_PORT`, `ACTION_MAILER_FROM`) as Railway env vars. **All transactional emails (order confirmation, download-ready, refund receipt, email verification, password reset) are silently dropped in production until SMTP is configured.**
 2. **S3 not yet active** — code is ready (`aws-sdk-s3` gem, `storage.yml` amazon service, `production.rb` switches when `AWS_BUCKET` env var is present). Add `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_BUCKET` as Railway env vars. **Required before digital downloads are durable in production** — local disk storage is wiped on every Railway deploy.
-3. **No `libvips`/ImageMagick in Dockerfile** — Active Storage variant transform jobs enqueue correctly but silently fail (no processor in the container image). Add `RUN apt-get install -y libvips` to `Dockerfile` before enabling image variants in production.
-4. **`Seoable` concern has no model-level validations** — `meta_title` and `meta_description` are DB columns wired to `<meta>` via layout, but the concern itself has no length/presence validators. Low priority — add in Phase 10 SEO pass.
+3. **`Seoable` concern has no model-level validations** — `meta_title` and `meta_description` are DB columns wired to `<meta>` via layout, but the concern itself has no length/presence validators. Low priority — add in Phase 10 SEO pass.
 
 ## Session Protocol
 

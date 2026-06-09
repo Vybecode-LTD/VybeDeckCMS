@@ -225,8 +225,7 @@ Also seeds: `Announcements` and `Field Notes` categories; `home` and `about` pag
 |---|-------|----------|-------|
 | 1 | SMTP not active in production | High | All email code complete and tested. Add `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD` (+ optional `SMTP_PORT`, `ACTION_MAILER_FROM`) as Railway env vars. **Order confirmation, download-ready, refund receipt, email verification, and password reset emails are all silently dropped until SMTP is configured.** |
 | 2 | S3 not active in production | High | `aws-sdk-s3` gem added, `storage.yml` amazon service configured, `production.rb` switches when `AWS_BUCKET` env var present. **Digital download files will be lost on every Railway deploy until S3 is active.** Add `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_BUCKET`. |
-| 3 | No `libvips` in Dockerfile | Medium | Active Storage variant jobs enqueue but silently fail in production. Add `RUN apt-get install -y libvips` to Dockerfile. |
-| 4 | `Seoable` has no model validators | Low | Columns exist and are wired to `<meta>` tags. Phase 10 adds validators/canonical/OG/JSON-LD. |
+| 3 | `Seoable` has no model validators | Low | Columns exist and are wired to `<meta>` tags. Phase 10 adds validators/canonical/OG/JSON-LD. |
 
 ---
 
