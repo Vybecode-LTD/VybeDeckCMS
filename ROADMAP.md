@@ -41,7 +41,8 @@ e-commerce, and collaborative album production — all inside one deployable mon
 | Audio Player | Stimulus controller, shared partial, play/pause/seek/volume/speed, 10 new tests |
 | Video Player | Stimulus controller, shared partial, screen-click, fullscreen, 12 new tests |
 | Embed Widgets | EmbedParser PORO (5 providers), admin preview endpoint, Stimulus picker, CSP |
-| Tests | 117 runs, 340 assertions, 0 failures; Minitest throughout |
+| Blog Enhancements | Reading time, related posts, RSS feed (/feed.xml), Post Series model + landing page |
+| Tests | 140 runs, 398 assertions, 0 failures; Minitest throughout |
 
 ---
 
@@ -74,13 +75,13 @@ on top of it. Everything in later phases depends on rich media working reliably.
 - CSP enabled: `frame-src` enforced; nonce-based `script-src` with `strict-dynamic`
 - 32 new tests (24 unit + 8 integration)
 
-### 1.5 Blog System Enhancements
-- ~~Pagination with Pagy on blog index and category pages (default: 12 per page)~~ ✅ Done
-- Post series: `Series` model, posts belong to a series with position, series landing page
-- Related posts: by shared category, displayed on post show page
-- Reading time estimate (words ÷ 200) displayed in byline
-- RSS/Atom feed at `/feed.xml` (ActionController::Live or static generation)
-- Draft preview link accessible to logged-in authors without publishing
+### ~~1.5 Blog System Enhancements~~ ✅ Done
+- ~~Pagination~~ ✅ (Phase 1.5 precursor)
+- `Post#reading_time` (words ÷ 200, min 1); displayed in post byline
+- Related posts: up to 3 live posts sharing categories, rendered below body
+- RSS 2.0 feed at `/feed.xml` (20 posts, public, no auth)
+- `Series` model (FriendlyId, ordered posts); `belongs_to :series` on Post; `/series/:slug` public route + landing page; admin dashboard
+- Draft preview: already handled by `PostPolicy#show?` — no extra work needed
 
 ---
 

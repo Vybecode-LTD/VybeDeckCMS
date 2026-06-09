@@ -19,6 +19,14 @@
 
 ## Last Completed Task (2026-06-08)
 
+**Phase 1.5 — Blog System Enhancements** (commit `f906f4b`):
+- `Post#reading_time` (words ÷ 200, min 1 minute) displayed in post byline.
+- Related posts: `PostsController#show` loads up to 3 live posts sharing any category; rendered as compact grid below body.
+- RSS 2.0 feed at `/feed.xml` (`FeedController`, 20 most-recent published posts, public).
+- `Series` model (FriendlyId, has_many :posts ordered by series_position); migration adds `series_id` + `series_position` to posts; public `/series/:slug` route + landing page with numbered post list; SeriesDashboard + SeriesPolicy.
+- Draft preview already handled by `PostPolicy#show?` — no extra code needed.
+- 23 new tests. Full suite: **140 runs, 398 assertions, 0 failures**.
+
 **Phase 1.4 — Third-Party Embed Widgets** (commit `950a827`):
 - `EmbedParser` PORO: YouTube, Vimeo, Spotify, SoundCloud, Apple Music URL-to-embed-URL conversion.
 - Shared `_embed.html.erb` partial with 16:9 ratio container or fixed-height iframe by provider.
@@ -55,7 +63,7 @@ Previous milestones: Rails 8 foundation → auth/Pundit → Page/Post/Category �
 
 ## Active Task
 
-Phase 1.5 — Blog System Enhancements. See `ROADMAP.md`.
+Phase 1 complete. Moving to Phase 2 — User Accounts & Profiles. See `ROADMAP.md`.
 
 ## Architecture (rules — never break without explicit owner approval)
 
@@ -99,7 +107,7 @@ ruby bin\rails test
 ## Test Suite
 
 ```
-117 runs, 340 assertions, 0 failures, 0 errors, 0 skips
+140 runs, 398 assertions, 0 failures, 0 errors, 0 skips
 ```
 
 Key test files:
