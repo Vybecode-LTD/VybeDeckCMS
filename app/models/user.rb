@@ -4,7 +4,22 @@ class User < ApplicationRecord
   has_many :posts, foreign_key: :author_id, dependent: :nullify
   has_one_attached :avatar
 
-  enum :role, { author: 0, editor: 1, admin: 2 }, default: :author
+  # author (0): can write posts; assigned by editor/admin
+  # editor (1): full content management; can access admin panel
+  # admin  (2): full access including settings and user management
+  # member (3): default for self-registered users; can browse, buy, comment
+  # subscriber (4): paid member; same as member + subscriber-gated content
+  enum :role, { author: 0, editor: 1, admin: 2, member: 3, subscriber: 4 }, default: :author
+
+  # True if the user can write or manage content (used in Pundit helpers).
+  def content_creator?
+    author? || editor? || admin?
+  end
+
+  # True if the user may access the admin panel.
+  def admin_accessible?
+    editor? || admin?
+  end
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 

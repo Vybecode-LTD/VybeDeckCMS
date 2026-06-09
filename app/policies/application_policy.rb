@@ -50,4 +50,21 @@ class ApplicationPolicy
 
     attr_reader :user, :scope
   end
+
+  private
+
+  # editor or admin — may access the admin panel and manage all content.
+  def admin_accessible?
+    user&.editor? || user&.admin?
+  end
+
+  # author, editor, or admin — may create and edit posts/pages.
+  def content_creator?
+    user&.author? || user&.editor? || user&.admin?
+  end
+
+  # subscriber, editor, or admin — may view subscriber-gated content.
+  def subscriber_or_above?
+    user&.subscriber? || user&.editor? || user&.admin?
+  end
 end

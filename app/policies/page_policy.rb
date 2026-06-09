@@ -1,12 +1,10 @@
 class PagePolicy < ApplicationPolicy
-  def index? = user.present?
-
-  def show? = record.published? || user&.editor? || user&.admin?
-
-  def create? = user&.editor? || user&.admin?
-
-  def update? = user&.editor? || user&.admin?
-
+  # Only editor/admin may see or manage pages through the admin panel.
+  # Members and subscribers have no editorial access.
+  def index?   = admin_accessible?
+  def show?    = record.published? || admin_accessible?
+  def create?  = admin_accessible?
+  def update?  = admin_accessible?
   def destroy? = user&.admin?
 
   class Scope < Scope

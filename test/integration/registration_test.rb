@@ -34,7 +34,7 @@ class RegistrationTest < ActionDispatch::IntegrationTest
 
   # ── POST /register ────────────────────────────────────────────────────────────
 
-  test "successful registration creates an unverified author user" do
+  test "successful registration creates an unverified member user" do
     assert_difference "User.count", 1 do
       post registrations_path, params: {
         user: {
@@ -46,7 +46,7 @@ class RegistrationTest < ActionDispatch::IntegrationTest
     end
 
     new_user = User.order(:created_at).last
-    assert new_user.author?
+    assert new_user.member?, "expected self-registered user to have member role, got: #{new_user.role}"
     assert_not new_user.email_verified?
     assert new_user.email_verification_token.present?
   end
@@ -138,7 +138,7 @@ class RegistrationTest < ActionDispatch::IntegrationTest
       }
     }
     new_user = User.order(:created_at).last
-    assert new_user.author?, "expected newly registered user to be author, got #{new_user.role}"
+    assert new_user.member?, "expected newly registered user to be member, got #{new_user.role}"
   end
 
   # ── GET /register/verify?token= ───────────────────────────────────────────────

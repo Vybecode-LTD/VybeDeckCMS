@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_08_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_08_230000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -112,6 +112,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_210000) do
     t.text "meta_description"
     t.string "meta_title"
     t.datetime "published_at"
+    t.boolean "requires_subscriber", default: false, null: false
     t.bigint "series_id"
     t.integer "series_position"
     t.string "slug"
@@ -119,6 +120,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_210000) do
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["author_id"], name: "index_posts_on_author_id"
+    t.index ["requires_subscriber"], name: "index_posts_on_requires_subscriber"
     t.index ["series_id", "series_position"], name: "index_posts_on_series_id_and_series_position"
     t.index ["series_id"], name: "index_posts_on_series_id"
     t.index ["slug"], name: "index_posts_on_slug", unique: true
@@ -144,6 +146,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_210000) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "site_settings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "key", default: "", null: false
+    t.datetime "updated_at", null: false
+    t.text "value"
+    t.string "value_type", default: "string", null: false
+    t.index ["key"], name: "index_site_settings_on_key", unique: true
+  end
+
   create_table "taggings", force: :cascade do |t|
     t.bigint "category_id", null: false
     t.datetime "created_at", null: false
@@ -159,12 +171,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_210000) do
     t.datetime "created_at", null: false
     t.string "display_name"
     t.string "email_address", null: false
+    t.datetime "email_verification_sent_at"
+    t.string "email_verification_token"
+    t.datetime "email_verified_at"
     t.string "password_digest", null: false
     t.integer "role", default: 0, null: false
     t.datetime "updated_at", null: false
     t.string "website_url"
     t.index "lower((display_name)::text)", name: "index_users_on_lower_display_name", unique: true, where: "((display_name IS NOT NULL) AND ((display_name)::text <> ''::text))"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
+    t.index ["email_verification_token"], name: "index_users_on_email_verification_token", unique: true, where: "(email_verification_token IS NOT NULL)"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"

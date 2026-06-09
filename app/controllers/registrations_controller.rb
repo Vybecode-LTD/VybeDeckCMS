@@ -13,7 +13,7 @@ class RegistrationsController < ApplicationController
 
   def create
     @user = User.new(registration_params)
-    @user.role = :author  # never trust the form for role
+    @user.role = :member  # self-registered users are members; authors are promoted by admin
 
     if @user.save
       token = @user.generate_email_verification_token!

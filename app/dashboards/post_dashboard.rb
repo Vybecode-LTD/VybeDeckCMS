@@ -17,6 +17,7 @@ class PostDashboard < Administrate::BaseDashboard
     cover_image: ActiveStorageField,
     meta_title: Field::String,
     meta_description: Field::Text,
+    requires_subscriber: Field::Boolean,
     created_at: Field::DateTime,
     updated_at: Field::DateTime
   }.freeze
@@ -35,6 +36,7 @@ class PostDashboard < Administrate::BaseDashboard
     title
     status
     published_at
+    requires_subscriber
     cover_image
     body
     slug
@@ -51,6 +53,7 @@ class PostDashboard < Administrate::BaseDashboard
     title
     status
     published_at
+    requires_subscriber
     cover_image
     body
     slug
