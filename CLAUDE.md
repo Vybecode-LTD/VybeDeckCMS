@@ -15,9 +15,21 @@
 | Branch | `main` |
 | Platform | Railway (PaaS, auto-deploy from main) |
 | Stack | Rails 8.1, Ruby 3.4, PostgreSQL 17, Propshaft, Importmap, Minitest |
-| Last commit | `5a64f0f` |
+| Last commit | `5219abb` |
 
 ## Last Completed Task (2026-06-10)
+
+**Production deploy hardening** (commit `5219abb`):
+- `railway.toml`: `SOLID_QUEUE_IN_PUMA=true` — background jobs (email, variant generation) now run in the Puma process in production
+- `bin/docker-entrypoint`: runs `db:seed` after `db:migrate` on every boot so admin user and structural data exist on a fresh Railway deploy
+- `db/seeds.rb`: admin credentials from `ADMIN_EMAIL`/`ADMIN_PASSWORD`/`ADMIN_DISPLAY_NAME` env vars (no hardcoded passwords); structural data always seeded; sample content moved to `db/seeds/development.rb` (never runs in production)
+- `config/storage.yml`: dedicated `:cloudflare` service using `CLOUDFLARE_R2_*` env vars (replaces generic `:amazon` entry)
+- `config/environments/production.rb`: switches active_storage to `:cloudflare` service when `CLOUDFLARE_R2_BUCKET` is set
+- `.env.production.example`: full Railway env var reference for all secrets — safe to commit (no real values)
+- `.gitignore`: `!/.env*.example` exception so example files are tracked
+- `docs/ACTIVE_STORAGE_BACKUP.md`: R2 bucket versioning + 30-day retention lifecycle + recovery runbook
+- `docs/SMOKE_CHECKLIST.md`: 10-section end-to-end checklist for every deploy (boot, public site, auth, admin, Active Storage, Solid Queue, email, Stripe, theme, SEO)
+- **Suite: 713 runs, 1857 assertions, 0 failures, 0 errors, 0 skips**
 
 **Phase 10 — SEO & Discoverability** (commit `5a64f0f`):
 - Canonical `<link rel="canonical">` in layout; defaults to `request.base_url + request.path`; views override via `content_for(:canonical_url)`
@@ -287,7 +299,7 @@ Previous milestones: Rails 8 foundation → auth/Pundit → Page/Post/Category �
 
 ## Active Task
 
-All 10 phases complete. Next: commit documentation updates, then plan post-MVP work (production hardening, Kamal deploy, content import).
+Production hardening complete. Next: real content import (pages, posts, albums) via admin panel or `db/seeds/production.rb` before launch, then monitor first Railway deploy with smoke checklist.
 
 ## Architecture (rules — never break without explicit owner approval)
 
@@ -417,30 +429,41 @@ Key test files:
 
 ## Seeds
 
-`ruby bin\rails db:seed` (idempotent):
-- Admin: `admin@vybedeck.test` / `password`
+`ruby bin\rails db:seed` (idempotent, runs automatically on every Railway boot):
+- Admin: credentials from `ADMIN_EMAIL` / `ADMIN_PASSWORD` env vars (dev defaults: `admin@vybedeck.test` / `changeme`)
+- Site settings: `invite_only`, `robots_txt_custom`
 - Categories: Announcements, Field Notes
-- Pages: home, about
-- Posts: launch-notes (pub), editorial-workflow (pub), private-draft (draft)
+- Pages: home, about (with default body content)
+- Sample posts created only in non-production (`db/seeds/development.rb`): launch-notes, editorial-workflow, private-draft
 
 ## Deployment
 
 - Railway auto-deploys from `main` via Dockerfile
-- `railway.toml`: `PORT=80` (critical — do not remove), `healthcheckTimeout=600`
-- `bin/docker-entrypoint`: retries `db:migrate` 12× before starting Puma
+- `railway.toml`: `PORT=80` (critical), `healthcheckTimeout=600`, `SOLID_QUEUE_IN_PUMA=true` (background jobs)
+- `bin/docker-entrypoint`: retries `db:migrate` 12× then runs `db:seed` before starting Puma
 - All 4 DB configs share `DATABASE_URL` in production
 - `RAILS_MASTER_KEY` is a Railway env var — never committed
+- Active Storage: Cloudflare R2; set `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_R2_ACCESS_KEY_ID`, `CLOUDFLARE_R2_SECRET_ACCESS_KEY`, `CLOUDFLARE_R2_BUCKET` in Railway
+- See `.env.production.example` for the full env var reference
+- See `docs/SMOKE_CHECKLIST.md` for the post-deploy verification runbook
+- See `docs/ACTIVE_STORAGE_BACKUP.md` for R2 versioning and recovery procedures
 
 ## Known Gaps (priority order)
 
-All pre-Phase-1 gaps closed. Phase 3 E-Commerce complete. All production infrastructure active. Remaining items:
+1. **Content import** — real pages, posts, and albums need to be authored in the admin panel or seeded via `db/seeds/production.rb` before launch. No sample content runs in production.
+2. **`Seoable` concern has no model-level validations** — `meta_title` and `meta_description` columns have no length/presence validators. Low priority.
+3. **R2 bucket versioning not yet confirmed active** — the backup strategy doc (`docs/ACTIVE_STORAGE_BACKUP.md`) describes how to enable it; someone needs to click "Enable versioning" in the Cloudflare dashboard for the production bucket.
 
-1. **`Seoable` concern has no model-level validations** — `meta_title` and `meta_description` are DB columns wired to `<meta>` via layout, but the concern itself has no length/presence validators. Low priority — add in Phase 10 SEO pass.
+### Resolved (2026-06-10)
+- ~~Solid Queue not running in production~~ ✅ Fixed — `SOLID_QUEUE_IN_PUMA=true` in `railway.toml`
+- ~~No admin user on fresh deploy~~ ✅ Fixed — `bin/docker-entrypoint` now runs `db:seed` after `db:migrate`
+- ~~Hardcoded admin credentials in seeds~~ ✅ Fixed — `ADMIN_EMAIL`/`ADMIN_PASSWORD` env vars
+- ~~Active Storage backup strategy undocumented~~ ✅ Documented in `docs/ACTIVE_STORAGE_BACKUP.md`
 
 ### Resolved (2026-06-09)
-- ~~SMTP~~ ✅ Active — Resend SMTP via `smtp.resend.com`; sending domain `send.vybedeck.com` verified; `ACTION_MAILER_FROM=no-reply@send.vybedeck.com`
-- ~~S3/Storage~~ ✅ Active — Cloudflare R2, bucket `vybedeck-production`; `storage.yml` supports `AWS_ENDPOINT` override for non-AWS providers
-- ~~libvips~~ ✅ Already installed in Dockerfile (was a false gap in the docs)
+- ~~SMTP~~ ✅ Active — Resend SMTP via `smtp.resend.com`; sending domain `send.vybedeck.com` verified
+- ~~S3/Storage~~ ✅ Active — Cloudflare R2; `:cloudflare` service in `storage.yml` using `CLOUDFLARE_R2_*` env vars
+- ~~libvips~~ ✅ Already installed in Dockerfile
 
 ## Session Protocol
 
