@@ -14,6 +14,11 @@ if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
     echo "Database not ready yet, retrying in 5s... ($retries attempts left)"
     sleep 5
   done
+
+  # Seeds are idempotent — safe to run on every start.
+  # In production this creates the admin user (from ADMIN_EMAIL/ADMIN_PASSWORD
+  # env vars) and structural data (categories, pages, site settings).
+  ./bin/rails db:seed
 fi
 
 exec "${@}"

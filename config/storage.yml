@@ -6,19 +6,16 @@ local:
   service: Disk
   root: <%= Rails.root.join("storage") %>
 
-# Activated when AWS_BUCKET is set in Railway env vars.
-# For AWS S3: set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_BUCKET
-# For Cloudflare R2: set the same vars PLUS AWS_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
-#   AWS_REGION should be "auto" for R2
-amazon:
+# Cloudflare R2 (S3-compatible). Set CLOUDFLARE_R2_* env vars in Railway.
+# CLOUDFLARE_ACCOUNT_ID is used to build the endpoint URL.
+cloudflare:
   service: S3
-  access_key_id: <%= ENV.fetch("AWS_ACCESS_KEY_ID", "") %>
-  secret_access_key: <%= ENV.fetch("AWS_SECRET_ACCESS_KEY", "") %>
-  region: <%= ENV.fetch("AWS_REGION", "us-east-1") %>
-  bucket: <%= ENV.fetch("AWS_BUCKET", "") %>
-<% if ENV["AWS_ENDPOINT"].present? %>
-  endpoint: <%= ENV.fetch("AWS_ENDPOINT") %>
-<% end %>
+  access_key_id: <%= ENV.fetch("CLOUDFLARE_R2_ACCESS_KEY_ID", "") %>
+  secret_access_key: <%= ENV.fetch("CLOUDFLARE_R2_SECRET_ACCESS_KEY", "") %>
+  region: auto
+  bucket: <%= ENV.fetch("CLOUDFLARE_R2_BUCKET", "") %>
+  endpoint: https://<%= ENV.fetch("CLOUDFLARE_ACCOUNT_ID", "MISSING") %>.r2.cloudflarestorage.com
+  force_path_style: false
 
 # Remember not to checkin your GCS keyfile to a repository
 # google:

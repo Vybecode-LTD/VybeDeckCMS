@@ -10,3 +10,6 @@ restartPolicyType = "on_failure"
 # Pin PORT=80 so Railway routes traffic to the port Thruster actually uses.
 [deploy.environment]
 PORT = "80"
+# Run the Solid Queue supervisor inside the Puma process (single-server deployment).
+# Background jobs (email, Active Storage variants, etc.) won't process without this.
+SOLID_QUEUE_IN_PUMA = "true"

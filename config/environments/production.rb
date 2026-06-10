@@ -21,8 +21,8 @@ Rails.application.configure do
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.asset_host = "http://assets.example.com"
 
-  # Use S3 when AWS_BUCKET is set; fall back to local disk otherwise.
-  config.active_storage.service = ENV["AWS_BUCKET"].present? ? :amazon : :local
+  # Use Cloudflare R2 when credentials are set; fall back to local disk otherwise.
+  config.active_storage.service = ENV["CLOUDFLARE_R2_BUCKET"].present? ? :cloudflare : :local
 
   # Railway terminates SSL at the edge — trust it and enforce HTTPS.
   config.assume_ssl = true
