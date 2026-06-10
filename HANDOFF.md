@@ -3,10 +3,10 @@
 > New agents read this file first (after `CLAUDE.md`), then `ROADMAP.md`.
 > Keep "Last Completed" and "Immediate Next Session" current at the end of every session.
 
-**Updated:** 2026-06-09
-**Branch:** `main` — Phase 4.3-4.5 committed; ready to push to GitHub
-**Last commit:** `f811492` (Phase 4.3-4.5 — Per-Reply Delete, Notification Bell, Forum Accent Colour)
-**Test suite:** `545 runs, 1429 assertions, 0 failures, 0 errors, 0 skips`
+**Updated:** 2026-06-10
+**Branch:** `main` — pushed to GitHub; Railway auto-deploy triggered
+**Last commit:** `d87f379` (plugin settings UI, AI streaming, webhook events admin, album artwork crop)
+**Test suite:** `767 runs, 2021 assertions, 0 failures, 0 errors, 0 skips`
 
 ---
 
@@ -18,8 +18,8 @@
 | Rails app | `C:\DEV\VybeDeck\vybedeck_cms` |
 | GitHub | `https://github.com/Vybecode-LTD/VybeDeckCMS.git` |
 | Deployed | Railway (auto-deploy from `main`) |
-| Branch | `main` — Phase 4.3-4.5 committed; push when ready to deploy |
-| Tests | `545 runs, 1429 assertions, 0 failures, 0 errors, 0 skips` |
+| Branch | `main` — pushed `d87f379`; Railway auto-deploying |
+| Tests | `767 runs, 2021 assertions, 0 failures, 0 errors, 0 skips` |
 
 ---
 
@@ -273,15 +273,16 @@ cd C:\DEV\VybeDeck\vybedeck_cms
 
 # 2. Confirm green baseline
 ruby bin\rails test
-# Expected: 545 runs, 1429 assertions, 0 failures
+# Expected: 767 runs, 2021 assertions, 0 failures
 
 # 3. Choose next phase (see options below)
 ```
 
 **Next phase options (priority order):**
 
-1. **Push `main` to GitHub** — Railway auto-deploys; Phase 4 features go live
-2. **Phase 5** — plan with user (likely direct messages, or a Phase 5.1 from ROADMAP.md)
+1. **Content import** — author real pages, posts, and albums in admin panel, or add a `db/seeds/production.rb` script, before public launch
+2. **Monitor Railway deploy** — verify `d87f379` deployed cleanly; run `docs/SMOKE_CHECKLIST.md`
+3. **Enable R2 bucket versioning** — follow steps in `docs/ACTIVE_STORAGE_BACKUP.md`
 
 ---
 
@@ -319,6 +320,9 @@ test/test_helpers/stripe_helper.rb           with_stripe_payment_intent / with_s
 
 | Hash | Message |
 |------|---------|
+| `d87f379` | feat: plugin settings UI, AI streaming, webhook events admin, album crop |
+| `5219abb` | feat(deploy): production hardening — railway.toml, entrypoint seed, R2 storage, env example |
+| `8dc855a` | feat: plugin sandbox, extended theme tokens, JSON-LD schema + FAQ blocks |
 | `f811492` | feat(community): Phase 4.3-4.5 — reply delete, notification bell, forum accent colour |
 | `2b90b1c` | feat(community): Phase 4.2 — reactions and moderation queue |
 | `40b5ea0` | feat(community): Phase 4.1 — Forum models, admin, and public UI |
