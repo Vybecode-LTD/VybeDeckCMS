@@ -7,13 +7,25 @@
 <% content_for :json_ld do %>
 {
   "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": "<%= j(@post.meta_title.presence || @post.title) %>",
-  "description": "<%= j(@post.meta_description.presence || @post.excerpt.to_s) %>",
-  "author": { "@type": "Person", "name": "<%= j @post.author.display_name %>" },
-  "datePublished": "<%= @post.published_at&.iso8601 %>",
-  "dateModified": "<%= @post.updated_at.iso8601 %>"<% if @post.cover_image.attached? %>,
-  "image": "<%= j url_for(@post.cover_image) %>"<% end %>
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "<%= j(@post.meta_title.presence || @post.title) %>",
+      "description": "<%= j(@post.meta_description.presence || @post.excerpt.to_s) %>",
+      "author": { "@type": "Person", "name": "<%= j @post.author.display_name %>" },
+      "datePublished": "<%= @post.published_at&.iso8601 %>",
+      "dateModified": "<%= @post.updated_at.iso8601 %>"<% if @post.cover_image.attached? %>,
+      "image": "<%= j url_for(@post.cover_image) %>"<% end %>
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home",  "item": "<%= j root_url %>" },
+        { "@type": "ListItem", "position": 2, "name": "Blog",  "item": "<%= j posts_url %>" },
+        { "@type": "ListItem", "position": 3, "name": "<%= j @post.title %>", "item": "<%= j request.url %>" }
+      ]
+    }
+  ]
 }
 <% end %>
 

@@ -1,7 +1,18 @@
 <%
   t = @theme.effective_tokens
 
-  light_style = [
+  shared_shape_style = [
+    "--radius-sm:#{t["radius_sm"]}",
+    "--radius-md:#{t["radius_md"]}",
+    "--radius-lg:#{t["radius_lg"]}",
+    "--radius-full:#{t["radius_full"]}",
+    "--space-unit:#{t["space_unit"]}",
+    "--shadow-sm:#{t["shadow_sm"]}",
+    "--shadow-md:#{t["shadow_md"]}",
+    "--shadow-lg:#{t["shadow_lg"]}",
+  ].join(";")
+
+  light_style = ([
     "--bg:#{t["light_bg"]}",
     "--bg-elevated:#{t["light_bg_elevated"]}",
     "--bg-sunken:#{t["light_bg_sunken"]}",
@@ -9,10 +20,13 @@
     "--text-muted:#{t["light_text_muted"]}",
     "--accent:#{t["light_accent"]}",
     "--border:#e4e1da",
-    "--border-strong:#cac7be"
-  ].join(";")
+    "--border-strong:#cac7be",
+    (t["hero_accent"].present?   ? "--hero-accent:#{t["hero_accent"]}"     : nil),
+    (t["card_accent"].present?   ? "--card-accent:#{t["card_accent"]}"     : nil),
+    (t["button_accent"].present? ? "--button-accent:#{t["button_accent"]}" : nil),
+  ] + shared_shape_style.split(";").map { |s| s }).compact.join(";")
 
-  dark_style = [
+  dark_style = ([
     "--bg:#{t["dark_bg"]}",
     "--bg-elevated:#{t["dark_bg_elevated"]}",
     "--bg-sunken:#{t["dark_bg_sunken"]}",
@@ -20,8 +34,11 @@
     "--text-muted:#{t["dark_text_muted"]}",
     "--accent:#{t["dark_accent"]}",
     "--border:#2d2b27",
-    "--border-strong:#3f3c38"
-  ].join(";")
+    "--border-strong:#3f3c38",
+    (t["hero_accent"].present?   ? "--hero-accent:#{t["hero_accent"]}"     : nil),
+    (t["card_accent"].present?   ? "--card-accent:#{t["card_accent"]}"     : nil),
+    (t["button_accent"].present? ? "--button-accent:#{t["button_accent"]}" : nil),
+  ] + shared_shape_style.split(";").map { |s| s }).compact.join(";")
 %>
 
 <div class="administrate-page-header">
@@ -172,6 +189,118 @@
         </div>
       </div>
 
+      <%# ── Border radius ───────────────────────────────────────── %>
+      <div class="theme-section">
+        <div class="theme-section__title">Border Radius</div>
+        <% {
+          "radius_sm"   => ["Small (buttons, tags)",   "--radius-sm",   "4",  "0", "32"],
+          "radius_md"   => ["Medium (cards, inputs)",  "--radius-md",   "8",  "0", "48"],
+          "radius_lg"   => ["Large (panels, modals)",  "--radius-lg",   "16", "0", "64"],
+          "radius_full" => ["Full (pills, avatars)",   "--radius-full", "9999", "0", "9999"],
+        }.each do |token_key, (label, css_var, default_val, min_val, max_val)| %>
+          <div class="theme-token">
+            <label class="theme-token__label-text"><%= label %></label>
+            <div class="theme-token__control theme-token__control--range">
+              <input type="range"
+                     min="<%= min_val %>" max="<%= max_val %>"
+                     value="<%= t[token_key].to_i %>"
+                     class="theme-token__range-input"
+                     data-theme-editor-target="rangeInput"
+                     data-css-var="<%= css_var %>"
+                     data-token-key="<%= token_key %>"
+                     data-action="input->theme-editor#rangeChanged">
+              <input type="text"
+                     name="theme[tokens][<%= token_key %>]"
+                     value="<%= t[token_key] %>"
+                     class="input theme-token__range-text"
+                     data-theme-editor-target="rangeTextInput"
+                     data-token-key="<%= token_key %>"
+                     data-action="change->theme-editor#rangeTextChanged"
+                     size="7">
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%# ── Spacing ──────────────────────────────────────────────── %>
+      <div class="theme-section">
+        <div class="theme-section__title">Spacing</div>
+        <div class="theme-token">
+          <label class="theme-token__label-text">Base unit (all spacing is a multiple of this)</label>
+          <div class="theme-token__control theme-token__control--range">
+            <input type="range" min="2" max="16"
+                   value="<%= t["space_unit"].to_i %>"
+                   class="theme-token__range-input"
+                   data-theme-editor-target="rangeInput"
+                   data-css-var="--space-unit"
+                   data-token-key="space_unit"
+                   data-action="input->theme-editor#rangeChanged">
+            <input type="text"
+                   name="theme[tokens][space_unit]"
+                   value="<%= t["space_unit"] %>"
+                   class="input theme-token__range-text"
+                   data-theme-editor-target="rangeTextInput"
+                   data-token-key="space_unit"
+                   data-action="change->theme-editor#rangeTextChanged"
+                   size="7">
+          </div>
+        </div>
+      </div>
+
+      <%# ── Shadows ─────────────────────────────────────────────── %>
+      <div class="theme-section">
+        <div class="theme-section__title">Shadows</div>
+        <% {
+          "shadow_sm" => "Small (subtle lift)",
+          "shadow_md" => "Medium (cards, dropdowns)",
+          "shadow_lg" => "Large (modals, overlays)",
+        }.each do |token_key, label| %>
+          <div class="theme-token theme-token--full">
+            <label class="theme-token__label-text"><%= label %></label>
+            <input type="text"
+                   name="theme[tokens][<%= token_key %>]"
+                   value="<%= t[token_key] %>"
+                   class="input theme-token__shadow-input"
+                   placeholder="e.g. 0 4px 6px rgba(0,0,0,.07)">
+          </div>
+        <% end %>
+      </div>
+
+      <%# ── Per-section accent colours ──────────────────────────── %>
+      <div class="theme-section">
+        <div class="theme-section__title">Section Accents <small class="theme-section__hint">(overrides global accent per component — leave blank to inherit)</small></div>
+        <% {
+          "hero_accent"   => ["Hero section",  "--hero-accent",   "both"],
+          "card_accent"   => ["Cards",         "--card-accent",   "both"],
+          "button_accent" => ["Buttons",       "--button-accent", "both"],
+        }.each do |token_key, (label, css_var, mode)| %>
+          <div class="theme-token">
+            <label class="theme-token__label-text"><%= label %></label>
+            <div class="theme-token__control">
+              <input type="color"
+                     class="theme-token__color-input"
+                     value="<%= t[token_key].presence || "#e8440a" %>"
+                     data-theme-editor-target="colorInput"
+                     data-css-var="<%= css_var %>"
+                     data-mode="<%= mode %>"
+                     data-token-key="<%= token_key %>"
+                     data-action="input->theme-editor#tokenChanged">
+              <input type="text"
+                     name="theme[tokens][<%= token_key %>]"
+                     value="<%= t[token_key] %>"
+                     class="input theme-token__text-input"
+                     data-theme-editor-target="textInput"
+                     data-token-key="<%= token_key %>"
+                     data-action="input->theme-editor#textChanged"
+                     pattern="#[0-9a-fA-F]{6}|"
+                     placeholder="inherit"
+                     maxlength="7"
+                     size="8">
+            </div>
+          </div>
+        <% end %>
+      </div>
+
       <div style="margin-top:1.5rem">
         <button type="submit" class="button">Save &amp; Apply Theme</button>
       </div>
@@ -181,11 +310,12 @@
 
   <%# ── Right column: live preview ──────────────────────────── %>
   <div class="theme-preview-pair">
+    <% [["Light Preview", "lightPreview", light_style], ["Dark Preview", "darkPreview", dark_style]].each do |label, target, style| %>
     <div>
-      <div class="theme-preview-label">Light Preview</div>
+      <div class="theme-preview-label"><%= label %></div>
       <div class="theme-preview"
-           data-theme-editor-target="lightPreview"
-           style="<%= light_style %>">
+           data-theme-editor-target="<%= target %>"
+           style="<%= style %>">
         <div class="tp-nav">
           <span class="tp-brand">VybeDeck</span>
           <span class="tp-nav-links">
@@ -194,40 +324,23 @@
           </span>
         </div>
         <div class="tp-content">
-          <h2 class="tp-h2">Page Heading</h2>
-          <p class="tp-body">Body text here. <span class="tp-muted">Muted secondary text.</span></p>
+          <div class="tp-hero">
+            <h2 class="tp-h2">Page Heading</h2>
+            <p class="tp-body">Body text here. <span class="tp-muted">Muted secondary text.</span></p>
+          </div>
           <button type="button" class="tp-btn">Primary Action</button>
           <div class="tp-card">
             <div class="tp-card-title">Card Component</div>
             <p class="tp-card-body">Content on an elevated surface.</p>
+            <div class="tp-tags">
+              <span class="tp-tag">Tag one</span>
+              <span class="tp-tag">Tag two</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
-
-    <div>
-      <div class="theme-preview-label">Dark Preview</div>
-      <div class="theme-preview"
-           data-theme-editor-target="darkPreview"
-           style="<%= dark_style %>">
-        <div class="tp-nav">
-          <span class="tp-brand">VybeDeck</span>
-          <span class="tp-nav-links">
-            <span class="tp-nav-link">Blog</span>
-            <span class="tp-nav-link">Shop</span>
-          </span>
-        </div>
-        <div class="tp-content">
-          <h2 class="tp-h2">Page Heading</h2>
-          <p class="tp-body">Body text here. <span class="tp-muted">Muted secondary text.</span></p>
-          <button type="button" class="tp-btn">Primary Action</button>
-          <div class="tp-card">
-            <div class="tp-card-title">Card Component</div>
-            <p class="tp-card-body">Content on an elevated surface.</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <% end %>
   </div>
 
 </div>

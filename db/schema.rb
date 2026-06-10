@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_10_041646) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_10_060000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -162,6 +162,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_10_041646) do
     t.index ["chat_message_id", "user_id", "emoji"], name: "index_chat_reactions_unique", unique: true
     t.index ["chat_message_id"], name: "index_chat_reactions_on_chat_message_id"
     t.index ["user_id"], name: "index_chat_reactions_on_user_id"
+  end
+
+  create_table "faq_blocks", force: :cascade do |t|
+    t.text "answer", null: false
+    t.datetime "created_at", null: false
+    t.bigint "page_id", null: false
+    t.integer "position", default: 0, null: false
+    t.string "question", null: false
+    t.datetime "updated_at", null: false
+    t.index ["page_id", "position"], name: "index_faq_blocks_on_page_id_and_position"
+    t.index ["page_id"], name: "index_faq_blocks_on_page_id"
   end
 
   create_table "forum_replies", force: :cascade do |t|
@@ -519,6 +530,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_10_041646) do
   add_foreign_key "chat_messages", "users", column: "author_id"
   add_foreign_key "chat_reactions", "chat_messages"
   add_foreign_key "chat_reactions", "users"
+  add_foreign_key "faq_blocks", "pages"
   add_foreign_key "forum_replies", "forum_threads"
   add_foreign_key "forum_replies", "users", column: "author_id"
   add_foreign_key "forum_threads", "forums"

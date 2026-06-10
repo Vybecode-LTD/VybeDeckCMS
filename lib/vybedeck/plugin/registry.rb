@@ -27,11 +27,22 @@ module VybeDeck
         end
 
         # Collect HTML string from all active plugins for a given view hook.
+        # Output from each plugin is validated by the sandbox before inclusion.
+        # A SandboxViolation blocks that plugin's output for this request.
         def render_hook(hook)
           active_slugs = active_plugin_slugs
           @registered
             .select { |p| active_slugs.include?(p.plugin_slug) }
-            .map { |p| p.public_send(hook) rescue "" }
+            .filter_map do |p|
+              html = p.public_send(hook)
+              ::VybeDeck::Plugin::Sandbox.validate_html!(html, plugin_slug: p.plugin_slug, hook: hook)
+              html
+            rescue ::VybeDeck::Plugin::SandboxViolation
+              nil
+            rescue StandardError => e
+              Rails.logger.error("[PluginRegistry] #{p}##{hook} raised: #{e.message}")
+              nil
+            end
             .join("\n")
             .html_safe
         end

@@ -32,6 +32,21 @@ module VybeDeck
         def plugin_author;      @plugin_author      || ""; end
         def plugin_description; @plugin_description || ""; end
 
+        # Declare every external hostname your plugin is permitted to contact.
+        # Call with arguments to set; call without to read the current list.
+        #
+        #   self.allowed_hosts "api.example.com", "cdn.example.com"
+        #
+        # Use "*" to allow all hosts (discouraged — only for fully trusted plugins).
+        # An empty list (the default) means no outbound HTTP is permitted.
+        def allowed_hosts(*hosts)
+          if hosts.empty?
+            @allowed_hosts ||= []
+          else
+            @allowed_hosts = hosts.flatten.map(&:to_s)
+          end
+        end
+
         # Lifecycle hooks — override as needed
         def on_install;    end
         def on_activate;   end

@@ -3967,7 +3967,28 @@ body.cart-open { overflow: hidden; }
 .tp-h2 { font-size: .9rem; font-weight: 700; margin: 0 0 .3rem; color: var(--text); }
 .tp-body { margin-bottom: .5rem; color: var(--text); }
 .tp-muted { color: var(--text-muted); }
-.tp-btn { display: inline-block; background: var(--accent); color: #fff; border: none; border-radius: 4px; padding: .25rem .65rem; font-size: .72rem; font-weight: 600; cursor: pointer; margin-bottom: .6rem; }
-.tp-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 5px; padding: .5rem .6rem; margin-top: .1rem; }
-.tp-card-title { font-weight: 600; font-size: .78rem; margin-bottom: .15rem; color: var(--text); }
+.tp-btn { display: inline-block; background: var(--button-accent, var(--accent)); color: #fff; border: none; border-radius: var(--radius-sm, 4px); padding: .25rem .65rem; font-size: .72rem; font-weight: 600; cursor: pointer; margin-bottom: .6rem; }
+.tp-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md, 5px); box-shadow: var(--shadow-sm, none); padding: .5rem .6rem; margin-top: .1rem; }
+.tp-card-title { font-weight: 600; font-size: .78rem; margin-bottom: .15rem; color: var(--card-accent, var(--text)); }
 .tp-card-body { font-size: .72rem; color: var(--text-muted); margin: 0; }
+.tp-hero { background: var(--bg-sunken); border-radius: var(--radius-lg, 0); padding: .35rem .5rem; margin-bottom: .5rem; }
+.tp-tags { display: flex; flex-wrap: wrap; gap: .25rem; margin-top: .4rem; }
+.tp-tag { font-size: .6rem; font-weight: 600; padding: .1rem .4rem; border-radius: var(--radius-full, 9999px); background: var(--accent); color: #fff; opacity: .85; }
+
+/* ── Theme token form — range + shadow inputs ──────────────────────────── */
+.theme-token--full { flex-direction: column; align-items: flex-start; gap: .3rem; }
+.theme-token__control--range { gap: .6rem; }
+.theme-token__range-input { flex: 1; min-width: 100px; max-width: 160px; accent-color: var(--accent); }
+.theme-token__range-text { width: 5rem; font-family: monospace; font-size: .8rem; }
+.theme-token__shadow-input { width: 100%; font-family: monospace; font-size: .78rem; }
+.theme-section__hint { font-size: .7rem; font-weight: 400; text-transform: none; letter-spacing: 0; opacity: .7; margin-left: .35rem; }
+
+/* ── FAQ blocks (public) ───────────────────────────────────────────────── */
+.faq-list { display: flex; flex-direction: column; gap: .5rem; }
+.faq-item { border: 1px solid var(--border); border-radius: var(--radius-md, 8px); background: var(--bg-elevated); }
+.faq-item__question { font-size: 1rem; font-weight: 600; cursor: pointer; padding: .85rem 1rem; list-style: none; display: flex; align-items: center; justify-content: space-between; color: var(--text); }
+.faq-item__question::-webkit-details-marker { display: none; }
+.faq-item__question::after { content: "+"; font-size: 1.1rem; font-weight: 400; color: var(--accent); flex-shrink: 0; margin-left: .5rem; }
+details[open] .faq-item__question::after { content: "−"; }
+.faq-item__answer { padding: 0 1rem 1rem; font-size: .925rem; color: var(--text-muted); line-height: 1.6; }
+.faq-item__answer p { margin: 0 0 .5rem; }

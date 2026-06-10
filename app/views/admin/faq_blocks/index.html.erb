@@ -1,0 +1,46 @@
+<div class="administrate-page-header">
+  <h1 class="administrate-page-header__title">
+    FAQ Blocks — <%= link_to @page.title, admin_page_path(@page), class: "link" %>
+  </h1>
+  <div class="administrate-page-header__actions">
+    <%= link_to "← Back to Page", admin_page_path(@page), class: "button button--alt button--sm" %>
+    <%= link_to "+ Add FAQ", new_admin_page_faq_block_path(@page), class: "button button--sm" %>
+  </div>
+</div>
+
+<% if flash[:notice] %>
+  <div class="flash flash--notice" style="margin-bottom:1rem"><%= flash[:notice] %></div>
+<% end %>
+
+<% if @faq_blocks.empty? %>
+  <div class="blank-slate">
+    <p>No FAQ items yet. Add one to generate FAQPage structured data on this page.</p>
+  </div>
+<% else %>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Question</th>
+        <th>Answer (preview)</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @faq_blocks.each do |faq| %>
+        <tr>
+          <td><%= faq.position %></td>
+          <td><%= faq.question %></td>
+          <td class="table-cell--truncate"><%= truncate(faq.answer, length: 80) %></td>
+          <td class="table-cell--actions">
+            <%= link_to "Edit",   edit_admin_page_faq_block_path(@page, faq), class: "action-item" %>
+            <%= button_to "Delete", admin_page_faq_block_path(@page, faq),
+                  method: :delete,
+                  class: "action-item action-item--destructive",
+                  data: { turbo_confirm: "Delete this FAQ item?" } %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

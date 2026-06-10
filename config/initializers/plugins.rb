@@ -1,3 +1,5 @@
+require "vybedeck/plugin/sandbox_violation"
+require "vybedeck/plugin/sandbox"
 require "vybedeck/plugin/registry"
 require "vybedeck/plugin/base"
 

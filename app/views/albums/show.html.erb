@@ -1,5 +1,40 @@
 <% content_for :title, "#{@album.title}#{" — #{@album.artist}" if @album.artist.present?}" %>
 <% content_for :description, @album.description %>
+<% if @album.artwork.attached? %>
+  <% content_for :og_image, url_for(@album.artwork) %>
+<% end %>
+<% content_for :json_ld do %>
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "MusicAlbum",
+      "name": "<%= j @album.title %>"<% if @album.artist.present? %>,
+      "byArtist": { "@type": "MusicGroup", "name": "<%= j @album.artist %>" }<% end %><% if @album.release_date %>,
+      "datePublished": "<%= @album.release_date.iso8601 %>"<% end %><% if @album.description.present? %>,
+      "description": "<%= j @album.description %>"<% end %><% if @album.artwork.attached? %>,
+      "image": "<%= j url_for(@album.artwork) %>"<% end %><% if @tracks.any? %>,
+      "numTracks": <%= @tracks.size %>,
+      "track": [
+        <% @tracks.each_with_index do |track, i| %>{
+          "@type": "MusicRecording",
+          "name": "<%= j track.title %>"<% if track.duration_seconds %>,
+          "duration": "PT<%= track.duration_seconds / 60 %>M<%= track.duration_seconds % 60 %>S"<% end %>
+        }<%= "," unless i == @tracks.size - 1 %>
+        <% end %>
+      ]<% end %>
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home",   "item": "<%= j root_url %>" },
+        { "@type": "ListItem", "position": 2, "name": "Albums", "item": "<%= j albums_url %>" },
+        { "@type": "ListItem", "position": 3, "name": "<%= j @album.title %>", "item": "<%= j request.url %>" }
+      ]
+    }
+  ]
+}
+<% end %>
 
 <main class="page-main">
   <div class="album-page">

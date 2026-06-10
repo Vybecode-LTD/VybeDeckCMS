@@ -7,6 +7,8 @@ class SampleSeoPlugin
   self.plugin_author      = "VybeDeck Team"
   self.plugin_description = "Demonstrates the plugin hook system. Injects a sample meta tag."
 
+  # No outbound HTTP — allowed_hosts left empty (default).
+
   def self.inject_head
     '<meta name="generator" content="VybeDeck CMS">'
   end

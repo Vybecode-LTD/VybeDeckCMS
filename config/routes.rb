@@ -4,7 +4,9 @@ Rails.application.routes.draw do
       collection { delete :bulk_destroy }
     end
     resources :categories
-    resources :pages
+    resources :pages do
+      resources :faq_blocks, only: %i[index new create edit update destroy]
+    end
     resources :posts
     # Phase 4 community
     resources :forums

@@ -4,6 +4,33 @@
   <% content_for :og_image, url_for(@page.hero_image) %>
 <% end %>
 
+<%# ── BreadcrumbList + optional FAQPage JSON-LD ──────────────────────────── %>
+<% content_for :json_ld do %>
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "<%= j root_url %>" },
+        { "@type": "ListItem", "position": 2, "name": "<%= j @page.title %>", "item": "<%= j request.url %>" }
+      ]
+    }<% if @page.faq_blocks.any? %>,
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        <% @page.faq_blocks.each_with_index do |faq, i| %>{
+          "@type": "Question",
+          "name": "<%= j faq.question %>",
+          "acceptedAnswer": { "@type": "Answer", "text": "<%= j faq.answer %>" }
+        }<%= "," unless i == @page.faq_blocks.size - 1 %>
+        <% end %>
+      ]
+    }<% end %>
+  ]
+}
+<% end %>
+
 <main class="page-shell">
   <section class="content-hero">
     <div class="shell content-hero__grid">
@@ -33,4 +60,20 @@
       <%= @page.body %>
     </div>
   </section>
+
+  <% if @page.faq_blocks.any? %>
+    <section class="content-band content-band--muted">
+      <div class="shell reading-width">
+        <h2 class="section-heading">Frequently Asked Questions</h2>
+        <div class="faq-list">
+          <% @page.faq_blocks.each do |faq| %>
+            <details class="faq-item">
+              <summary class="faq-item__question"><%= faq.question %></summary>
+              <div class="faq-item__answer"><%= simple_format(faq.answer) %></div>
+            </details>
+          <% end %>
+        </div>
+      </div>
+    </section>
+  <% end %>
 </main>

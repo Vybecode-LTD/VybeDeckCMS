@@ -1,4 +1,36 @@
 <% content_for :title, "#{@product.name} | Shop | VybeDeck CMS" %>
+<% content_for :description, @product.description if @product.respond_to?(:description) && @product.description.present? %>
+<% if @product.cover_image.attached? %>
+  <% content_for :og_image, url_for(@product.cover_image) %>
+<% end %>
+<% content_for :json_ld do %>
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Product",
+      "name": "<%= j @product.name %>"<% if @product.description.present? %>,
+      "description": "<%= j @product.description %>"<% end %><% if @product.cover_image.attached? %>,
+      "image": "<%= j url_for(@product.cover_image) %>"<% end %><% if @price %>,
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "<%= j @price.currency.upcase %>",
+        "price": "<%= "%.2f" % (@price.amount_cents / 100.0) %>",
+        "availability": "https://schema.org/InStock",
+        "url": "<%= j request.url %>"
+      }<% end %>
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "<%= j root_url %>" },
+        { "@type": "ListItem", "position": 2, "name": "Shop", "item": "<%= j shop_url %>" },
+        { "@type": "ListItem", "position": 3, "name": "<%= j @product.name %>", "item": "<%= j request.url %>" }
+      ]
+    }
+  ]
+}
+<% end %>
 
 <main class="page-shell">
   <article class="product-detail">

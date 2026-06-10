@@ -21,6 +21,10 @@
       rel: "noopener"
     ) %>
 
+    <%= link_to "Manage FAQ (#{cms_page.faq_blocks.size})",
+          main_app.admin_page_faq_blocks_path(cms_page),
+          class: "button button--alt button--sm" %>
+
     <%= link_to(
       t("administrate.actions.edit_resource", name: page.page_title),
       [:edit, namespace, cms_page],
