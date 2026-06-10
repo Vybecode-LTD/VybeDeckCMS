@@ -16,6 +16,8 @@
   <% end %>
 
   <% if current_user&.admin_accessible? %>
+    <%= link_to "AI", admin_ai_path,
+          class: "navigation__link navigation__link--#{ request.path.start_with?(admin_ai_path) ? "active" : "inactive" }" %>
     <%= link_to "Revenue", admin_revenue_path,
           class: "navigation__link navigation__link--#{ request.path.start_with?(admin_revenue_path) ? "active" : "inactive" }" %>
     <%= link_to "Moderation", admin_moderation_index_path,

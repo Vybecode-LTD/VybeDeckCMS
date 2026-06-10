@@ -1,0 +1,42 @@
+<% content_for :title, @conversation.title.presence || "AI Conversation" %>
+
+<div class="ai-layout" data-controller="ai">
+  <%# Sidebar %>
+  <aside class="ai-sidebar">
+    <div class="ai-sidebar__header">
+      <h2 class="ai-sidebar__title">Conversations</h2>
+      <%= link_to "+ New", admin_ai_path, class: "button button--sm" %>
+    </div>
+
+    <ul class="ai-convo-list">
+      <% @conversations.each do |convo| %>
+        <li class="ai-convo-item <%= convo == @conversation ? 'ai-convo-item--active' : '' %>">
+          <%= link_to admin_ai_conversation_path(convo), class: "ai-convo-item__link" do %>
+            <span class="ai-convo-item__title"><%= convo.title.presence || "Untitled" %></span>
+            <span class="ai-convo-item__date"><%= convo.created_at.strftime("%d %b") %></span>
+          <% end %>
+          <%= button_to admin_ai_conversation_path(convo), method: :delete,
+                data: { turbo_confirm: "Delete this conversation?" },
+                class: "ai-convo-item__delete button--icon" do %>
+            &times;
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </aside>
+
+  <%# Main — message thread + composer %>
+  <main class="ai-main">
+    <header class="ai-main__header">
+      <h1 class="ai-main__title"><%= @conversation.title.presence || "Conversation" %></h1>
+    </header>
+
+    <div class="ai-messages" id="ai-messages" data-ai-target="messages">
+      <% @messages.each do |message| %>
+        <%= render "admin/ai/message", message: message %>
+      <% end %>
+    </div>
+
+    <%= render "admin/ai_conversations/composer", conversation: @conversation %>
+  </main>
+</div>

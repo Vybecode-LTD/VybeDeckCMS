@@ -9,6 +9,7 @@ class User < ApplicationRecord
   has_many :album_collaborators, dependent: :destroy
   has_many :albums, through: :album_collaborators
   has_many :track_comments,      foreign_key: :author_id, dependent: :nullify
+  has_many :ai_conversations,    dependent: :destroy
   has_one_attached :avatar
 
   # author (0): can write posts; assigned by editor/admin

@@ -1,0 +1,8 @@
+<%# Shared partial for both ai/index and ai_conversations/show %>
+<div class="ai-message ai-message--<%= message.role %>" id="ai-message-<%= message.id %>">
+  <div class="ai-message__role"><%= message.user? ? "You" : "Claude" %></div>
+  <div class="ai-message__body"><%= simple_format(message.content) %></div>
+  <% if message.assistant? && message.input_tokens %>
+    <div class="ai-message__meta"><%= message.input_tokens %> in / <%= message.output_tokens %> out tokens</div>
+  <% end %>
+</div>

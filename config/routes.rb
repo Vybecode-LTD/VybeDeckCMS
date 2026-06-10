@@ -25,6 +25,13 @@ Rails.application.routes.draw do
     end
     resource :album_download_report, only: :show, controller: :album_download_report
 
+    # Phase 7 AI assistant
+    get    "ai",                            to: "ai#index",                 as: :ai
+    post   "ai/conversations",              to: "ai_conversations#create",  as: :ai_conversations
+    get    "ai/conversations/:id",          to: "ai_conversations#show",    as: :ai_conversation
+    delete "ai/conversations/:id",          to: "ai_conversations#destroy"
+    post   "ai/conversations/:ai_conversation_id/messages", to: "ai_messages#create", as: :ai_conversation_messages
+
     # Phase 5 admin group chat
     get  "chat",                                                       to: "chat#index",            as: :chat
     post "chat/channels",                                              to: "chat#create_channel",   as: :chat_channels

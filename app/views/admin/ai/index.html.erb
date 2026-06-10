@@ -1,0 +1,50 @@
+<% content_for :title, "AI Assistant" %>
+
+<div class="ai-layout" data-controller="ai">
+  <%# Sidebar — conversation history %>
+  <aside class="ai-sidebar">
+    <div class="ai-sidebar__header">
+      <h2 class="ai-sidebar__title">Conversations</h2>
+      <button class="button button--sm" data-action="ai#newConversation">+ New</button>
+    </div>
+
+    <ul class="ai-convo-list">
+      <% @conversations.each do |convo| %>
+        <li class="ai-convo-item <%= convo == @conversation ? 'ai-convo-item--active' : '' %>">
+          <%= link_to admin_ai_conversation_path(convo), class: "ai-convo-item__link" do %>
+            <span class="ai-convo-item__title"><%= convo.title.presence || "Untitled" %></span>
+            <span class="ai-convo-item__date"><%= convo.created_at.strftime("%d %b") %></span>
+          <% end %>
+          <%= button_to admin_ai_conversation_path(convo), method: :delete,
+                data: { turbo_confirm: "Delete this conversation?" },
+                class: "ai-convo-item__delete button--icon" do %>
+            &times;
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </aside>
+
+  <%# Main content area %>
+  <main class="ai-main">
+    <% if @conversation %>
+      <header class="ai-main__header">
+        <h1 class="ai-main__title"><%= @conversation.title.presence || "Conversation" %></h1>
+      </header>
+
+      <div class="ai-messages" id="ai-messages" data-ai-target="messages">
+        <% @messages.each do |message| %>
+          <%= render "admin/ai/message", message: message %>
+        <% end %>
+      </div>
+
+      <%= render "admin/ai_conversations/composer", conversation: @conversation %>
+    <% else %>
+      <div class="ai-welcome">
+        <h1 class="ai-welcome__title">VybeDeck AI Assistant</h1>
+        <p class="ai-welcome__sub">Ask me to help draft content, suggest SEO copy, or answer editorial questions.</p>
+        <%= render "admin/ai_conversations/new_form" %>
+      </div>
+    <% end %>
+  </main>
+</div>

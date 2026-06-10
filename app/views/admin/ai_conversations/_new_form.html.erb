@@ -1,0 +1,16 @@
+<%# New conversation starter form — shown on the welcome screen %>
+<%= form_with url: admin_ai_conversations_path, method: :post, class: "ai-new-form",
+              data: { controller: "ai", action: "submit->ai#submitNewConversation" } do |f| %>
+  <div class="ai-new-form__field">
+    <%= f.text_area :content,
+          placeholder: "Ask anything about content, SEO, album copy…",
+          rows: 4,
+          class: "ai-new-form__textarea",
+          autofocus: true,
+          required: true,
+          data: { ai_target: "newInput" } %>
+  </div>
+  <div class="ai-new-form__actions">
+    <%= f.submit "Send", class: "button", data: { ai_target: "newSubmit" } %>
+  </div>
+<% end %>
