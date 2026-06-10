@@ -9,7 +9,8 @@
   <% if @forums.any? %>
     <div class="forum-list" role="list">
       <% @forums.each do |forum| %>
-        <article class="forum-card" role="listitem">
+        <article class="forum-card" role="listitem"
+                 style="<%= "--forum-accent: #{forum.colour_hex};" if forum.colour_hex.present? %>">
           <div class="forum-card__icon" aria-hidden="true">
             <%= forum.icon.presence || "💬" %>
           </div>

@@ -10,6 +10,9 @@ class Forum < ApplicationRecord
   validates :description, length: { maximum: 500 }, allow_blank: true
   validates :position,    numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :visibility,  presence: true
+  validates :colour_hex,
+            format: { with: /\A#[0-9a-fA-F]{6}\z/, message: "must be a 6-digit hex colour like #e8440a" },
+            allow_blank: true
 
   scope :ordered, -> { order(position: :asc, created_at: :asc) }
 

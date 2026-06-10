@@ -1,0 +1,37 @@
+<% content_for :title, "Notifications — VybeDeck" %>
+
+<main class="shell">
+  <header class="page-header">
+    <h1 class="page-header__title">Notifications</h1>
+  </header>
+
+  <% if @notifications.any? %>
+    <div class="notification-list">
+      <% @notifications.each do |n| %>
+        <div class="notification-item">
+          <div class="notification-item__content">
+            <% if n.notifiable.is_a?(ForumReply) %>
+              <strong><%= n.actor&.byline || "Someone" %></strong>
+              replied to your thread
+              <%= link_to n.notifiable.forum_thread.title,
+                    community_thread_path(n.notifiable.forum_thread.forum.slug,
+                                         n.notifiable.forum_thread.id),
+                    class: "notification-link" %>
+            <% else %>
+              New activity on your account.
+            <% end %>
+          </div>
+          <time class="notification-item__time"
+                datetime="<%= n.created_at.iso8601 %>">
+            <%= time_ago_in_words(n.created_at) %> ago
+          </time>
+        </div>
+      <% end %>
+    </div>
+    <%== pagy_nav(@pagy) if @pagy.pages > 1 %>
+  <% else %>
+    <div class="empty-state">
+      <p>No notifications yet.</p>
+    </div>
+  <% end %>
+</main>

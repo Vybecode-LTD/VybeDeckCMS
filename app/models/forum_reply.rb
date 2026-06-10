@@ -9,6 +9,7 @@ class ForumReply < ApplicationRecord
   scope :reported, -> { where.not(reported_at: nil) }
 
   after_create_commit  :update_thread_last_reply_at
+  after_create_commit  :notify_thread_author
   after_destroy_commit :reset_thread_last_reply_at
 
   def like!(user)
@@ -37,6 +38,12 @@ class ForumReply < ApplicationRecord
   end
 
   private
+
+  def notify_thread_author
+    thread_author = forum_thread.author
+    return if thread_author == author
+    Notification.create!(recipient: thread_author, actor: author, notifiable: self)
+  end
 
   def update_thread_last_reply_at
     forum_thread.update_column(:last_reply_at, created_at)

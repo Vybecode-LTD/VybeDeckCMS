@@ -116,6 +116,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_210002) do
   end
 
   create_table "forums", force: :cascade do |t|
+    t.string "colour_hex"
     t.datetime "created_at", null: false
     t.text "description"
     t.string "icon"
@@ -193,6 +194,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_210002) do
     t.index ["file_type"], name: "index_media_on_file_type"
     t.index ["owner_type", "owner_id"], name: "index_media_on_owner"
     t.index ["uploaded_by_id"], name: "index_media_on_uploaded_by_id"
+  end
+
+  create_table "notifications", force: :cascade do |t|
+    t.bigint "actor_id"
+    t.datetime "created_at", null: false
+    t.bigint "notifiable_id", null: false
+    t.string "notifiable_type", null: false
+    t.datetime "read_at"
+    t.bigint "recipient_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actor_id"], name: "index_notifications_on_actor_id"
+    t.index ["notifiable_type", "notifiable_id"], name: "index_notifications_on_notifiable"
+    t.index ["recipient_id", "read_at"], name: "index_notifications_on_recipient_read"
+    t.index ["recipient_id"], name: "index_notifications_on_recipient_id"
   end
 
   create_table "orders", force: :cascade do |t|
@@ -363,6 +378,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_210002) do
   add_foreign_key "line_items", "prices"
   add_foreign_key "line_items", "products"
   add_foreign_key "media", "users", column: "uploaded_by_id"
+  add_foreign_key "notifications", "users", column: "actor_id"
+  add_foreign_key "notifications", "users", column: "recipient_id"
   add_foreign_key "orders", "users"
   add_foreign_key "pages", "pages", column: "parent_id"
   add_foreign_key "posts", "series"

@@ -21,6 +21,12 @@
       <% end %>
     </nav>
 
+    <%# Notification bell — authenticated users only %>
+    <% if Current.user %>
+      <%= render "shared/notification_bell",
+            count: Current.user.notifications.unread.count %>
+    <% end %>
+
     <%# Cart toggle — opens the cart drawer %>
     <button class="cart-toggle"
             data-action="click->cart#open"

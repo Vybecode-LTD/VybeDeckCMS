@@ -41,6 +41,14 @@
       <% if reply.reported? && Current.user&.admin_accessible? %>
         <span class="reported-badge">⚑ Reported</span>
       <% end %>
+
+      <% if Current.user && policy(reply).destroy? %>
+        <%= button_to "Delete",
+              community_thread_reply_path(forum.slug, thread.id, reply.id),
+              method: :delete,
+              class: "reply-delete-btn",
+              data: { turbo_confirm: "Delete this reply? This cannot be undone." } %>
+      <% end %>
     </div>
   </div>
 </article>

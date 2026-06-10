@@ -1,8 +1,9 @@
 class User < ApplicationRecord
   has_secure_password
-  has_many :sessions,  dependent: :destroy
-  has_many :posts,     foreign_key: :author_id, dependent: :nullify
-  has_many :orders,    dependent: :nullify
+  has_many :sessions,       dependent: :destroy
+  has_many :posts,          foreign_key: :author_id, dependent: :nullify
+  has_many :orders,         dependent: :nullify
+  has_many :notifications,  foreign_key: :recipient_id, dependent: :destroy
   has_one_attached :avatar
 
   # author (0): can write posts; assigned by editor/admin

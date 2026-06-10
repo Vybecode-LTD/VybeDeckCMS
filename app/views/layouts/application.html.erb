@@ -40,6 +40,10 @@
   </head>
 
   <body data-controller="cart" data-action="keydown->cart#keydown@window">
+    <%# Turbo Stream subscription for real-time notification bell updates %>
+    <% if Current.user %>
+      <%= turbo_stream_from "notifications_user_#{Current.user.id}" %>
+    <% end %>
     <%# Impersonation warning — only visible when an admin is browsing as another user %>
     <% if impersonating? %>
       <div class="impersonation-banner">

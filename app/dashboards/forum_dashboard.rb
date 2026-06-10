@@ -11,6 +11,7 @@ class ForumDashboard < Administrate::BaseDashboard
                   ),
     position:     Field::Number,
     icon:         Field::String,
+    colour_hex:   Field::String,
     forum_threads: Field::HasMany,
     created_at:   Field::DateTime,
     updated_at:   Field::DateTime,
@@ -19,11 +20,11 @@ class ForumDashboard < Administrate::BaseDashboard
   COLLECTION_ATTRIBUTES = %i[name visibility position created_at].freeze
 
   SHOW_PAGE_ATTRIBUTES = %i[
-    id name slug description visibility position icon
+    id name slug description visibility position icon colour_hex
     forum_threads created_at updated_at
   ].freeze
 
-  FORM_ATTRIBUTES = %i[name description visibility position icon].freeze
+  FORM_ATTRIBUTES = %i[name description visibility position icon colour_hex].freeze
 
   COLLECTION_FILTERS = {}.freeze
 

@@ -1,7 +1,7 @@
 <% content_for :title, "#{@forum.name} — Community — VybeDeck" %>
 
 <main class="shell community-page">
-  <header class="page-header">
+  <header class="page-header" style="<%= "--forum-accent: #{@forum.colour_hex};" if @forum.colour_hex.present? %>">
     <div class="page-header__back">
       <%= link_to "← Community", community_path, class: "back-link" %>
     </div>

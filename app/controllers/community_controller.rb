@@ -1,9 +1,9 @@
 class CommunityController < ApplicationController
   allow_unauthenticated_access
   before_action :resume_session
-  before_action :require_authentication, only: %i[new_thread create_thread create_reply like_reply report_reply]
+  before_action :require_authentication, only: %i[new_thread create_thread create_reply destroy_reply like_reply report_reply]
   before_action :set_forum,  except: :index
-  before_action :set_thread, only: %i[thread create_reply like_reply report_reply]
+  before_action :set_thread, only: %i[thread create_reply destroy_reply like_reply report_reply]
 
   # GET /community
   def index
@@ -74,6 +74,17 @@ class CommunityController < ApplicationController
           )
         end
       end
+    end
+  end
+
+  # DELETE /community/:slug/:id/replies/:reply_id
+  def destroy_reply
+    @reply = @thread.forum_replies.find(params[:reply_id])
+    authorize @reply, :destroy?
+    @reply.destroy
+    respond_to do |format|
+      format.turbo_stream { render turbo_stream: turbo_stream.remove("reply-#{@reply.id}") }
+      format.html { redirect_to community_thread_path(@forum.slug, @thread), notice: "Reply deleted." }
     end
   end
 
