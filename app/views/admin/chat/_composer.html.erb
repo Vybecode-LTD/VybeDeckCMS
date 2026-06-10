@@ -1,0 +1,46 @@
+<div class="chat-composer" data-chat-target="composer">
+  <%= form_with url: admin_chat_channel_messages_path(channel_id: channel.id),
+        data: { chat_target: "form", action: "submit->chat#sendMessage", turbo: false },
+        class: "chat-composer__form" do |f| %>
+    <%= f.text_area :body,
+          name: "chat_message[body]",
+          class: "chat-composer__input",
+          placeholder: "Message ##{channel.name}",
+          rows: 1,
+          data: {
+            chat_target: "input",
+            action: "keydown->chat#handleKeydown"
+          },
+          autofocus: true %>
+
+    <div class="chat-composer__actions">
+      <%= f.label :attachment, class: "chat-composer__attach-label", title: "Attach file" do %>
+        &#128206;
+        <%= f.file_field :attachment, name: "chat_message[attachment]",
+              class: "chat-composer__file-input",
+              data: { action: "change->chat#showFilename" } %>
+      <% end %>
+      <span class="chat-composer__filename" data-chat-target="filename"></span>
+      <%= f.submit "Send", class: "button button--sm chat-composer__send" %>
+    </div>
+  <% end %>
+
+  <%# Edit form (hidden, swapped in by Stimulus) %>
+  <div class="chat-edit-form" id="chat-edit-form" style="display:none"
+       data-chat-target="editForm">
+    <%= form_with url: "#", method: :patch,
+          data: { chat_target: "editFormEl", turbo: false },
+          class: "chat-composer__form" do |f| %>
+      <%= f.text_area :body,
+            name: "chat_message[body]",
+            class: "chat-composer__input",
+            rows: 1,
+            data: { chat_target: "editInput" } %>
+      <div class="chat-composer__actions">
+        <%= f.submit "Save", class: "button button--sm" %>
+        <button type="button" class="button button--alt button--sm"
+                data-action="chat#cancelEdit">Cancel</button>
+      </div>
+    <% end %>
+  </div>
+</div>

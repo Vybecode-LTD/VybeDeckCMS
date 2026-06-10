@@ -1,0 +1,11 @@
+<% cu = local_assigns.fetch(:current_user, nil) %>
+<div id="message-reactions-<%= message.id %>" class="chat-reactions">
+  <% message.chat_reactions.group_by(&:emoji).each do |emoji, reactions| %>
+    <% own = cu && reactions.any? { |r| r.user_id == cu.id } %>
+    <%= button_to "#{emoji} #{reactions.count}",
+          admin_chat_reaction_path(channel_id: message.chat_channel_id, message_id: message.id),
+          params: { chat_reaction: { emoji: emoji } },
+          class: "chat-reaction-chip #{"chat-reaction-chip--own" if own}",
+          title: reactions.map { |r| r.user.byline }.join(", ") %>
+  <% end %>
+</div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_09_210002) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_09_210300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -78,6 +78,41 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_210002) do
     t.string "slug"
     t.datetime "updated_at", null: false
     t.index ["slug"], name: "index_categories_on_slug", unique: true
+  end
+
+  create_table "chat_channels", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.text "description"
+    t.boolean "is_private", default: false, null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_chat_channels_on_created_by_id"
+    t.index ["name"], name: "index_chat_channels_on_name", unique: true
+  end
+
+  create_table "chat_messages", force: :cascade do |t|
+    t.bigint "author_id", null: false
+    t.text "body"
+    t.bigint "chat_channel_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "deleted_at"
+    t.datetime "edited_at"
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_chat_messages_on_author_id"
+    t.index ["chat_channel_id", "created_at"], name: "index_chat_messages_on_channel_and_time"
+    t.index ["chat_channel_id"], name: "index_chat_messages_on_chat_channel_id"
+  end
+
+  create_table "chat_reactions", force: :cascade do |t|
+    t.bigint "chat_message_id", null: false
+    t.datetime "created_at", null: false
+    t.string "emoji", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["chat_message_id", "user_id", "emoji"], name: "index_chat_reactions_unique", unique: true
+    t.index ["chat_message_id"], name: "index_chat_reactions_on_chat_message_id"
+    t.index ["user_id"], name: "index_chat_reactions_on_user_id"
   end
 
   create_table "forum_replies", force: :cascade do |t|
@@ -367,6 +402,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_210002) do
   add_foreign_key "cart_items", "prices"
   add_foreign_key "cart_items", "products"
   add_foreign_key "carts", "users"
+  add_foreign_key "chat_channels", "users", column: "created_by_id"
+  add_foreign_key "chat_messages", "chat_channels"
+  add_foreign_key "chat_messages", "users", column: "author_id"
+  add_foreign_key "chat_reactions", "chat_messages"
+  add_foreign_key "chat_reactions", "users"
   add_foreign_key "forum_replies", "forum_threads"
   add_foreign_key "forum_replies", "users", column: "author_id"
   add_foreign_key "forum_threads", "forums"

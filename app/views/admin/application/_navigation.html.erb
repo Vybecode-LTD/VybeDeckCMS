@@ -20,6 +20,8 @@
           class: "navigation__link navigation__link--#{ request.path.start_with?(admin_revenue_path) ? "active" : "inactive" }" %>
     <%= link_to "Moderation", admin_moderation_index_path,
           class: "navigation__link navigation__link--#{ request.path.start_with?(admin_moderation_index_path) ? "active" : "inactive" }" %>
+    <%= link_to "Chat", admin_chat_path,
+          class: "navigation__link navigation__link--#{ request.path.start_with?(admin_chat_path) ? "active" : "inactive" }" %>
   <% end %>
 
   <% if current_user&.admin? %>

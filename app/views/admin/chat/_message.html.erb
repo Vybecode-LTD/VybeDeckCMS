@@ -1,0 +1,78 @@
+<% cu = local_assigns.fetch(:current_user, nil) %>
+<% can_manage = cu && (message.author == cu || cu.admin?) %>
+
+<div id="chat-message-<%= message.id %>" class="chat-message <%= "chat-message--deleted" if message.deleted? %> <%= "chat-message--own" if cu && message.author == cu %>">
+  <% unless message.deleted? %>
+    <div class="chat-message__avatar">
+      <% if message.author.avatar.attached? %>
+        <%= image_tag message.author.avatar, class: "chat-message__avatar-img", alt: message.author.byline %>
+      <% else %>
+        <span class="chat-message__avatar-placeholder"><%= message.author.byline.first.upcase %></span>
+      <% end %>
+    </div>
+
+    <div class="chat-message__body">
+      <div class="chat-message__meta">
+        <strong class="chat-message__author"><%= message.author.byline %></strong>
+        <time class="chat-message__time" datetime="<%= message.created_at.iso8601 %>"
+              title="<%= message.created_at.strftime("%d %b %Y %H:%M") %>">
+          <%= message.created_at.strftime("%H:%M") %>
+        </time>
+        <% if message.edited_at %>
+          <span class="chat-message__edited">(edited)</span>
+        <% end %>
+      </div>
+
+      <p class="chat-message__text"><%= message.body %></p>
+
+      <% if message.attachment.attached? %>
+        <div class="chat-message__attachment">
+          <% if message.attachment.content_type.start_with?("image/") %>
+            <%= image_tag message.attachment, class: "chat-message__image" %>
+          <% else %>
+            <%= link_to message.attachment.filename.to_s,
+                  rails_blob_path(message.attachment, disposition: "attachment"),
+                  class: "chat-message__file-link" %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%= render "admin/chat/reactions", message: message, current_user: cu %>
+
+      <% if cu %>
+        <div class="chat-message__actions">
+          <div class="chat-emoji-picker" data-controller="emoji-picker">
+            <button type="button" class="chat-action-btn" title="React"
+                    data-action="emoji-picker#toggle">&#128578;</button>
+            <div class="chat-emoji-picker__panel" data-emoji-picker-target="panel" style="display:none">
+              <% %w[👍 ❤️ 😂 🔥 👀 ✅ 🎉 💯].each do |emoji| %>
+                <%= button_to emoji,
+                      admin_chat_reaction_path(channel_id: message.chat_channel_id, message_id: message.id),
+                      params: { chat_reaction: { emoji: emoji } },
+                      class: "chat-emoji-btn" %>
+              <% end %>
+            </div>
+          </div>
+
+          <% if can_manage %>
+            <button type="button" class="chat-action-btn"
+                    data-action="chat#editMessage"
+                    data-message-id="<%= message.id %>"
+                    data-message-body="<%= j(message.body) %>"
+                    title="Edit">&#9998;</button>
+            <%= button_to "&#128465;".html_safe,
+                  admin_chat_channel_message_path(channel_id: message.chat_channel_id, id: message.id),
+                  method: :delete,
+                  class: "chat-action-btn chat-action-btn--danger",
+                  title: "Delete",
+                  data: { turbo_confirm: "Delete this message?" } %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="chat-message__deleted-body">
+      <em class="chat-message__deleted-text">This message was deleted.</em>
+    </div>
+  <% end %>
+</div>

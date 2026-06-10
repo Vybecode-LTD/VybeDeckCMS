@@ -15,6 +15,16 @@ Rails.application.routes.draw do
       end
     end
     resources :forum_replies, only: %i[index show destroy]
+    # Phase 5 admin group chat
+    get  "chat",                                                       to: "chat#index",            as: :chat
+    post "chat/channels",                                              to: "chat#create_channel",   as: :chat_channels
+    get  "chat/:id",                                                   to: "chat#show",             as: :chat_channel
+    post "chat/:channel_id/messages",                                  to: "chat_messages#create",  as: :chat_channel_messages
+    patch "chat/:channel_id/messages/:id",                             to: "chat_messages#update",  as: :chat_channel_message
+    delete "chat/:channel_id/messages/:id",                            to: "chat_messages#destroy"
+    post "chat/:channel_id/messages/:message_id/reactions",            to: "chat_reactions#create", as: :chat_reaction
+    delete "chat/:channel_id/messages/:message_id/reactions/:emoji",   to: "chat_reactions#destroy"
+
     # Phase 4.2 moderation queue
     resources :moderation, only: :index do
       member do

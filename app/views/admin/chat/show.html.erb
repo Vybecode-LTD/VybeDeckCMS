@@ -1,0 +1,94 @@
+<% content_for :title, @channel ? @channel.name : "Chat" %>
+
+<div class="chat-layout" data-controller="chat">
+  <%# Left sidebar: channel list %>
+  <aside class="chat-sidebar">
+    <div class="chat-sidebar__header">
+      <h2 class="chat-sidebar__title">Channels</h2>
+      <% if current_user.admin? %>
+        <%= link_to "+", "#new-channel-modal",
+              class: "chat-sidebar__add",
+              aria: { label: "New channel" } %>
+      <% end %>
+    </div>
+
+    <nav class="chat-sidebar__channels">
+      <% @channels.each do |ch| %>
+        <%= link_to admin_chat_channel_path(ch),
+              class: "chat-sidebar__channel #{"chat-sidebar__channel--active" if @channel&.id == ch.id}",
+              data: { turbo_frame: "chat-main" } do %>
+          <span class="chat-sidebar__channel-name"># <%= ch.name %></span>
+          <% if ch.is_private %>
+            <span class="chat-sidebar__lock" aria-label="Private" title="Private">&#128274;</span>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <% if @channels.empty? %>
+        <p class="chat-sidebar__empty">No channels yet.</p>
+      <% end %>
+    </nav>
+
+    <% if current_user.admin? %>
+      <div class="chat-sidebar__footer">
+        <%= button_to "New Channel", "#",
+              class: "button button--alt button--sm",
+              id: "open-channel-form",
+              data: { action: "chat#toggleChannelForm" } %>
+      </div>
+    <% end %>
+  </aside>
+
+  <%# Main panel %>
+  <%= turbo_frame_tag "chat-main", class: "chat-main" do %>
+    <% if @channel %>
+      <%= turbo_stream_from "chat_channel_#{@channel.id}" %>
+
+      <header class="chat-main__header">
+        <h1 class="chat-main__title"># <%= @channel.name %></h1>
+        <% if @channel.description.present? %>
+          <p class="chat-main__desc"><%= @channel.description %></p>
+        <% end %>
+      </header>
+
+      <div class="chat-messages" id="chat-messages"
+           data-chat-target="messages">
+        <% @messages.each do |message| %>
+          <%= render "admin/chat/message", message: message, current_user: current_user %>
+        <% end %>
+      </div>
+
+      <%# Composer %>
+      <%= render "admin/chat/composer", channel: @channel %>
+    <% else %>
+      <div class="chat-empty-state">
+        <p>No channels yet.<% if current_user.admin? %> Create one to get started.<% end %></p>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%# New channel form (admin only, hidden by default) %>
+  <% if current_user.admin? %>
+    <div class="chat-channel-form" id="new-channel-form"
+         style="display:none" data-chat-target="channelForm">
+      <h3>New Channel</h3>
+      <%= form_with url: admin_chat_channels_path, method: :post, data: { turbo: false } do |f| %>
+        <div class="field">
+          <%= f.label :name %>
+          <%= f.text_field :name, class: "field__input", required: true %>
+        </div>
+        <div class="field">
+          <%= f.label :description %>
+          <%= f.text_area :description, class: "field__input", rows: 2 %>
+        </div>
+        <div class="field field--checkbox">
+          <%= f.check_box :is_private %>
+          <%= f.label :is_private, "Private (admin only)" %>
+        </div>
+        <%= f.submit "Create Channel", class: "button" %>
+        <%= button_tag "Cancel", type: "button", class: "button button--alt",
+              data: { action: "chat#toggleChannelForm" } %>
+      <% end %>
+    </div>
+  <% end %>
+</div>
