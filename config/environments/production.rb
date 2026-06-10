@@ -49,6 +49,9 @@ Rails.application.configure do
   config.active_job.queue_adapter = :solid_queue
   config.solid_queue.connects_to = { database: { writing: :queue } }
 
+  # Always raise delivery errors so Solid Queue marks the job failed rather
+  # than silently completing with no email sent.
+  config.action_mailer.raise_delivery_errors = true
   config.action_mailer.default_url_options = { host: ENV.fetch("RAILS_HOST", "localhost") }
 
   # SMTP is enabled when SMTP_ADDRESS is set as a Railway env var.
@@ -56,7 +59,6 @@ Rails.application.configure do
   # Optional vars: SMTP_PORT (default 587), ACTION_MAILER_FROM
   if ENV["SMTP_ADDRESS"].present?
     config.action_mailer.delivery_method = :smtp
-    config.action_mailer.raise_delivery_errors = true
     config.action_mailer.smtp_settings = {
       address: ENV.fetch("SMTP_ADDRESS"),
       port: ENV.fetch("SMTP_PORT", "587").to_i,

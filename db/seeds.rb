@@ -19,6 +19,12 @@ if admin.previously_new_record? && admin_password == "changeme" && Rails.env.pro
        "Set ADMIN_PASSWORD and ADMIN_EMAIL env vars and redeploy. ***\n\n"
 end
 
+# Verify any existing admin-role accounts that somehow got through without
+# email verification (e.g. created before this guard existed).
+User.where(role: :admin, email_verified_at: nil).find_each do |u|
+  u.update_columns(email_verified_at: Time.current)
+end
+
 # ── Site settings ─────────────────────────────────────────────────────────────
 SiteSetting.find_or_create_by!(key: "invite_only") do |s|
   s.value       = "false"
