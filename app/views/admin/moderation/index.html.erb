@@ -1,0 +1,58 @@
+<% content_for :title, "Moderation Queue" %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title">Moderation Queue</h1>
+</header>
+
+<section class="main-content__body">
+  <% if @reported_replies.any? %>
+    <p class="moderation-count"><%= pluralize(@pagy.count, "reported reply") %></p>
+
+    <div class="moderation-queue">
+      <% @reported_replies.each do |reply| %>
+        <div class="moderation-row">
+          <div class="moderation-row__meta">
+            <strong><%= reply.author.byline %></strong>
+            in
+            <%= link_to reply.forum_thread.title,
+                  community_thread_path(reply.forum_thread.forum.slug, reply.forum_thread.id),
+                  target: "_blank" %>
+            &middot;
+            <time datetime="<%= reply.reported_at.iso8601 %>">
+              Reported <%= time_ago_in_words(reply.reported_at) %> ago
+            </time>
+          </div>
+
+          <% if reply.report_reason.present? %>
+            <p class="moderation-row__reason"><%= reply.report_reason %></p>
+          <% end %>
+
+          <div class="moderation-row__body trix-content">
+            <%= reply.body %>
+          </div>
+
+          <div class="moderation-row__actions">
+            <%= button_to "Approve (keep reply)",
+                  approve_admin_moderation_path(reply),
+                  method: :patch,
+                  class: "button button--alt",
+                  data: { turbo_confirm: "Clear this report and keep the reply?" } %>
+            <%= button_to "Remove reply",
+                  remove_admin_moderation_path(reply),
+                  method: :delete,
+                  class: "button",
+                  data: { turbo_confirm: "Permanently delete this reply? This cannot be undone." } %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <% if @pagy.pages > 1 %>
+      <div class="pagination">
+        <%= pagy_nav(@pagy) %>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="moderation-empty">No reported replies. The community is well-behaved.</p>
+  <% end %>
+</section>

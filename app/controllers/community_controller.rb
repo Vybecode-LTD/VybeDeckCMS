@@ -1,9 +1,9 @@
 class CommunityController < ApplicationController
   allow_unauthenticated_access
   before_action :resume_session
-  before_action :require_authentication, only: %i[new_thread create_thread create_reply]
+  before_action :require_authentication, only: %i[new_thread create_thread create_reply like_reply report_reply]
   before_action :set_forum,  except: :index
-  before_action :set_thread, only: %i[thread create_reply]
+  before_action :set_thread, only: %i[thread create_reply like_reply report_reply]
 
   # GET /community
   def index
@@ -74,6 +74,38 @@ class CommunityController < ApplicationController
           )
         end
       end
+    end
+  end
+
+  # POST /community/:slug/:id/replies/:reply_id/like
+  def like_reply
+    @reply = @thread.forum_replies.find(params[:reply_id])
+    authorize @reply, :like?
+
+    existing = Like.find_by(user: Current.user, likeable: @reply)
+    if existing
+      existing.destroy
+    else
+      Like.create!(user: Current.user, likeable: @reply)
+    end
+    @reply.reload
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to community_thread_path(@forum.slug, @thread) }
+    end
+  end
+
+  # POST /community/:slug/:id/replies/:reply_id/report
+  def report_reply
+    @reply = @thread.forum_replies.find(params[:reply_id])
+    authorize @reply, :report?
+
+    @reply.report!(params[:report_reason].to_s.strip)
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to community_thread_path(@forum.slug, @thread), notice: "Reply reported. Thank you." }
     end
   end
 

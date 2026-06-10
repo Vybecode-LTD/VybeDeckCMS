@@ -1,3 +1,4 @@
+<%# Locals: reply, forum, thread %>
 <article class="forum-post" id="reply-<%= reply.id %>">
   <div class="forum-post__avatar">
     <span class="forum-post__initials"><%= reply.author.byline.first.upcase %></span>
@@ -15,6 +16,31 @@
     <div class="forum-post__body trix-content">
       <%= reply.body %>
     </div>
-    <%# Phase 4.3 will add per-reply moderation controls here %>
+    <div class="forum-post__actions">
+      <%= render "community/like_button", reply: reply, forum: forum, thread: thread %>
+
+      <% if Current.user && Current.user != reply.author %>
+        <% unless reply.reported? %>
+          <div id="report-reply-<%= reply.id %>" class="report-wrap">
+            <details class="report-details">
+              <summary class="report-link">Report</summary>
+              <div class="report-form-inner">
+                <%= form_with url: report_community_reply_path(forum.slug, thread.id, reply.id),
+                              method: :post, class: "report-form" do |f| %>
+                  <%= f.text_area :report_reason,
+                        placeholder: "Briefly describe the issue…",
+                        rows: 2, class: "report-textarea" %>
+                  <%= f.submit "Submit Report", class: "report-submit-btn" %>
+                <% end %>
+              </div>
+            </details>
+          </div>
+        <% end %>
+      <% end %>
+
+      <% if reply.reported? && Current.user&.admin_accessible? %>
+        <span class="reported-badge">⚑ Reported</span>
+      <% end %>
+    </div>
   </div>
 </article>

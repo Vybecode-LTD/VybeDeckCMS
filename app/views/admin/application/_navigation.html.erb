@@ -7,16 +7,19 @@
   <%= link_to(t("administrate.navigation.back_to_app"), root_url, class: "button button--alt button--nav") if defined?(root_url) %>
 
   <% Administrate::Namespace.new(namespace).resources_with_index_route.each do |resource| %>
+    <% resource_model = begin; model_from_resource(resource); rescue NameError; nil; end %>
     <%= link_to(
       display_resource_name(resource),
       resource_index_route(resource),
       class: "navigation__link navigation__link--#{nav_link_state(resource)}"
-    ) if accessible_action?(model_from_resource(resource), :index) %>
+    ) if resource_model && accessible_action?(resource_model, :index) %>
   <% end %>
 
   <% if current_user&.admin_accessible? %>
     <%= link_to "Revenue", admin_revenue_path,
           class: "navigation__link navigation__link--#{ request.path.start_with?(admin_revenue_path) ? "active" : "inactive" }" %>
+    <%= link_to "Moderation", admin_moderation_index_path,
+          class: "navigation__link navigation__link--#{ request.path.start_with?(admin_moderation_index_path) ? "active" : "inactive" }" %>
   <% end %>
 
   <% if current_user&.admin? %>

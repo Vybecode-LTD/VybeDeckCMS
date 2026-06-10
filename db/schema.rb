@@ -86,11 +86,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_210002) do
     t.bigint "forum_thread_id", null: false
     t.boolean "is_solution", default: false, null: false
     t.integer "likes_count", default: 0, null: false
+    t.text "report_reason"
+    t.datetime "reported_at"
     t.datetime "updated_at", null: false
     t.index ["author_id"], name: "index_forum_replies_on_author_id"
     t.index ["forum_thread_id", "created_at"], name: "index_forum_replies_on_forum_thread_id_and_created_at"
     t.index ["forum_thread_id"], name: "index_forum_replies_on_forum_thread_id"
     t.index ["is_solution"], name: "index_forum_replies_on_is_solution"
+    t.index ["reported_at"], name: "index_forum_replies_on_reported_at"
   end
 
   create_table "forum_threads", force: :cascade do |t|
@@ -148,6 +151,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_210002) do
     t.index ["impersonated_id"], name: "index_impersonation_logs_on_impersonated_id"
     t.index ["impersonator_id"], name: "index_impersonation_logs_on_impersonator_id"
     t.index ["impersonator_session_id"], name: "index_impersonation_logs_on_impersonator_session_id"
+  end
+
+  create_table "likes", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "likeable_id", null: false
+    t.string "likeable_type", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["likeable_type", "likeable_id"], name: "index_likes_on_likeable"
+    t.index ["user_id", "likeable_type", "likeable_id"], name: "index_likes_on_user_and_likeable", unique: true
+    t.index ["user_id"], name: "index_likes_on_user_id"
   end
 
   create_table "line_items", force: :cascade do |t|
@@ -344,6 +358,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_210002) do
   add_foreign_key "forum_threads", "users", column: "author_id"
   add_foreign_key "impersonation_logs", "users", column: "impersonated_id"
   add_foreign_key "impersonation_logs", "users", column: "impersonator_id"
+  add_foreign_key "likes", "users"
   add_foreign_key "line_items", "orders"
   add_foreign_key "line_items", "prices"
   add_foreign_key "line_items", "products"

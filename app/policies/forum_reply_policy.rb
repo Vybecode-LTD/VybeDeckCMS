@@ -19,6 +19,22 @@ class ForumReplyPolicy < ApplicationPolicy
     record.author == user || admin_accessible?
   end
 
+  # Any authenticated user may like a reply.
+  def like?
+    user.present?
+  end
+
+  # Any authenticated user may report a reply that is not their own.
+  def report?
+    return false unless user
+    record.author != user
+  end
+
+  # Editor/admin may clear a report or remove the reply via the moderation queue.
+  def approve?
+    admin_accessible?
+  end
+
   class Scope < ApplicationPolicy::Scope
     def resolve
       scope.all

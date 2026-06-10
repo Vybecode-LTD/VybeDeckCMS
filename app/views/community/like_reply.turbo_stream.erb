@@ -1,0 +1,3 @@
+<%= turbo_stream.replace "like-reply-#{@reply.id}" do %>
+  <%= render "community/like_button", reply: @reply, forum: @forum, thread: @thread %>
+<% end %>

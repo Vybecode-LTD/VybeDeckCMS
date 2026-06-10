@@ -1,0 +1,15 @@
+<%# Locals: reply, forum, thread %>
+<% liked = Current.user && Like.exists?(user: Current.user, likeable: reply) %>
+<div id="like-reply-<%= reply.id %>" class="like-wrap">
+  <% if Current.user %>
+    <%= button_to liked ? "♥ Unlike" : "♡ Like",
+          like_community_reply_path(forum.slug, thread.id, reply.id),
+          method: :post,
+          class: "like-btn#{ " like-btn--active" if liked }" %>
+  <% else %>
+    <button class="like-btn" disabled aria-label="Sign in to like">♡ Like</button>
+  <% end %>
+  <% if reply.likes_count.positive? %>
+    <span class="like-count"><%= reply.likes_count %></span>
+  <% end %>
+</div>

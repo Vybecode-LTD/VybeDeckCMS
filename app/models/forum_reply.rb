@@ -2,11 +2,39 @@ class ForumReply < ApplicationRecord
   belongs_to :forum_thread, counter_cache: :reply_count
   belongs_to :author, class_name: "User"
   has_rich_text :body
+  has_many :likes, as: :likeable, dependent: :destroy
 
   validates :body, presence: true
 
+  scope :reported, -> { where.not(reported_at: nil) }
+
   after_create_commit  :update_thread_last_reply_at
   after_destroy_commit :reset_thread_last_reply_at
+
+  def like!(user)
+    likes.find_or_create_by!(user: user)
+  end
+
+  def unlike!(user)
+    likes.find_by(user: user)&.destroy
+  end
+
+  def liked_by?(user)
+    return false unless user
+    likes.exists?(user: user)
+  end
+
+  def report!(reason)
+    update!(reported_at: Time.current, report_reason: reason.presence)
+  end
+
+  def clear_report!
+    update!(reported_at: nil, report_reason: nil)
+  end
+
+  def reported?
+    reported_at.present?
+  end
 
   private
 

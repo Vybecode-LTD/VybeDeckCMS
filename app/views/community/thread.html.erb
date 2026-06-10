@@ -43,7 +43,8 @@
   <%# Replies %>
   <% if @replies.any? %>
     <section class="reply-list" id="replies" aria-label="Replies">
-      <%= render partial: "community/reply", collection: @replies, as: :reply %>
+      <%= render partial: "community/reply", collection: @replies, as: :reply,
+                 locals: { forum: @forum, thread: @thread } %>
     </section>
   <% end %>
 

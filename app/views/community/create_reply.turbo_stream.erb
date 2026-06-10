@@ -1,6 +1,6 @@
 <%# Append the new reply to the list (create the replies section if this is the first reply) %>
 <%= turbo_stream.append "replies" do %>
-  <%= render "community/reply", reply: @reply %>
+  <%= render "community/reply", reply: @reply, forum: @forum, thread: @thread %>
 <% end %>
 
 <%# Replace the reply form with a fresh empty one %>

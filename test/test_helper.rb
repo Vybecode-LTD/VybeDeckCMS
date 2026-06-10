@@ -7,10 +7,10 @@ require_relative "test_helpers/stripe_helper"
 module ActiveSupport
   class TestCase
     # Run tests in parallel with specified workers.
-    # Threshold raised to 200 — thread-based parallelism causes PG FK deadlocks
-    # when fixture loading concurrency is high. Keep single-process until the
-    # suite is large enough to justify it.
-    parallelize(workers: :number_of_processors, with: :threads, threshold: 500)
+    # Threshold kept high — thread-based parallelism causes PG FK deadlocks on
+    # local Postgres when fixture loading concurrency is high. Raise when the
+    # suite grows large enough to justify tuning max_connections instead.
+    parallelize(workers: :number_of_processors, with: :threads, threshold: 1200)
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all

@@ -15,6 +15,13 @@ Rails.application.routes.draw do
       end
     end
     resources :forum_replies, only: %i[index show destroy]
+    # Phase 4.2 moderation queue
+    resources :moderation, only: :index do
+      member do
+        patch  :approve
+        delete :remove
+      end
+    end
     # Phase 3 commerce
     resources :products
     resources :orders, only: %i[index show] do
@@ -107,8 +114,10 @@ Rails.application.routes.draw do
   get  "/community/:slug/new",             to: "community#new_thread",    as: :new_community_thread
   post "/community/:slug/threads",         to: "community#create_thread", as: :community_threads
   get  "/community/:slug/:id",             to: "community#thread",        as: :community_thread
-  post "/community/:slug/:id/replies",     to: "community#create_reply",  as: :community_thread_replies
-  get  "/community/:slug",                 to: "community#forum",         as: :community_forum
+  post "/community/:slug/:id/replies",                    to: "community#create_reply",  as: :community_thread_replies
+  post "/community/:slug/:id/replies/:reply_id/like",   to: "community#like_reply",    as: :like_community_reply
+  post "/community/:slug/:id/replies/:reply_id/report", to: "community#report_reply",  as: :report_community_reply
+  get  "/community/:slug",                              to: "community#forum",         as: :community_forum
 
   # Page catch-all must be last so it does not swallow /blog, /topics, etc.
   get "/*id", to: "pages#show", as: :page
