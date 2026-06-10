@@ -3,6 +3,10 @@
 # Idempotent (if_not_exists: true) so it is safe to run against a database
 # that already has these tables.
 #
+# Uses timestamp 20240101000001 to avoid collision with the Solid Queue
+# migration (20240101000000) — all databases share the same schema_migrations
+# table when they use the same DATABASE_URL.
+#
 # Matches db/cache_schema.rb version 1.
 
 class InstallSolidCache < ActiveRecord::Migration[8.0]
