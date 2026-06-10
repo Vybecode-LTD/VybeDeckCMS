@@ -25,6 +25,14 @@ Rails.application.routes.draw do
     end
     resource :album_download_report, only: :show, controller: :album_download_report
 
+    # Phase 8 plugins
+    resources :plugins, only: %i[index create destroy] do
+      member do
+        patch :activate
+        patch :deactivate
+      end
+    end
+
     # Phase 7 AI assistant
     get    "ai",                            to: "ai#index",                 as: :ai
     post   "ai/conversations",              to: "ai_conversations#create",  as: :ai_conversations

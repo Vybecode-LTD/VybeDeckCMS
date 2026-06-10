@@ -1,0 +1,81 @@
+<% content_for :title, "Plugins" %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title">Plugins</h1>
+</header>
+
+<section class="main-content__body">
+
+  <%# Installed plugins %>
+  <% if @plugins.any? %>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Plugin</th>
+          <th>Version</th>
+          <th>Author</th>
+          <th>Status</th>
+          <th>Loaded</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @plugins.each do |plugin| %>
+          <tr>
+            <td>
+              <strong><%= plugin.name %></strong>
+              <% if plugin.description.present? %>
+                <br><span class="admin-muted"><%= plugin.description.truncate(80) %></span>
+              <% end %>
+            </td>
+            <td><%= plugin.version %></td>
+            <td><%= plugin.author.presence || "—" %></td>
+            <td>
+              <span class="status-pill status-pill--<%= plugin.status %>"><%= plugin.status %></span>
+            </td>
+            <td><%= plugin.loaded? ? "✓" : "✗" %></td>
+            <td class="admin-table__actions">
+              <% if plugin.active? %>
+                <%= button_to "Deactivate", deactivate_admin_plugin_path(plugin), method: :patch,
+                      class: "button button--sm button--alt",
+                      data: { turbo_confirm: "Deactivate '#{plugin.name}'?" } %>
+              <% elsif plugin.installed? || plugin.disabled? %>
+                <%= button_to "Activate", activate_admin_plugin_path(plugin), method: :patch,
+                      class: "button button--sm" %>
+              <% end %>
+              <%= button_to "Remove", admin_plugin_path(plugin), method: :delete,
+                    class: "button button--sm button--danger",
+                    data: { turbo_confirm: "Uninstall '#{plugin.name}'? This cannot be undone." } %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="admin-empty">No plugins installed yet.</p>
+  <% end %>
+
+  <%# Available but unregistered plugins %>
+  <% if @loadable_plugins.any? %>
+    <hr class="admin-divider">
+    <h2 class="admin-section-title">Available to Install</h2>
+    <p class="admin-hint">These plugins are loaded in the application but not yet installed.</p>
+
+    <%= form_with url: admin_plugins_path, method: :post do |f| %>
+      <% @loadable_plugins.each do |pc| %>
+        <div class="plugin-available-card">
+          <div>
+            <strong><%= pc.plugin_name %></strong>
+            <span class="admin-muted"> v<%= pc.plugin_version %></span>
+            <% if pc.plugin_description.present? %>
+              <p class="admin-hint"><%= pc.plugin_description %></p>
+            <% end %>
+          </div>
+          <%= f.hidden_field :slug, value: pc.plugin_slug, id: nil %>
+          <%= f.submit "Install", class: "button button--sm" %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+
+</section>

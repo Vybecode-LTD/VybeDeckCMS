@@ -19,8 +19,19 @@ class Order < ApplicationRecord
   validates :currency,    presence: true,
                           inclusion: { in: Product::SUPPORTED_CURRENCIES }
 
-  # Human-readable total, e.g. "£9.99"
+  after_commit :dispatch_complete_hook, if: :just_paid?
+
   def total_display
     Product.format_money(total_cents, currency)
+  end
+
+  private
+
+  def just_paid?
+    saved_change_to_status? && paid?
+  end
+
+  def dispatch_complete_hook
+    VybeDeck::Plugin::Registry.dispatch(:after_order_complete, self)
   end
 end

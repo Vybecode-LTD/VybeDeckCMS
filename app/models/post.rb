@@ -18,10 +18,24 @@ class Post < ApplicationRecord
 
   validates :title, presence: true
 
+  after_commit :dispatch_publish_hook, if: :just_published?
+
   # ── reading time ─────────────────────────────────────────────────────────────
 
   # Returns estimated reading time in minutes (minimum 1).
   # Uses the standard ~200 words-per-minute rate.
+  private
+
+  def just_published?
+    saved_change_to_status? && published?
+  end
+
+  def dispatch_publish_hook
+    VybeDeck::Plugin::Registry.dispatch(:after_post_publish, self)
+  end
+
+  public
+
   def reading_time
     word_count = body.to_plain_text.split.size
     [(word_count / 200.0).ceil, 1].max
