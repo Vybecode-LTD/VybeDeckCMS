@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_10_040332) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_10_041646) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -439,6 +439,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_10_040332) do
     t.index ["category_id"], name: "index_taggings_on_category_id"
     t.index ["post_id", "category_id"], name: "index_taggings_on_post_id_and_category_id", unique: true
     t.index ["post_id"], name: "index_taggings_on_post_id"
+  end
+
+  create_table "themes", force: :cascade do |t|
+    t.boolean "active", default: false, null: false
+    t.datetime "created_at", null: false
+    t.string "name", default: "Default", null: false
+    t.json "tokens", default: {}, null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_themes_on_active"
   end
 
   create_table "track_comments", force: :cascade do |t|

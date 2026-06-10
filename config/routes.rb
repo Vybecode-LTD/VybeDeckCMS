@@ -33,6 +33,13 @@ Rails.application.routes.draw do
       end
     end
 
+    # Phase 9 design system / theme editor (controller: :theme keeps singular name)
+    resource :theme, only: %i[show update], controller: :theme do
+      get  :export
+      post :import
+      post :reset
+    end
+
     # Phase 7 AI assistant
     get    "ai",                            to: "ai#index",                 as: :ai
     post   "ai/conversations",              to: "ai_conversations#create",  as: :ai_conversations

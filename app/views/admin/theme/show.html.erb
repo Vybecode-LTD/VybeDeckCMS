@@ -1,0 +1,233 @@
+<%
+  t = @theme.effective_tokens
+
+  light_style = [
+    "--bg:#{t["light_bg"]}",
+    "--bg-elevated:#{t["light_bg_elevated"]}",
+    "--bg-sunken:#{t["light_bg_sunken"]}",
+    "--text:#{t["light_text"]}",
+    "--text-muted:#{t["light_text_muted"]}",
+    "--accent:#{t["light_accent"]}",
+    "--border:#e4e1da",
+    "--border-strong:#cac7be"
+  ].join(";")
+
+  dark_style = [
+    "--bg:#{t["dark_bg"]}",
+    "--bg-elevated:#{t["dark_bg_elevated"]}",
+    "--bg-sunken:#{t["dark_bg_sunken"]}",
+    "--text:#{t["dark_text"]}",
+    "--text-muted:#{t["dark_text_muted"]}",
+    "--accent:#{t["dark_accent"]}",
+    "--border:#2d2b27",
+    "--border-strong:#3f3c38"
+  ].join(";")
+%>
+
+<div class="administrate-page-header">
+  <h1 class="administrate-page-header__title">Design System</h1>
+  <div class="administrate-page-header__actions">
+    <%= form_tag export_admin_theme_path, method: :get, style: "display:inline" do %>
+      <button type="submit" class="button button--alt button--sm">Export JSON</button>
+    <% end %>
+    <%= form_tag import_admin_theme_path, method: :post, multipart: true, class: "theme-import-form" do %>
+      <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+      <label class="button button--alt button--sm" style="cursor:pointer">
+        Import JSON
+        <input type="file" name="theme_json" accept=".json,application/json" style="display:none"
+               onchange="this.form.submit()">
+      </label>
+    <% end %>
+    <%= button_to "Reset to Defaults", reset_admin_theme_path,
+          method: :post,
+          class: "button button--danger button--sm",
+          data: { turbo_confirm: "Reset all theme tokens to the VybeDeck defaults?" } %>
+  </div>
+</div>
+
+<% if @theme.errors.any? %>
+  <div class="flash flash--alert" style="margin-bottom:1rem">
+    <ul style="margin:0;padding-left:1.25rem">
+      <% @theme.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<div class="theme-editor-layout"
+     data-controller="theme-editor">
+
+  <%# ── Left column: form ──────────────────────────────────────── %>
+  <div class="theme-editor-form">
+    <%= form_with model: @theme, url: admin_theme_path, method: :patch, local: true do |f| %>
+
+      <div class="theme-section">
+        <div class="theme-section__title">Theme Name</div>
+        <div class="theme-token">
+          <%= f.label :name, "Name", class: "theme-token__label-text" %>
+          <%= f.text_field :name, class: "input", style: "max-width:220px" %>
+        </div>
+      </div>
+
+      <%# ── Light mode colours ───────────────────────────────── %>
+      <div class="theme-section">
+        <div class="theme-section__title">Light Mode</div>
+
+        <% {
+          "light_bg"          => ["Background",       "--bg",          "light"],
+          "light_bg_elevated" => ["Surface",          "--bg-elevated", "light"],
+          "light_bg_sunken"   => ["Sunken",           "--bg-sunken",   "light"],
+          "light_text"        => ["Text",             "--text",        "light"],
+          "light_text_muted"  => ["Muted text",       "--text-muted",  "light"],
+          "light_accent"      => ["Accent",           "--accent",      "light"],
+        }.each do |token_key, (label, css_var, mode)| %>
+          <div class="theme-token">
+            <label class="theme-token__label-text"><%= label %></label>
+            <div class="theme-token__control">
+              <input type="color"
+                     class="theme-token__color-input"
+                     value="<%= t[token_key] %>"
+                     data-theme-editor-target="colorInput"
+                     data-css-var="<%= css_var %>"
+                     data-mode="<%= mode %>"
+                     data-token-key="<%= token_key %>"
+                     data-action="input->theme-editor#tokenChanged">
+              <input type="text"
+                     name="theme[tokens][<%= token_key %>]"
+                     value="<%= t[token_key] %>"
+                     class="input theme-token__text-input"
+                     data-theme-editor-target="textInput"
+                     data-token-key="<%= token_key %>"
+                     data-action="input->theme-editor#textChanged"
+                     pattern="#[0-9a-fA-F]{6}"
+                     maxlength="7"
+                     size="8">
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%# ── Dark mode colours ────────────────────────────────── %>
+      <div class="theme-section">
+        <div class="theme-section__title">Dark Mode</div>
+
+        <% {
+          "dark_bg"          => ["Background",       "--bg",          "dark"],
+          "dark_bg_elevated" => ["Surface",          "--bg-elevated", "dark"],
+          "dark_bg_sunken"   => ["Sunken",           "--bg-sunken",   "dark"],
+          "dark_text"        => ["Text",             "--text",        "dark"],
+          "dark_text_muted"  => ["Muted text",       "--text-muted",  "dark"],
+          "dark_accent"      => ["Accent",           "--accent",      "dark"],
+        }.each do |token_key, (label, css_var, mode)| %>
+          <div class="theme-token">
+            <label class="theme-token__label-text"><%= label %></label>
+            <div class="theme-token__control">
+              <input type="color"
+                     class="theme-token__color-input"
+                     value="<%= t[token_key] %>"
+                     data-theme-editor-target="colorInput"
+                     data-css-var="<%= css_var %>"
+                     data-mode="<%= mode %>"
+                     data-token-key="<%= token_key %>"
+                     data-action="input->theme-editor#tokenChanged">
+              <input type="text"
+                     name="theme[tokens][<%= token_key %>]"
+                     value="<%= t[token_key] %>"
+                     class="input theme-token__text-input"
+                     data-theme-editor-target="textInput"
+                     data-token-key="<%= token_key %>"
+                     data-action="input->theme-editor#textChanged"
+                     pattern="#[0-9a-fA-F]{6}"
+                     maxlength="7"
+                     size="8">
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%# ── Typography ───────────────────────────────────────── %>
+      <div class="theme-section">
+        <div class="theme-section__title">Typography</div>
+        <div class="theme-token">
+          <label class="theme-token__label-text">Font family</label>
+          <div class="theme-token__control">
+            <select name="theme[tokens][font_family]"
+                    class="input"
+                    data-theme-editor-target="fontSelect"
+                    data-action="change->theme-editor#fontChanged">
+              <% Theme::AVAILABLE_FONTS.each do |font| %>
+                <option value="<%= font[:name] %>"
+                        data-font-url="<%= font[:url] %>"
+                        <%= "selected" if t["font_family"] == font[:name] %>>
+                  <%= font[:name] %>
+                </option>
+              <% end %>
+            </select>
+            <input type="hidden"
+                   name="theme[tokens][font_url]"
+                   value="<%= t["font_url"] %>"
+                   data-theme-editor-target="fontUrlInput">
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:1.5rem">
+        <button type="submit" class="button">Save &amp; Apply Theme</button>
+      </div>
+
+    <% end %>
+  </div>
+
+  <%# ── Right column: live preview ──────────────────────────── %>
+  <div class="theme-preview-pair">
+    <div>
+      <div class="theme-preview-label">Light Preview</div>
+      <div class="theme-preview"
+           data-theme-editor-target="lightPreview"
+           style="<%= light_style %>">
+        <div class="tp-nav">
+          <span class="tp-brand">VybeDeck</span>
+          <span class="tp-nav-links">
+            <span class="tp-nav-link">Blog</span>
+            <span class="tp-nav-link">Shop</span>
+          </span>
+        </div>
+        <div class="tp-content">
+          <h2 class="tp-h2">Page Heading</h2>
+          <p class="tp-body">Body text here. <span class="tp-muted">Muted secondary text.</span></p>
+          <button type="button" class="tp-btn">Primary Action</button>
+          <div class="tp-card">
+            <div class="tp-card-title">Card Component</div>
+            <p class="tp-card-body">Content on an elevated surface.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="theme-preview-label">Dark Preview</div>
+      <div class="theme-preview"
+           data-theme-editor-target="darkPreview"
+           style="<%= dark_style %>">
+        <div class="tp-nav">
+          <span class="tp-brand">VybeDeck</span>
+          <span class="tp-nav-links">
+            <span class="tp-nav-link">Blog</span>
+            <span class="tp-nav-link">Shop</span>
+          </span>
+        </div>
+        <div class="tp-content">
+          <h2 class="tp-h2">Page Heading</h2>
+          <p class="tp-body">Body text here. <span class="tp-muted">Muted secondary text.</span></p>
+          <button type="button" class="tp-btn">Primary Action</button>
+          <div class="tp-card">
+            <div class="tp-card-title">Card Component</div>
+            <p class="tp-card-body">Content on an elevated surface.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

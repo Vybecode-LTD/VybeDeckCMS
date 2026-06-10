@@ -15,6 +15,10 @@
 
     <%= yield :head %>
     <%= VybeDeck::Plugin::Registry.render_hook(:inject_head) %>
+    <% _theme_css = active_theme_css %>
+    <% if _theme_css.present? %>
+      <style id="theme-override"><%= raw _theme_css %></style>
+    <% end %>
 
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">

@@ -1,5 +1,11 @@
 module ApplicationHelper
   include Pagy::Frontend
+
+  def active_theme_css
+    Rails.cache.fetch("active_theme_css", expires_in: 1.hour) do
+      Theme.active_theme&.to_css || ""
+    end
+  end
   def public_nav_pages
     @public_nav_pages ||= Page.live.where(show_in_nav: true).order(:position, :title)
   end
