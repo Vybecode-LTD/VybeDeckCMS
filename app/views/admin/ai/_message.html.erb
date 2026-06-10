@@ -1,8 +1,22 @@
-<%# Shared partial for both ai/index and ai_conversations/show %>
+<%# Shared partial for both ai/index and ai_conversations/show.
+    Locals:
+      message           — AiMessage record (required)
+      streaming         — boolean override; defaults to message.streaming?
+      streaming_content — text to show instead of message.content during streaming %>
+<% is_streaming  = local_assigns.fetch(:streaming,          message.streaming?) %>
+<% body_content  = local_assigns.fetch(:streaming_content,  message.content).to_s %>
+
 <div class="ai-message ai-message--<%= message.role %>" id="ai-message-<%= message.id %>">
   <div class="ai-message__role"><%= message.user? ? "You" : "Claude" %></div>
-  <div class="ai-message__body"><%= simple_format(message.content) %></div>
-  <% if message.assistant? && message.input_tokens %>
-    <div class="ai-message__meta"><%= message.input_tokens %> in / <%= message.output_tokens %> out tokens</div>
+  <div class="ai-message__body">
+    <%= simple_format(body_content) if body_content.present? %>
+    <% if is_streaming %>
+      <span class="ai-streaming-cursor" aria-hidden="true">▍</span>
+    <% end %>
+  </div>
+  <% if message.assistant? && !is_streaming && message.input_tokens %>
+    <div class="ai-message__meta">
+      <%= message.input_tokens %> in / <%= message.output_tokens %> out tokens
+    </div>
   <% end %>
 </div>

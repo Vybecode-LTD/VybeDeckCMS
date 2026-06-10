@@ -1,0 +1,43 @@
+<% content_for :title, "Stripe Webhook Events" %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title">Stripe Webhook Events</h1>
+  <p class="admin-hint">Last 100 events received. Click an event to view its full payload or replay a failed one.</p>
+</header>
+
+<section class="main-content__body">
+  <% if @events.any? %>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Event ID</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Replays</th>
+          <th>Received</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @events.each do |ev| %>
+          <tr>
+            <td><code class="admin-code"><%= ev.stripe_event_id.truncate(28) %></code></td>
+            <td><code class="admin-code"><%= ev.event_type %></code></td>
+            <td>
+              <span class="status-pill status-pill--<%= ev.status_label %>">
+                <%= ev.status_label %>
+              </span>
+            </td>
+            <td><%= ev.replay_count > 0 ? ev.replay_count : "—" %></td>
+            <td><%= ev.created_at.strftime("%d %b %H:%M") %></td>
+            <td class="admin-table__actions">
+              <%= link_to "View", admin_stripe_webhook_event_path(ev), class: "button button--sm button--alt" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="admin-empty">No webhook events recorded yet. Events are logged when Stripe sends a signed request to <code>/webhooks/stripe</code>.</p>
+  <% end %>
+</section>

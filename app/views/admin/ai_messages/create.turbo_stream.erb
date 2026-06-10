@@ -1,0 +1,12 @@
+<%= turbo_stream.append "ai-messages" do %>
+  <%= render "admin/ai/message", message: @user_message %>
+<% end %>
+
+<%= turbo_stream.append "ai-messages" do %>
+  <%= render "admin/ai/message", message: @assistant_message, streaming: true %>
+<% end %>
+
+<%= turbo_stream.replace "ai-composer" do %>
+  <%= render "admin/ai_conversations/composer", conversation: @conversation %>
+<% end %>
+

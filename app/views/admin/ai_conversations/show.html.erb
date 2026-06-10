@@ -1,4 +1,5 @@
 <% content_for :title, @conversation.title.presence || "AI Conversation" %>
+<%= turbo_stream_from "ai_conversation_#{@conversation.id}" %>
 
 <div class="ai-layout" data-controller="ai">
   <%# Sidebar %>

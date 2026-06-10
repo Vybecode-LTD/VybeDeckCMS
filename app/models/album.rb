@@ -14,7 +14,9 @@ class Album < ApplicationRecord
   has_one  :product, as: :productable, dependent: :nullify
   has_one_attached :artwork
 
-  validates :title, presence: true
+  validates :title,  presence: true
+  validates :crop_x, numericality: { only_integer: true, in: 0..100 }, allow_nil: true
+  validates :crop_y, numericality: { only_integer: true, in: 0..100 }, allow_nil: true
 
   scope :ordered,    -> { order(release_date: :desc, title: :asc) }
   scope :published,  -> { where(status: :published) }

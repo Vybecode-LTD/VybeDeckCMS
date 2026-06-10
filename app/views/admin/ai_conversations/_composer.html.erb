@@ -1,18 +1,20 @@
 <%# Bottom composer for continuing a conversation %>
-<%= form_with url: admin_ai_conversation_messages_path(conversation),
-              method: :post,
-              class: "ai-composer",
-              data: { controller: "ai-composer", action: "submit->ai-composer#submit" } do |f| %>
-  <div class="ai-composer__field">
-    <%= f.text_area :content,
-          placeholder: "Continue the conversation…",
-          rows: 3,
-          class: "ai-composer__textarea",
-          required: true,
-          data: { "ai-composer-target": "input" } %>
-  </div>
-  <div class="ai-composer__actions">
-    <%= f.submit "Send", class: "button", data: { "ai-composer-target": "submit" } %>
-    <span class="ai-composer__hint">Ctrl+Enter to send</span>
-  </div>
-<% end %>
+<div id="ai-composer">
+  <%= form_with url: admin_ai_conversation_messages_path(conversation),
+                method: :post,
+                class: "ai-composer",
+                data: { controller: "ai-composer", action: "submit->ai-composer#submit" } do |f| %>
+    <div class="ai-composer__field">
+      <%= f.text_area :content,
+            placeholder: "Continue the conversation…",
+            rows: 3,
+            class: "ai-composer__textarea",
+            required: true,
+            data: { "ai-composer-target": "input" } %>
+    </div>
+    <div class="ai-composer__actions">
+      <%= f.submit "Send", class: "button", data: { "ai-composer-target": "submit" } %>
+      <span class="ai-composer__hint">Ctrl+Enter to send</span>
+    </div>
+  <% end %>
+</div>

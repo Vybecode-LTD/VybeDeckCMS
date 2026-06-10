@@ -32,6 +32,28 @@ module VybeDeck
         def plugin_author;      @plugin_author      || ""; end
         def plugin_description; @plugin_description || ""; end
 
+        # Declare admin-configurable settings for this plugin.
+        # Values are persisted in the Plugin#settings JSON column.
+        #
+        #   setting :notify_email, type: :string,  default: "",   label: "Notification email"
+        #   setting :enabled,      type: :boolean, default: true, label: "Enable feature"
+        #
+        # Supported types: :string, :boolean, :integer
+        def setting(key, type: :string, default: nil, label: nil, hint: nil)
+          @declared_settings ||= []
+          @declared_settings << {
+            key:     key.to_s,
+            type:    type,
+            default: default,
+            label:   label || key.to_s.humanize,
+            hint:    hint
+          }
+        end
+
+        def declared_settings
+          @declared_settings || []
+        end
+
         # Declare every external hostname your plugin is permitted to contact.
         # Call with arguments to set; call without to read the current list.
         #

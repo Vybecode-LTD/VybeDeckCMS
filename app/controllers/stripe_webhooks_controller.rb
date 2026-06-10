@@ -14,6 +14,23 @@ class StripeWebhooksController < ApplicationController
       payload, sig_header, ENV.fetch("STRIPE_WEBHOOK_SECRET", nil)
     )
 
+    # Log the event for the admin webhook viewer. Skipped when there is no
+    # Stripe event ID (e.g., in test mocks that send an empty payload).
+    parsed_payload = JSON.parse(payload)
+    event_id_str   = parsed_payload["id"].to_s
+    webhook_record = nil
+
+    if event_id_str.present?
+      webhook_record = StripeWebhookEvent.find_or_initialize_by(stripe_event_id: event_id_str)
+      if webhook_record.persisted? && webhook_record.processed?
+        return render json: { received: true, duplicate: true }
+      end
+      unless webhook_record.persisted?
+        webhook_record.assign_attributes(event_type: event.type, payload: parsed_payload)
+        webhook_record.save!
+      end
+    end
+
     case event.type
     when "payment_intent.succeeded"
       handle_payment_intent_succeeded(event.data.object)
@@ -23,6 +40,7 @@ class StripeWebhooksController < ApplicationController
       handle_charge_refunded(event.data.object)
     end
 
+    webhook_record&.update(processed_at: Time.current)
     render json: { received: true }
 
   rescue JSON::ParserError, Stripe::SignatureVerificationError => e
@@ -47,7 +65,6 @@ class StripeWebhooksController < ApplicationController
   end
 
   def handle_charge_refunded(charge)
-    # A Charge object carries a payment_intent field (the PI id string)
     pi_id = charge.payment_intent
     return unless pi_id
 

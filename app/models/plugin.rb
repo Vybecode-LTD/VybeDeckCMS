@@ -33,4 +33,33 @@ class Plugin < ApplicationRecord
   def loaded?
     plugin_class.present?
   end
+
+  # Returns the stored value for +key+, falling back to the declared default.
+  def setting_value(key)
+    declared = plugin_class&.declared_settings&.find { |s| s[:key] == key.to_s }
+    settings.fetch(key.to_s) { declared&.fetch(:default, nil) }
+  end
+
+  # Merge +values+ hash into the settings column, casting each to its declared type.
+  def update_settings!(values)
+    return unless plugin_class
+
+    new_vals = plugin_class.declared_settings.each_with_object({}) do |decl, h|
+      raw = values[decl[:key]] || values[decl[:key].to_sym]
+      next if raw.nil?
+      h[decl[:key]] = cast_setting(raw, decl[:type])
+    end
+
+    update!(settings: settings.merge(new_vals))
+  end
+
+  private
+
+  def cast_setting(value, type)
+    case type
+    when :boolean then ActiveModel::Type::Boolean.new.cast(value)
+    when :integer then value.to_i
+    else value.to_s
+    end
+  end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_10_060000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_10_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -67,6 +67,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_10_060000) do
     t.integer "input_tokens"
     t.integer "output_tokens"
     t.integer "role", default: 0, null: false
+    t.boolean "streaming", default: false, null: false
     t.datetime "updated_at", null: false
     t.index ["ai_conversation_id"], name: "index_ai_messages_on_ai_conversation_id"
   end
@@ -440,6 +441,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_10_060000) do
     t.bigint "user_id", null: false
     t.index ["stripe_customer_id"], name: "index_stripe_customers_on_stripe_customer_id", unique: true
     t.index ["user_id"], name: "index_stripe_customers_on_user_id", unique: true
+  end
+
+  create_table "stripe_webhook_events", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.string "event_type", null: false
+    t.jsonb "payload", default: {}, null: false
+    t.datetime "processed_at"
+    t.integer "replay_count", default: 0, null: false
+    t.string "stripe_event_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_stripe_webhook_events_on_created_at"
+    t.index ["event_type"], name: "index_stripe_webhook_events_on_event_type"
+    t.index ["stripe_event_id"], name: "index_stripe_webhook_events_on_stripe_event_id", unique: true
   end
 
   create_table "taggings", force: :cascade do |t|

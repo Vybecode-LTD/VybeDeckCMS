@@ -1,0 +1,48 @@
+<% content_for :title, "Webhook Event — #{@event.stripe_event_id}" %>
+
+<header class="main-content__header">
+  <div class="main-content__header-left">
+    <%= link_to "← Webhook Events", admin_stripe_webhook_events_path, class: "back-link" %>
+    <h1 class="main-content__page-title">Webhook Event</h1>
+    <span class="status-pill status-pill--<%= @event.status_label %>"><%= @event.status_label %></span>
+  </div>
+  <div class="main-content__header-actions">
+    <% if @event.replayable? %>
+      <%= button_to "Replay", replay_admin_stripe_webhook_event_path(@event),
+            method: :post,
+            class: "button",
+            data: { turbo_confirm: "Re-run the handler for this event?" } %>
+    <% end %>
+  </div>
+</header>
+
+<section class="main-content__body">
+  <dl class="detail-list">
+    <dt>Stripe Event ID</dt>
+    <dd><code><%= @event.stripe_event_id %></code></dd>
+
+    <dt>Event Type</dt>
+    <dd><code><%= @event.event_type %></code></dd>
+
+    <dt>Received</dt>
+    <dd><%= @event.created_at.strftime("%d %b %Y %H:%M:%S UTC") %></dd>
+
+    <% if @event.processed_at %>
+      <dt>Processed</dt>
+      <dd><%= @event.processed_at.strftime("%d %b %Y %H:%M:%S UTC") %></dd>
+    <% end %>
+
+    <% if @event.error_message.present? %>
+      <dt>Error</dt>
+      <dd class="admin-error"><%= @event.error_message %></dd>
+    <% end %>
+
+    <% if @event.replay_count > 0 %>
+      <dt>Replays</dt>
+      <dd><%= @event.replay_count %></dd>
+    <% end %>
+  </dl>
+
+  <h2 class="admin-section-title" style="margin-top:2rem">Raw Payload</h2>
+  <pre class="admin-code-block"><%= JSON.pretty_generate(@event.payload) %></pre>
+</section>

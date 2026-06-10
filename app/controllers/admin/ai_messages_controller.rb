@@ -7,23 +7,22 @@ module Admin
       skip_policy_scope
 
       content = params[:content].to_s.strip
-      return redirect_to admin_ai_conversation_path(@conversation), alert: "Message cannot be blank." if content.blank?
-
-      @conversation.ai_messages.create!(role: :user, content: content)
-      result = AiAssistantService.new(@conversation).call(content)
-
-      if result.success?
-        @conversation.ai_messages.create!(
-          role:          :assistant,
-          content:       result.content,
-          input_tokens:  result.input_tokens,
-          output_tokens: result.output_tokens
-        )
-      else
-        @conversation.ai_messages.create!(role: :assistant, content: "_Error: #{result.error}_")
+      if content.blank?
+        return respond_to do |format|
+          format.html         { redirect_to admin_ai_conversation_path(@conversation), alert: "Message cannot be blank." }
+          format.turbo_stream { head :unprocessable_entity }
+        end
       end
 
-      redirect_to admin_ai_conversation_path(@conversation)
+      @user_message      = @conversation.ai_messages.create!(role: :user,      content: content)
+      @assistant_message = @conversation.ai_messages.create!(role: :assistant, content: "", streaming: true)
+
+      StreamAiResponseJob.perform_later(@assistant_message.id)
+
+      respond_to do |format|
+        format.html         { redirect_to admin_ai_conversation_path(@conversation) }
+        format.turbo_stream # renders create.turbo_stream.erb
+      end
     end
 
     private

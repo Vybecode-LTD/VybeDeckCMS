@@ -33,6 +33,8 @@
           class: "navigation__link navigation__link--#{ request.path.start_with?(admin_theme_path) ? "active" : "inactive" }" %>
     <%= link_to "Plugins", admin_plugins_path,
           class: "navigation__link navigation__link--#{ request.path.start_with?(admin_plugins_path) ? "active" : "inactive" }" %>
+    <%= link_to "Webhooks", admin_stripe_webhook_events_path,
+          class: "navigation__link navigation__link--#{ request.path.start_with?(admin_stripe_webhook_events_path) ? "active" : "inactive" }" %>
     <%= link_to "Site Settings", admin_settings_path, class: "navigation__link" %>
   <% end %>
 </nav>

@@ -40,7 +40,10 @@
   <div class="album-page">
     <div class="album-page__header">
       <% if @album.artwork.attached? %>
-        <%= image_tag @album.artwork, class: "album-page__artwork", alt: "#{@album.title} artwork" %>
+        <%= image_tag @album.artwork,
+              class: "album-page__artwork",
+              alt:   "#{@album.title} artwork",
+              style: "object-position: #{@album.crop_x}% #{@album.crop_y}%" %>
       <% end %>
 
       <div class="album-page__info">

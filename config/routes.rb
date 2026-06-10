@@ -33,6 +33,12 @@ Rails.application.routes.draw do
         patch :activate
         patch :deactivate
       end
+      resource :settings, only: %i[show update], controller: :plugin_settings
+    end
+
+    # Stripe webhook event log + replay
+    resources :stripe_webhook_events, only: %i[index show] do
+      member { post :replay }
     end
 
     # Phase 9 design system / theme editor (controller: :theme keeps singular name)

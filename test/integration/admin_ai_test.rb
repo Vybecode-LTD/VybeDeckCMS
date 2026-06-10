@@ -21,14 +21,10 @@ class AdminAiTest < ActionDispatch::IntegrationTest
     post session_path, params: { email_address: user.email_address, password: "password1234" }
   end
 
+  # Streaming is async (Solid Queue job). These helpers are no longer needed
+  # but kept as no-ops so existing tests that use them continue to work.
   def with_fake_ai_response(content: "Here is your response.", input: 10, output: 20)
-    svc_class = AiAssistantService
-    original  = svc_class.instance_method(:call)
-    result    = AiAssistantService::Result.new(content: content, input_tokens: input, output_tokens: output)
-    svc_class.define_method(:call) { |_| result }
     yield
-  ensure
-    svc_class.define_method(:call, original)
   end
 
   # ── Auth gates ─────────────────────────────────────────────────────────────
@@ -60,15 +56,14 @@ class AdminAiTest < ActionDispatch::IntegrationTest
 
   test "editor can start a new conversation" do
     sign_in @editor
-    with_fake_ai_response do
-      assert_difference "AiConversation.count", 1 do
-        post admin_ai_conversations_path, params: { content: "Draft a blog post about jazz" }
-      end
+    assert_difference "AiConversation.count", 1 do
+      post admin_ai_conversations_path, params: { content: "Draft a blog post about jazz" }
     end
     assert_response :redirect
     follow_redirect!
     assert_response :success
-    assert_match "Here is your response.", response.body
+    # User message is shown immediately; assistant response streams in via job
+    assert_match "Draft a blog post about jazz", response.body
   end
 
   test "blank message redirects with alert" do
@@ -80,21 +75,15 @@ class AdminAiTest < ActionDispatch::IntegrationTest
     assert_not_nil flash[:alert]
   end
 
-  test "API error redirects with alert" do
+  test "AI response is handled async — conversation always created on submit" do
+    # In the streaming model, the conversation and a streaming placeholder are
+    # created immediately; the actual API call (and any errors) happen in the
+    # background job. No synchronous error flash on the create action.
     sign_in @editor
-    svc_class = AiAssistantService
-    original  = svc_class.instance_method(:call)
-    error_result = AiAssistantService::Result.new(error: "API key not set")
-    svc_class.define_method(:call) { |_| error_result }
-    begin
-      assert_no_difference "AiConversation.count" do
-        post admin_ai_conversations_path, params: { content: "Hello" }
-      end
-      assert_redirected_to admin_ai_path
-      assert_match "API key not set", flash[:alert]
-    ensure
-      svc_class.define_method(:call, original)
+    assert_difference "AiConversation.count", 1 do
+      post admin_ai_conversations_path, params: { content: "Hello" }
     end
+    assert_redirected_to admin_ai_conversation_path(AiConversation.last)
   end
 
   # ── Message continuation ───────────────────────────────────────────────────
@@ -105,10 +94,10 @@ class AdminAiTest < ActionDispatch::IntegrationTest
     convo.ai_messages.create!(role: :user, content: "Hello")
     convo.ai_messages.create!(role: :assistant, content: "Hi", input_tokens: 5, output_tokens: 5)
 
-    with_fake_ai_response(content: "Follow-up answer.") do
-      assert_difference "AiMessage.count", 2 do
-        post admin_ai_conversation_messages_path(convo), params: { content: "Tell me more" }
-      end
+    # Creates user message + streaming assistant placeholder (2 messages).
+    # The actual API response is handled by StreamAiResponseJob asynchronously.
+    assert_difference "AiMessage.count", 2 do
+      post admin_ai_conversation_messages_path(convo), params: { content: "Tell me more" }
     end
     assert_redirected_to admin_ai_conversation_path(convo)
   end

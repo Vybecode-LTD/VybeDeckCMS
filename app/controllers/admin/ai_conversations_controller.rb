@@ -13,22 +13,13 @@ module Admin
       content = params[:content].to_s.strip
       return redirect_to admin_ai_path, alert: "Message cannot be blank." if content.blank?
 
-      @conversation = AiConversation.start_for(Current.user, content)
-      result = call_ai(@conversation, content)
+      @conversation      = AiConversation.start_for(Current.user, content)
+      @conversation.ai_messages.create!(role: :user,      content: content)
+      assistant_message  = @conversation.ai_messages.create!(role: :assistant, content: "", streaming: true)
 
-      if result.success?
-        @conversation.ai_messages.create!(role: :user,      content: content)
-        @conversation.ai_messages.create!(
-          role:          :assistant,
-          content:       result.content,
-          input_tokens:  result.input_tokens,
-          output_tokens: result.output_tokens
-        )
-        redirect_to admin_ai_conversation_path(@conversation)
-      else
-        @conversation.destroy
-        redirect_to admin_ai_path, alert: result.error
-      end
+      StreamAiResponseJob.perform_later(assistant_message.id)
+
+      redirect_to admin_ai_conversation_path(@conversation)
     end
 
     def destroy
@@ -41,10 +32,6 @@ module Admin
 
     def set_conversation
       @conversation = AiConversation.find(params[:id])
-    end
-
-    def call_ai(conversation, content)
-      AiAssistantService.new(conversation).call(content)
     end
   end
 end

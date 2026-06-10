@@ -35,6 +35,9 @@
             </td>
             <td><%= plugin.loaded? ? "✓" : "✗" %></td>
             <td class="admin-table__actions">
+              <% if plugin.loaded? && plugin.plugin_class.declared_settings.any? %>
+                <%= link_to "Settings", admin_plugin_settings_path(plugin), class: "button button--sm button--alt" %>
+              <% end %>
               <% if plugin.active? %>
                 <%= button_to "Deactivate", deactivate_admin_plugin_path(plugin), method: :patch,
                       class: "button button--sm button--alt",

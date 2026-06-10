@@ -3992,3 +3992,21 @@ body.cart-open { overflow: hidden; }
 details[open] .faq-item__question::after { content: "−"; }
 .faq-item__answer { padding: 0 1rem 1rem; font-size: .925rem; color: var(--text-muted); line-height: 1.6; }
 .faq-item__answer p { margin: 0 0 .5rem; }
+
+/* ── Focal-point artwork crop picker (admin) ───────────────────────────── */
+.focal-point-picker { margin-top: .75rem; }
+.focal-point-picker__wrap { position: relative; display: inline-block; cursor: crosshair; border-radius: var(--radius-md, 8px); overflow: hidden; max-width: 260px; }
+.focal-point-picker__img { display: block; width: 100%; max-width: 260px; height: 260px; object-fit: cover; }
+.focal-point-dot { position: absolute; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.3); transform: translate(-50%, -50%); pointer-events: none; transition: left .1s, top .1s; }
+
+/* ── AI streaming cursor ───────────────────────────────────────────────── */
+.ai-streaming-cursor { display: inline-block; width: .6em; animation: blink .8s step-end infinite; color: var(--accent); font-weight: 700; vertical-align: baseline; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* ── Admin code block (webhook payloads) ────────────────────────────────── */
+.admin-code { font-family: monospace; font-size: .82em; background: var(--bg-sunken); padding: .1em .35em; border-radius: 4px; }
+.admin-code-block { background: var(--bg-sunken); border: 1px solid var(--border); border-radius: var(--radius-md, 8px); padding: 1rem; font-family: monospace; font-size: .8rem; overflow-x: auto; white-space: pre; line-height: 1.5; max-height: 28rem; overflow-y: auto; }
+.admin-error { color: var(--danger); font-size: .875rem; }
+.status-pill--processed { background: oklch(92% .08 148); color: oklch(38% .14 148); }
+.status-pill--pending   { background: oklch(94% .07 80);  color: oklch(42% .12 80); }
+.status-pill--failed    { background: oklch(93% .08 25);  color: oklch(42% .15 25); }

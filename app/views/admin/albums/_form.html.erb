@@ -53,9 +53,23 @@
     <div class="field field--full">
       <%= f.label :artwork, "Artwork (JPG/PNG, recommended 1:1)" %>
       <%= f.file_field :artwork, class: "field__input", accept: "image/*" %>
+
       <% if album.artwork.attached? %>
-        <div class="field__preview">
-          <%= image_tag album.artwork, class: "field__preview-img" %>
+        <div class="focal-point-picker" data-controller="artwork-crop">
+          <div class="focal-point-picker__wrap"
+               data-action="click->artwork-crop#pick">
+            <%= image_tag album.artwork,
+                  class: "focal-point-picker__img",
+                  alt:   "Current artwork",
+                  data:  { "artwork-crop-target": "image" } %>
+            <div class="focal-point-dot"
+                 data-artwork-crop-target="dot"
+                 style="left: <%= album.crop_x %>%; top: <%= album.crop_y %>%;"
+                 aria-hidden="true"></div>
+          </div>
+          <p class="field__hint">Click on the artwork to set the focal point used for cropped display. Current: (<%= album.crop_x %>%, <%= album.crop_y %>%).</p>
+          <%= f.hidden_field :crop_x, data: { "artwork-crop-target": "xInput" } %>
+          <%= f.hidden_field :crop_y, data: { "artwork-crop-target": "yInput" } %>
         </div>
       <% end %>
     </div>

@@ -1,0 +1,46 @@
+<% content_for :title, "#{@plugin.name} — Settings" %>
+
+<header class="main-content__header">
+  <div class="main-content__header-left">
+    <%= link_to "← Plugins", admin_plugins_path, class: "back-link" %>
+    <h1 class="main-content__page-title">Settings — <%= @plugin.name %></h1>
+  </div>
+</header>
+
+<section class="main-content__body">
+  <%= form_with url: admin_plugin_settings_path(@plugin), method: :patch, class: "settings-form" do %>
+    <% @declared_settings.each do |s| %>
+      <div class="field">
+        <label class="field__label" for="settings_<%= s[:key] %>"><%= s[:label] %></label>
+
+        <% current_val = @plugin.setting_value(s[:key]) %>
+
+        <% case s[:type] %>
+        <% when :boolean %>
+          <div class="field__checkbox-row">
+            <input type="hidden"   name="settings[<%= s[:key] %>]" value="0" />
+            <input type="checkbox" name="settings[<%= s[:key] %>]" value="1"
+                   id="settings_<%= s[:key] %>"
+                   <%= "checked" if current_val %> />
+            <span><%= s[:label] %></span>
+          </div>
+        <% when :integer %>
+          <input type="number" name="settings[<%= s[:key] %>]" value="<%= current_val.to_i %>"
+                 id="settings_<%= s[:key] %>" class="field__input" />
+        <% else %>
+          <input type="text" name="settings[<%= s[:key] %>]" value="<%= current_val.to_s %>"
+                 id="settings_<%= s[:key] %>" class="field__input" />
+        <% end %>
+
+        <% if s[:hint].present? %>
+          <p class="field__hint"><%= s[:hint] %></p>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="form-actions">
+      <input type="submit" value="Save Settings" class="button" />
+      <%= link_to "Cancel", admin_plugins_path, class: "button button--alt" %>
+    </div>
+  <% end %>
+</section>
