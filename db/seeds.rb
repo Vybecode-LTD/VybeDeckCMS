@@ -6,11 +6,15 @@ admin_email    = ENV.fetch("ADMIN_EMAIL",    "admin@vybedeck.test")
 admin_password = ENV.fetch("ADMIN_PASSWORD", "changeme")
 
 admin = User.find_or_initialize_by(email_address: admin_email)
-admin.assign_attributes(
-  role:         :admin,
-  password:     admin_password,
-  display_name: ENV.fetch("ADMIN_DISPLAY_NAME", "VybeDeck Admin")
-)
+if admin.new_record?
+  admin.assign_attributes(
+    role:         :admin,
+    password:     admin_password,
+    display_name: ENV.fetch("ADMIN_DISPLAY_NAME", "VybeDeck Admin")
+  )
+else
+  admin.role = :admin
+end
 admin.email_verified_at ||= Time.current
 admin.save!
 
