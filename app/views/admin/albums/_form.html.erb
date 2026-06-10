@@ -1,0 +1,68 @@
+<%= form_with model: [:admin, album], multipart: true do |f| %>
+  <% if album.errors.any? %>
+    <div class="form-errors">
+      <ul>
+        <% album.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="form-grid">
+    <div class="field">
+      <%= f.label :title %>
+      <%= f.text_field :title, class: "field__input", required: true %>
+    </div>
+
+    <div class="field">
+      <%= f.label :artist %>
+      <%= f.text_field :artist, class: "field__input" %>
+    </div>
+
+    <div class="field">
+      <%= f.label :genre %>
+      <%= f.text_field :genre, class: "field__input" %>
+    </div>
+
+    <div class="field">
+      <%= f.label :label, "Record Label" %>
+      <%= f.text_field :label, class: "field__input" %>
+    </div>
+
+    <div class="field">
+      <%= f.label :upc, "UPC" %>
+      <%= f.text_field :upc, class: "field__input" %>
+    </div>
+
+    <div class="field">
+      <%= f.label :release_date %>
+      <%= f.date_field :release_date, class: "field__input" %>
+    </div>
+
+    <div class="field">
+      <%= f.label :status %>
+      <%= f.select :status, Album.statuses.keys.map { |s| [s.humanize, s] }, {}, class: "field__input" %>
+    </div>
+
+    <div class="field field--full">
+      <%= f.label :description %>
+      <%= f.text_area :description, class: "field__input", rows: 3 %>
+    </div>
+
+    <div class="field field--full">
+      <%= f.label :artwork, "Artwork (JPG/PNG, recommended 1:1)" %>
+      <%= f.file_field :artwork, class: "field__input", accept: "image/*" %>
+      <% if album.artwork.attached? %>
+        <div class="field__preview">
+          <%= image_tag album.artwork, class: "field__preview-img" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit album.persisted? ? "Save Changes" : "Create Album", class: "button" %>
+    <%= link_to "Cancel", album.persisted? ? admin_album_path(album) : admin_albums_path, class: "button button--alt" %>
+  </div>
+<% end %>

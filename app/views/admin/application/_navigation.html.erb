@@ -22,6 +22,8 @@
           class: "navigation__link navigation__link--#{ request.path.start_with?(admin_moderation_index_path) ? "active" : "inactive" }" %>
     <%= link_to "Chat", admin_chat_path,
           class: "navigation__link navigation__link--#{ request.path.start_with?(admin_chat_path) ? "active" : "inactive" }" %>
+    <%= link_to "Albums", admin_albums_path,
+          class: "navigation__link navigation__link--#{ request.path.start_with?(admin_albums_path) ? "active" : "inactive" }" %>
   <% end %>
 
   <% if current_user&.admin? %>

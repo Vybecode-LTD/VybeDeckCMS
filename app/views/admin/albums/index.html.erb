@@ -1,0 +1,46 @@
+<% content_for :title, "Albums" %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title">Albums</h1>
+  <div class="main-content__header-actions">
+    <%= link_to "New Album", new_admin_album_path, class: "button" %>
+    <%= link_to "Download Report", admin_album_download_report_path, class: "button button--alt" %>
+  </div>
+</header>
+
+<section class="main-content__body">
+  <div class="album-kanban">
+    <% Album.statuses.keys.each do |status| %>
+      <div class="album-kanban__column">
+        <h2 class="album-kanban__status"><%= status.humanize %></h2>
+        <div class="album-kanban__cards">
+          <% @albums_by_status[status].each do |album| %>
+            <div class="album-card">
+              <% if album.artwork.attached? %>
+                <%= image_tag album.artwork, class: "album-card__artwork" %>
+              <% else %>
+                <div class="album-card__artwork album-card__artwork--placeholder">&#127925;</div>
+              <% end %>
+              <div class="album-card__body">
+                <strong class="album-card__title"><%= link_to album.title, admin_album_path(album) %></strong>
+                <% if album.artist.present? %>
+                  <span class="album-card__artist"><%= album.artist %></span>
+                <% end %>
+                <div class="album-card__meta">
+                  <span class="album-card__count"><%= pluralize(album.tracks.size, "track") %></span>
+                  <% if album.release_date %>
+                    <span class="album-card__date"><%= album.release_date.strftime("%b %Y") %></span>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+
+          <% if @albums_by_status[status].empty? %>
+            <p class="album-kanban__empty">No albums</p>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</section>

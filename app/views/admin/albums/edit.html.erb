@@ -1,0 +1,10 @@
+<% content_for :title, "Edit #{@album.title}" %>
+
+<header class="main-content__header">
+  <%= link_to "← #{@album.title}", admin_album_path(@album), class: "back-link" %>
+  <h1 class="main-content__page-title">Edit Album</h1>
+</header>
+
+<section class="main-content__body">
+  <%= render "form", album: @album %>
+</section>

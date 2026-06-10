@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_09_210300) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_09_220500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -50,6 +50,36 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_210300) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "album_collaborators", force: :cascade do |t|
+    t.bigint "album_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "role", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["album_id", "user_id"], name: "index_album_collaborators_unique", unique: true
+    t.index ["album_id"], name: "index_album_collaborators_on_album_id"
+    t.index ["user_id"], name: "index_album_collaborators_on_user_id"
+  end
+
+  create_table "albums", force: :cascade do |t|
+    t.string "artist"
+    t.datetime "created_at", null: false
+    t.integer "crop_height"
+    t.integer "crop_width"
+    t.integer "crop_x"
+    t.integer "crop_y"
+    t.text "description"
+    t.string "genre"
+    t.string "label"
+    t.date "release_date"
+    t.string "slug"
+    t.integer "status", default: 0, null: false
+    t.string "title", null: false
+    t.string "upc"
+    t.datetime "updated_at", null: false
+    t.index ["slug"], name: "index_albums_on_slug", unique: true
   end
 
   create_table "cart_items", force: :cascade do |t|
@@ -378,6 +408,42 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_210300) do
     t.index ["post_id"], name: "index_taggings_on_post_id"
   end
 
+  create_table "track_comments", force: :cascade do |t|
+    t.bigint "author_id", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.bigint "track_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_track_comments_on_author_id"
+    t.index ["track_id"], name: "index_track_comments_on_track_id"
+  end
+
+  create_table "track_versions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "notes"
+    t.bigint "track_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "uploaded_by_id", null: false
+    t.integer "version_number", default: 1, null: false
+    t.index ["track_id"], name: "index_track_versions_on_track_id"
+    t.index ["uploaded_by_id"], name: "index_track_versions_on_uploaded_by_id"
+  end
+
+  create_table "tracks", force: :cascade do |t|
+    t.bigint "album_id", null: false
+    t.datetime "created_at", null: false
+    t.text "credits"
+    t.integer "duration_seconds"
+    t.string "isrc"
+    t.integer "position", default: 0, null: false
+    t.integer "preview_end_seconds", default: 30, null: false
+    t.integer "preview_start_seconds", default: 0, null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["album_id", "position"], name: "index_tracks_on_album_and_position"
+    t.index ["album_id"], name: "index_tracks_on_album_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "banned_at"
     t.text "bio"
@@ -398,6 +464,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_210300) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "album_collaborators", "albums"
+  add_foreign_key "album_collaborators", "users"
   add_foreign_key "cart_items", "carts"
   add_foreign_key "cart_items", "prices"
   add_foreign_key "cart_items", "products"
@@ -429,4 +497,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_210300) do
   add_foreign_key "stripe_customers", "users"
   add_foreign_key "taggings", "categories"
   add_foreign_key "taggings", "posts"
+  add_foreign_key "track_comments", "tracks"
+  add_foreign_key "track_comments", "users", column: "author_id"
+  add_foreign_key "track_versions", "tracks"
+  add_foreign_key "track_versions", "users", column: "uploaded_by_id"
+  add_foreign_key "tracks", "albums"
 end

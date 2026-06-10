@@ -1,0 +1,35 @@
+<% content_for :title, "Album Download Report" %>
+
+<header class="main-content__header">
+  <%= link_to "← Albums", admin_albums_path, class: "back-link" %>
+  <h1 class="main-content__page-title">Album Download Report</h1>
+</header>
+
+<section class="main-content__body">
+  <% if @line_items.any? %>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Order</th>
+          <th>Buyer</th>
+          <th>Product</th>
+          <th>Item Type</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @line_items.each do |li| %>
+          <tr>
+            <td><%= link_to "##{li.order_id}", admin_order_path(li.order) %></td>
+            <td><%= li.order.user&.byline || li.order.email %></td>
+            <td><%= li.product.name %></td>
+            <td><%= li.product.productable_type %></td>
+            <td><time datetime="<%= li.order.created_at.iso8601 %>"><%= li.order.created_at.strftime("%d %b %Y") %></time></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="admin-empty">No album or track purchases yet.</p>
+  <% end %>
+</section>

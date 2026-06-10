@@ -15,6 +15,16 @@ Rails.application.routes.draw do
       end
     end
     resources :forum_replies, only: %i[index show destroy]
+    # Phase 6 album manager
+    resources :albums do
+      member { patch :publish }
+      resources :tracks do
+        collection { patch :reorder }
+        resources :track_comments, only: %i[create destroy], path: "comments"
+      end
+    end
+    resource :album_download_report, only: :show, controller: :album_download_report
+
     # Phase 5 admin group chat
     get  "chat",                                                       to: "chat#index",            as: :chat
     post "chat/channels",                                              to: "chat#create_channel",   as: :chat_channels
@@ -121,6 +131,10 @@ Rails.application.routes.draw do
   get  "/checkout/confirmation", to: "checkouts#confirmation", as: :checkout_confirmation
 
   get "up" => "rails/health#show", as: :rails_health_check
+
+  # Public album catalogue — must come before the page catch-all
+  get "/albums",       to: "albums#index", as: :albums
+  get "/albums/:slug", to: "albums#show",  as: :album
 
   # Community — must be before the page catch-all
   get  "/community",                       to: "community#index",         as: :community

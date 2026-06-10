@@ -1,0 +1,110 @@
+<% content_for :title, @track.title %>
+
+<header class="main-content__header">
+  <div class="main-content__header-left">
+    <%= link_to "← #{@album.title}", admin_album_path(@album), class: "back-link" %>
+    <h1 class="main-content__page-title"><%= @track.title %></h1>
+  </div>
+  <div class="main-content__header-actions">
+    <%= link_to "Edit Track", edit_admin_album_track_path(@album, @track), class: "button button--alt" %>
+    <%= button_to "Remove", admin_album_track_path(@album, @track),
+          method: :delete,
+          class: "button button--danger",
+          data: { turbo_confirm: "Remove this track?" } %>
+  </div>
+</header>
+
+<section class="main-content__body">
+  <div class="track-detail">
+    <div class="track-detail__player">
+      <% if @track.audio.attached? %>
+        <%= render "shared/audio_player", medium: nil, audio_url: rails_blob_path(@track.audio, disposition: "inline"), show_download: current_user&.admin_accessible? %>
+      <% else %>
+        <p class="track-detail__no-audio">No audio uploaded yet.</p>
+      <% end %>
+    </div>
+
+    <dl class="track-detail__meta">
+      <% if @track.isrc.present? %>
+        <dt>ISRC</dt><dd><code><%= @track.isrc %></code></dd>
+      <% end %>
+      <% if @track.duration_seconds %>
+        <dt>Duration</dt><dd><%= "%d:%02d" % @track.duration_seconds.divmod(60) %></dd>
+      <% end %>
+      <dt>Preview</dt>
+      <dd><%= @track.preview_start_seconds %>s – <%= @track.preview_end_seconds %>s</dd>
+    </dl>
+
+    <% if @track.credits.present? %>
+      <section class="track-section">
+        <h3>Credits</h3>
+        <p><%= @track.credits %></p>
+      </section>
+    <% end %>
+
+    <% if @track.lyrics.body.present? %>
+      <section class="track-section">
+        <h3>Lyrics</h3>
+        <div class="trix-content"><%= @track.lyrics %></div>
+      </section>
+    <% end %>
+
+    <%# Version history %>
+    <section class="track-section">
+      <h3>Version History</h3>
+      <% if @versions.any? %>
+        <div class="version-list">
+          <% @versions.each do |v| %>
+            <div class="version-item">
+              <span class="version-item__number">v<%= v.version_number %></span>
+              <span class="version-item__uploader"><%= v.uploaded_by.byline %></span>
+              <time class="version-item__date"><%= v.created_at.strftime("%d %b %Y %H:%M") %></time>
+              <% if v.notes.present? %>
+                <span class="version-item__notes"><%= v.notes %></span>
+              <% end %>
+              <% if v.audio.attached? %>
+                <%= link_to "Download",
+                      rails_blob_path(v.audio, disposition: "attachment"),
+                      class: "button button--sm button--alt" %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="album-empty">No version history yet.</p>
+      <% end %>
+    </section>
+
+    <%# Comments %>
+    <section class="track-section">
+      <h3>Comments</h3>
+      <% if @comments.any? %>
+        <div class="track-comment-list">
+          <% @comments.each do |comment| %>
+            <div class="track-comment">
+              <div class="track-comment__meta">
+                <strong><%= comment.author.byline %></strong>
+                <time><%= comment.created_at.strftime("%d %b %Y %H:%M") %></time>
+              </div>
+              <p class="track-comment__body"><%= comment.body %></p>
+              <% if policy(comment).destroy? %>
+                <%= button_to "Delete",
+                      admin_album_track_comment_path(@album, @track, comment),
+                      method: :delete,
+                      class: "button button--sm button--danger" %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%= form_with url: admin_album_track_comments_path(@album, @track) do |f| %>
+        <%= f.text_area :body, name: "track_comment[body]",
+              class: "field__input",
+              rows: 2,
+              placeholder: "Add a comment…" %>
+        <%= f.submit "Comment", class: "button button--sm" %>
+      <% end %>
+    </section>
+  </div>
+</section>

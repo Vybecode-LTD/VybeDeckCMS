@@ -1,0 +1,119 @@
+<% content_for :title, @album.title %>
+
+<header class="main-content__header">
+  <div class="main-content__header-left">
+    <%= link_to "← Albums", admin_albums_path, class: "back-link" %>
+    <h1 class="main-content__page-title"><%= @album.title %></h1>
+    <span class="status-pill status-pill--<%= @album.status %>"><%= @album.status.humanize %></span>
+  </div>
+  <div class="main-content__header-actions">
+    <%= link_to "Edit", edit_admin_album_path(@album), class: "button button--alt" %>
+    <% unless @album.published? %>
+      <%= button_to "Publish Album", publish_admin_album_path(@album),
+            method: :patch,
+            class: "button",
+            data: { turbo_confirm: "Publish this album? This will make it live and create a product for sale." } %>
+    <% end %>
+    <%= button_to "Delete", admin_album_path(@album),
+          method: :delete,
+          class: "button button--danger",
+          data: { turbo_confirm: "Delete #{@album.title}? This cannot be undone." } %>
+  </div>
+</header>
+
+<section class="main-content__body">
+  <div class="album-detail">
+    <div class="album-detail__sidebar">
+      <% if @album.artwork.attached? %>
+        <%= image_tag @album.artwork, class: "album-detail__artwork" %>
+      <% else %>
+        <div class="album-detail__artwork album-detail__artwork--placeholder">&#127925;</div>
+      <% end %>
+
+      <dl class="album-detail__meta">
+        <% if @album.artist.present? %>
+          <dt>Artist</dt><dd><%= @album.artist %></dd>
+        <% end %>
+        <% if @album.genre.present? %>
+          <dt>Genre</dt><dd><%= @album.genre %></dd>
+        <% end %>
+        <% if @album.label.present? %>
+          <dt>Label</dt><dd><%= @album.label %></dd>
+        <% end %>
+        <% if @album.upc.present? %>
+          <dt>UPC</dt><dd><code><%= @album.upc %></code></dd>
+        <% end %>
+        <% if @album.release_date %>
+          <dt>Release</dt><dd><%= @album.release_date.strftime("%d %b %Y") %></dd>
+        <% end %>
+        <% if @album.product %>
+          <dt>Product</dt>
+          <dd><%= link_to @album.product.display_price || "No price", admin_product_path(@album.product) %></dd>
+        <% end %>
+      </dl>
+
+      <% if @album.description.present? %>
+        <p class="album-detail__desc"><%= @album.description %></p>
+      <% end %>
+    </div>
+
+    <div class="album-detail__main">
+      <%# Collaborators %>
+      <section class="album-section">
+        <div class="album-section__header">
+          <h2>Collaborators</h2>
+        </div>
+        <% if @collaborators.any? %>
+          <ul class="collaborator-list">
+            <% @collaborators.each do |ac| %>
+              <li class="collaborator-item">
+                <span class="collaborator-item__name"><%= ac.user.byline %></span>
+                <span class="collaborator-item__role album-badge album-badge--<%= ac.role %>"><%= ac.role.humanize %></span>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="album-empty">No collaborators assigned.</p>
+        <% end %>
+      </section>
+
+      <%# Track list with drag-to-reorder %>
+      <section class="album-section">
+        <div class="album-section__header">
+          <h2>Tracks</h2>
+          <%= link_to "Add Track", new_admin_album_track_path(@album), class: "button button--sm" %>
+        </div>
+
+        <% if @tracks.any? %>
+          <div class="track-list"
+               data-controller="track-sort"
+               data-track-sort-reorder-url-value="<%= reorder_admin_album_tracks_path(@album) %>">
+            <% @tracks.each do |track| %>
+              <div class="track-row" data-track-id="<%= track.id %>" draggable="true"
+                   data-action="dragstart->track-sort#dragStart dragover->track-sort#dragOver drop->track-sort#drop dragend->track-sort#dragEnd">
+                <span class="track-row__handle" aria-hidden="true">&#8942;</span>
+                <span class="track-row__number"><%= track.position + 1 %></span>
+                <div class="track-row__info">
+                  <strong><%= link_to track.title, admin_album_track_path(@album, track) %></strong>
+                  <% if track.duration_seconds %>
+                    <span class="track-row__duration"><%= "%d:%02d" % track.duration_seconds.divmod(60) %></span>
+                  <% end %>
+                </div>
+                <div class="track-row__status">
+                  <% if track.audio.attached? %>
+                    <span class="track-badge track-badge--audio" title="Audio uploaded">&#9654;</span>
+                  <% else %>
+                    <span class="track-badge track-badge--missing" title="No audio">&#9899;</span>
+                  <% end %>
+                  <span class="track-badge track-badge--comments" title="Comments"><%= track.track_comments.size %> &#128172;</span>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="album-empty">No tracks yet. <%= link_to "Add the first track", new_admin_album_track_path(@album) %>.</p>
+        <% end %>
+      </section>
+    </div>
+  </div>
+</section>

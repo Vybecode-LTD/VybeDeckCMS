@@ -1,0 +1,68 @@
+<%= form_with model: [:admin, album, track], multipart: true do |f| %>
+  <% if track.errors.any? %>
+    <div class="form-errors">
+      <ul>
+        <% track.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="form-grid">
+    <div class="field">
+      <%= f.label :title %>
+      <%= f.text_field :title, class: "field__input", required: true %>
+    </div>
+
+    <div class="field">
+      <%= f.label :position, "Track Position" %>
+      <%= f.number_field :position, class: "field__input", min: 0 %>
+    </div>
+
+    <div class="field">
+      <%= f.label :isrc, "ISRC" %>
+      <%= f.text_field :isrc, class: "field__input", placeholder: "AA-XXX-YY-NNNNN" %>
+    </div>
+
+    <div class="field">
+      <%= f.label :duration_seconds, "Duration (seconds)" %>
+      <%= f.number_field :duration_seconds, class: "field__input", min: 0 %>
+    </div>
+
+    <div class="field">
+      <%= f.label :preview_start_seconds, "Preview start (seconds)" %>
+      <%= f.number_field :preview_start_seconds, class: "field__input", min: 0, value: track.preview_start_seconds || 0 %>
+    </div>
+
+    <div class="field">
+      <%= f.label :preview_end_seconds, "Preview end (seconds)" %>
+      <%= f.number_field :preview_end_seconds, class: "field__input", min: 1, value: track.preview_end_seconds || 30 %>
+    </div>
+
+    <div class="field field--full">
+      <%= f.label :credits %>
+      <%= f.text_area :credits, class: "field__input", rows: 2 %>
+    </div>
+
+    <div class="field field--full">
+      <%= f.label :audio, "Audio File (MP3, WAV, FLAC, AAC)" %>
+      <%= f.file_field :audio, class: "field__input", accept: "audio/*" %>
+      <% if track.audio.attached? %>
+        <p class="field__hint">Current: <%= track.audio.filename %> (<%= number_to_human_size(track.audio.byte_size) %>)</p>
+      <% end %>
+    </div>
+
+    <div class="field field--full">
+      <%= f.label :lyrics %>
+      <%= f.rich_text_area :lyrics, class: "field__input" %>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit track.persisted? ? "Save Track" : "Add Track", class: "button" %>
+    <%= link_to "Cancel",
+          track.persisted? ? admin_album_track_path(album, track) : admin_album_path(album),
+          class: "button button--alt" %>
+  </div>
+<% end %>

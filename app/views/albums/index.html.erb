@@ -1,0 +1,35 @@
+<% content_for :title, "Albums" %>
+<% content_for :description, "Browse our full album catalogue." %>
+
+<main class="page-main">
+  <header class="page-header">
+    <h1 class="page-title">Albums</h1>
+  </header>
+
+  <% if @albums.any? %>
+    <div class="album-grid">
+      <% @albums.each do |album| %>
+        <%= link_to albums_path(album.slug), class: "album-grid-card" do %>
+          <div class="album-grid-card__artwork-wrap">
+            <% if album.artwork.attached? %>
+              <%= image_tag album.artwork, class: "album-grid-card__artwork", alt: album.title %>
+            <% else %>
+              <div class="album-grid-card__artwork album-grid-card__artwork--placeholder">&#127925;</div>
+            <% end %>
+          </div>
+          <div class="album-grid-card__body">
+            <strong class="album-grid-card__title"><%= album.title %></strong>
+            <% if album.artist.present? %>
+              <span class="album-grid-card__artist"><%= album.artist %></span>
+            <% end %>
+            <% if album.release_date %>
+              <span class="album-grid-card__year"><%= album.release_date.year %></span>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="empty-state">No albums released yet. Check back soon.</p>
+  <% end %>
+</main>

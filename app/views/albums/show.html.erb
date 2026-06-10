@@ -1,0 +1,86 @@
+<% content_for :title, "#{@album.title}#{" — #{@album.artist}" if @album.artist.present?}" %>
+<% content_for :description, @album.description %>
+
+<main class="page-main">
+  <div class="album-page">
+    <div class="album-page__header">
+      <% if @album.artwork.attached? %>
+        <%= image_tag @album.artwork, class: "album-page__artwork", alt: "#{@album.title} artwork" %>
+      <% end %>
+
+      <div class="album-page__info">
+        <h1 class="album-page__title"><%= @album.title %></h1>
+        <% if @album.artist.present? %>
+          <p class="album-page__artist"><%= @album.artist %></p>
+        <% end %>
+
+        <div class="album-page__meta">
+          <% if @album.release_date %>
+            <span><%= @album.release_date.strftime("%d %b %Y") %></span>
+          <% end %>
+          <% if @album.genre.present? %>
+            <span><%= @album.genre %></span>
+          <% end %>
+          <% if @album.label.present? %>
+            <span><%= @album.label %></span>
+          <% end %>
+        </div>
+
+        <% if @album.description.present? %>
+          <p class="album-page__desc"><%= @album.description %></p>
+        <% end %>
+
+        <div class="album-page__actions">
+          <% if @album.product&.active_price %>
+            <% if @purchased %>
+              <%= link_to "Download", account_downloads_path, class: "button" %>
+            <% else %>
+              <%= button_to "Buy — #{@album.product.display_price}",
+                    cart_items_path,
+                    params: { product_id: @album.product.id },
+                    class: "button" %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <section class="album-page__tracks">
+      <h2>Tracklist</h2>
+      <ol class="public-track-list">
+        <% @tracks.each do |track| %>
+          <li class="public-track-item">
+            <span class="public-track-item__num"><%= track.position + 1 %></span>
+            <div class="public-track-item__info">
+              <span class="public-track-item__title"><%= track.title %></span>
+              <% if track.credits.present? %>
+                <span class="public-track-item__credits"><%= track.credits %></span>
+              <% end %>
+            </div>
+            <% if track.duration_seconds %>
+              <span class="public-track-item__duration"><%= "%d:%02d" % track.duration_seconds.divmod(60) %></span>
+            <% end %>
+            <% if track.audio.attached? %>
+              <div class="public-track-item__player">
+                <audio controls preload="none"
+                  class="public-track-preview"
+                  <% unless @purchased %>
+                    data-start="<%= track.preview_start_seconds %>"
+                    data-end="<%= track.preview_end_seconds %>"
+                    data-controller="track-preview"
+                  <% end %>
+                >
+                  <source src="<%= rails_blob_path(track.audio, disposition: "inline") %>"
+                          type="<%= track.audio.content_type %>">
+                </audio>
+                <% unless @purchased %>
+                  <small class="public-track-preview__label">Preview</small>
+                <% end %>
+              </div>
+            <% end %>
+          </li>
+        <% end %>
+      </ol>
+    </section>
+  </div>
+</main>
