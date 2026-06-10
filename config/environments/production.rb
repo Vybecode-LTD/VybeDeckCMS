@@ -54,19 +54,11 @@ Rails.application.configure do
   config.action_mailer.raise_delivery_errors = true
   config.action_mailer.default_url_options = { host: ENV.fetch("RAILS_HOST", "localhost") }
 
-  # SMTP is enabled when SMTP_ADDRESS is set as a Railway env var.
-  # Required vars: SMTP_ADDRESS, SMTP_USERNAME, SMTP_PASSWORD
-  # Optional vars: SMTP_PORT (default 587), ACTION_MAILER_FROM
-  if ENV["SMTP_ADDRESS"].present?
-    config.action_mailer.delivery_method = :smtp
-    config.action_mailer.smtp_settings = {
-      address: ENV.fetch("SMTP_ADDRESS"),
-      port: ENV.fetch("SMTP_PORT", "587").to_i,
-      user_name: ENV.fetch("SMTP_USERNAME", nil),
-      password: ENV.fetch("SMTP_PASSWORD", nil),
-      authentication: :plain,
-      enable_starttls_auto: true
-    }
+  # Email delivery via Resend REST API.
+  # Required Railway env var: RESEND_API_KEY
+  # Optional: ACTION_MAILER_FROM (defaults to noreply@<RAILS_HOST>)
+  if ENV["RESEND_API_KEY"].present?
+    config.action_mailer.delivery_method = :resend
     config.action_mailer.default_options = {
       from: ENV.fetch("ACTION_MAILER_FROM", "noreply@#{ENV.fetch("RAILS_HOST", "localhost")}")
     }
