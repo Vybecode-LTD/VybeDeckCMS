@@ -4,9 +4,9 @@
 > Keep "Last Completed" and "Immediate Next Session" current at the end of every session.
 
 **Updated:** 2026-06-09
-**Branch:** `main` — Phase 4.1 pushed to GitHub; Railway auto-deploy triggered
-**Last commit:** `40b5ea0` (Phase 4.1 — Community & Forum models, admin, and public UI)
-**Test suite:** `490 runs, 1292 assertions, 0 failures, 0 errors, 0 skips`
+**Branch:** `main` — Phase 4.2 committed; ready to push to GitHub
+**Last commit:** `2b90b1c` (Phase 4.2 — Reactions & Moderation Queue)
+**Test suite:** `523 runs, 1375 assertions, 0 failures, 0 errors, 0 skips`
 
 ---
 
@@ -18,8 +18,8 @@
 | Rails app | `C:\DEV\VybeDeck\vybedeck_cms` |
 | GitHub | `https://github.com/Vybecode-LTD/VybeDeckCMS.git` |
 | Deployed | Railway (auto-deploy from `main`) |
-| Branch | `main` — Phase 4.1 pushed; Railway deploy in progress |
-| Tests | `490 runs, 1292 assertions, 0 failures, 0 errors, 0 skips` |
+| Branch | `main` — Phase 4.2 committed; push when ready to deploy |
+| Tests | `523 runs, 1375 assertions, 0 failures, 0 errors, 0 skips` |
 
 ---
 
@@ -132,9 +132,14 @@ ruby bin\rails server        # dev server on :3000
 - Routes: `/community/*` ordered before `/*id` page catch-all; admin namespace extended
 - 46 new integration tests covering visibility gates, auth gates, Turbo Stream reply, locked-thread guard, view-count increment, admin CRUD, lock/pin toggle
 
-**Remaining Phase 4 sub-phases (not started):**
-- 4.2 — Reactions & Moderation Queue (reply likes; report flag → admin queue; approve/remove)
-- 4.3 — Per-reply admin delete (placeholder comment already in `_reply.html.erb`)
+**4.2 — Reactions & Moderation Queue** (`2b90b1c`)
+- Polymorphic `Like` model; `ForumReply#like!/unlike!/liked_by?`; `report!/clear_report!/reported?`; `report_reason`/`reported_at` columns
+- `CommunityController`: `like_reply` (toggle, Turbo Stream) and `report_reply` (store reason, Turbo Stream confirmation)
+- `Admin::ModerationController`: reported-reply queue, approve (clear report), remove (destroy)
+- Admin nav "Moderation" link; defensive `NameError` rescue in Administrate nav loop for custom controllers
+
+**Remaining Phase 4 sub-phases:**
+- 4.3 — Per-reply admin delete (placeholder `<!-- TODO -->` already in `_reply.html.erb`)
 - 4.4 — Notification bell (`Notification` model; thread-reply notifications; Turbo Stream unread badge)
 - 4.5 — Per-forum accent colour (`colour_hex` column; applied to forum card/thread headers)
 
@@ -263,20 +268,19 @@ cd C:\DEV\VybeDeck\vybedeck_cms
 
 # 2. Confirm green baseline
 ruby bin\rails test
-# Expected: 490 runs, 1292 assertions, 0 failures
+# Expected: 523 runs, 1375 assertions, 0 failures
 
-# 3. Implement Phase 4.2 or 4.4 (see options below)
-#    OR implement Phase 4.4 — Notification Bell (higher user value)
+# 3. Choose next phase (see options below)
 ```
 
 **Next phase options (priority order):**
 
-1. **Phase 4.2 — Reactions & Moderation Queue**
-   - Add `likes_count` increment via `ForumReply#like!` and a `POST /community/:slug/:id/replies/:reply_id/like` route
-   - Add `reported_at` / `report_reason` to ForumReply; `POST /community/:slug/:id/replies/:reply_id/report`
-   - Admin moderation queue: `GET /admin/moderation` listing reported replies; approve/remove actions
+1. **Phase 4.3 — Per-Reply Admin Controls** (small, <1 hour)
+   - Add inline "Delete" button in `_reply.html.erb` for `admin_accessible?` users
+   - Turbo Stream remove from DOM on delete; route `DELETE /community/:slug/:id/replies/:reply_id`
+   - Policy: `destroy?` = author or admin_accessible?
 
-3. **Phase 4.4 — Notification Bell** (higher UX value, can skip 4.2/4.3)
+2. **Phase 4.4 — Notification Bell** (higher UX value, can skip 4.3)
    - `Notification` model: `recipient` (User), `actor` (User), `notifiable` (polymorphic), `read_at`
    - `after_create_commit` on ForumReply: creates Notification for thread author (if different from reply author)
    - Notification bell in site header: counter badge; `GET /notifications` list page; mark-as-read Turbo Stream action
@@ -312,6 +316,7 @@ test/test_helpers/stripe_helper.rb           with_stripe_payment_intent / with_s
 
 | Hash | Message |
 |------|---------|
+| `2b90b1c` | feat(community): Phase 4.2 — reactions and moderation queue |
 | `40b5ea0` | feat(community): Phase 4.1 — Forum models, admin, and public UI |
 | `9f28005` | feat(email): Phase 3.7 - order email notifications + Tier 2/3 test debt |
 | `f0ba7d7` | feat(security): Tier 1 - Administrate::Punditize, CategoryPolicy, FriendlyId admin fixes |
