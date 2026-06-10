@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 
 # Use RubyInstaller's bundled console/doc gems on Windows to avoid compiling Psych/libyaml.
-gem "irb", "1.14.3"
+gem "irb", "1.18.0"
 gem "rdoc", "6.14.0"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
