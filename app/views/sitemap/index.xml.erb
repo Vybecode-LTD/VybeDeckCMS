@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc><%= root_url %></loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc><%= posts_url %></loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <% @posts.each do |post| %>
+  <url>
+    <loc><%= post_url(post) %></loc>
+    <lastmod><%= post.updated_at.utc.strftime("%Y-%m-%d") %></lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <% end %>
+  <% @pages.each do |page| %>
+  <url>
+    <loc><%= page_url(page) %></loc>
+    <lastmod><%= page.updated_at.utc.strftime("%Y-%m-%d") %></lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <% end %>
+  <% @albums.each do |album| %>
+  <url>
+    <loc><%= album_url(album.slug) %></loc>
+    <lastmod><%= album.updated_at.utc.strftime("%Y-%m-%d") %></lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <% end %>
+  <% @products.each do |product| %>
+  <url>
+    <loc><%= shop_product_url(product.slug) %></loc>
+    <lastmod><%= product.updated_at.utc.strftime("%Y-%m-%d") %></lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.65</priority>
+  </url>
+  <% end %>
+</urlset>

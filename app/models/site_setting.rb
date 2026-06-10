@@ -4,6 +4,11 @@ class SiteSetting < ApplicationRecord
       value:       "false",
       value_type:  "boolean",
       description: "When enabled, new user registration is disabled. Existing users can still sign in."
+    },
+    "robots_txt_custom" => {
+      value:       "",
+      value_type:  "string",
+      description: "Additional lines appended to the generated robots.txt (e.g. extra Disallow rules)."
     }
   }.freeze
 

@@ -3,11 +3,13 @@ module Admin
     before_action :require_admin_role
 
     def show
-      @invite_only = SiteSetting.invite_only?
+      @invite_only        = SiteSetting.invite_only?
+      @robots_txt_custom  = SiteSetting.get("robots_txt_custom")
     end
 
     def update
       SiteSetting.set("invite_only", params[:invite_only] == "1" ? "true" : "false")
+      SiteSetting.set("robots_txt_custom", params[:robots_txt_custom].to_s.strip)
       redirect_to admin_settings_path, notice: "Site settings saved."
     end
 

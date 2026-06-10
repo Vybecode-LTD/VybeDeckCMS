@@ -6,6 +6,38 @@
       <meta name="description" content="<%= h content_for(:description) %>">
     <% end %>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <%# ── Canonical ────────────────────────────────────────────────────── %>
+    <% _canonical = content_for?(:canonical_url) ? content_for(:canonical_url) : (request.base_url + request.path) %>
+    <link rel="canonical" href="<%= h _canonical %>">
+
+    <%# ── Open Graph ───────────────────────────────────────────────────── %>
+    <% _og_title = content_for?(:title) ? content_for(:title) : "VybeDeck CMS" %>
+    <% _og_desc  = content_for?(:description) ? content_for(:description) : "" %>
+    <% _og_type  = content_for?(:og_type) ? content_for(:og_type) : "website" %>
+    <meta property="og:title"       content="<%= h _og_title %>">
+    <meta property="og:description" content="<%= h _og_desc %>">
+    <meta property="og:url"         content="<%= h _canonical %>">
+    <meta property="og:type"        content="<%= h _og_type %>">
+    <meta property="og:site_name"   content="VybeDeck CMS">
+    <% if content_for?(:og_image) %>
+      <meta property="og:image"     content="<%= h content_for(:og_image) %>">
+    <% end %>
+
+    <%# ── Twitter Card ─────────────────────────────────────────────────── %>
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:title"       content="<%= h _og_title %>">
+    <meta name="twitter:description" content="<%= h _og_desc %>">
+    <% if content_for?(:og_image) %>
+      <meta name="twitter:image"    content="<%= h content_for(:og_image) %>">
+    <% end %>
+
+    <%# ── JSON-LD ──────────────────────────────────────────────────────── %>
+    <% if content_for?(:json_ld) %>
+      <script type="application/ld+json" nonce="<%= content_security_policy_nonce %>">
+        <%= content_for(:json_ld) %>
+      </script>
+    <% end %>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="application-name" content="VybeDeck CMS">
     <meta name="mobile-web-app-capable" content="yes">

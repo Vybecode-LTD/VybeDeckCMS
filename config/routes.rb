@@ -152,6 +152,9 @@ Rails.application.routes.draw do
   post "/checkout",             to: "checkouts#create"
   get  "/checkout/confirmation", to: "checkouts#confirmation", as: :checkout_confirmation
 
+  get "sitemap.xml", to: "sitemap#index",  defaults: { format: :xml  }, as: :sitemap
+  get "robots.txt",  to: "robots#show",    defaults: { format: :text }, as: :robots_txt
+
   get "up" => "rails/health#show", as: :rails_health_check
 
   # Public album catalogue — must come before the page catch-all

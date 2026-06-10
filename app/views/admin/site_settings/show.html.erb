@@ -29,6 +29,22 @@
       </label>
     </fieldset>
 
+    <fieldset class="fieldset" style="border:1px solid #e0e0e0; border-radius:8px; padding:20px; margin-bottom:24px; max-width:560px;">
+      <legend style="font-weight:600; padding:0 8px;">SEO — robots.txt</legend>
+      <p style="color:#666; font-size:.85rem; margin:0 0 8px;">
+        The standard rules (disallow /admin/, /webhooks/, /account/, /checkout, /cart) are
+        always included. Add any extra directives below — one per line.
+      </p>
+      <textarea name="robots_txt_custom"
+                id="robots_txt_custom"
+                rows="5"
+                style="width:100%; font-family:monospace; font-size:.85rem; padding:8px; border:1px solid #ccc; border-radius:4px; resize:vertical;"
+                placeholder="e.g.&#10;Disallow: /private/&#10;User-agent: GPTBot&#10;Disallow: /"><%= h @robots_txt_custom %></textarea>
+      <small style="color:#888; display:block; margin-top:4px;">
+        View current output: <a href="/robots.txt" target="_blank">/robots.txt</a>
+      </small>
+    </fieldset>
+
     <%= f.submit "Save settings",
           style: "height:40px; padding:0 20px; background:#1a1a1a; border:none; border-radius:8px; color:#fff; cursor:pointer; font-size:.875rem; font-weight:600;" %>
   <% end %>

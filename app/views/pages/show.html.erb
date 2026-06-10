@@ -1,5 +1,8 @@
 <% content_for :title, public_page_title(@page) %>
 <% content_for :description, @page.meta_description if @page.meta_description.present? %>
+<% if @page.hero_image.attached? %>
+  <% content_for :og_image, url_for(@page.hero_image) %>
+<% end %>
 
 <main class="page-shell">
   <section class="content-hero">

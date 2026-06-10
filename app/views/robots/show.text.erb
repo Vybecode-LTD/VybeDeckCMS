@@ -1,0 +1,11 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /webhooks/
+Disallow: /account/
+Disallow: /checkout
+Disallow: /cart
+<% if @custom_rules.present? %>
+<%= @custom_rules.strip %>
+<% end %>
+
+Sitemap: <%= root_url %>sitemap.xml
