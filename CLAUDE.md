@@ -15,9 +15,22 @@
 | Branch | `main` |
 | Platform | Railway (PaaS, auto-deploy from main) |
 | Stack | Rails 8.1, Ruby 3.4, PostgreSQL 17, Propshaft, Importmap, Minitest |
-| Last commit | `2b90b1c` |
+| Last commit | `f811492` |
 
 ## Last Completed Task (2026-06-09)
+
+**Phase 4.3-4.5 — Per-Reply Delete, Notification Bell, Forum Accent Colour** (commit `f811492`):
+- `community#destroy_reply`: `DELETE /community/:slug/:id/replies/:reply_id`; Turbo Stream `remove("reply-#{@reply.id}")`; `ForumReplyPolicy#destroy?` (own reply or admin_accessible?); delete button rendered in `_reply.html.erb` via `policy(reply).destroy?` (Pundit helper_method)
+- Polymorphic `Notification` model: `recipient` (User), `actor` (User, optional), `notifiable` (polymorphic), `read_at`. `after_create_commit :broadcast_bell_to_recipient` calls `Turbo::StreamsChannel.broadcast_replace_to` on a per-user channel key. Scopes: `unread`, `recent`. Helpers: `unread?`, `mark_read!`
+- `ForumReply#after_create_commit :notify_thread_author` — creates `Notification` for thread author; skipped when author == thread author
+- `User#has_many :notifications, foreign_key: :recipient_id, dependent: :destroy`
+- `NotificationsController` (`GET /notifications`): Pundit `policy_scope` scoped to `Current.user`; marks all unread read via `update_all`; broadcasts bell count to 0 via Turbo Streams; Pagy 20/page
+- `shared/_notification_bell.html.erb` partial with SVG bell and badge; injected in site header for signed-in users; Turbo Stream subscription `turbo_stream_from "notifications_user_#{Current.user.id}"` in application layout
+- `colour_hex` string column on `Forum` (migration `20260609200300`); validates `/\A#[0-9a-fA-F]{6}\z/`, allow_blank. `--forum-accent` CSS custom property injected inline on forum-card, forum header, thread header; all affected rules use `var(--forum-accent, var(--accent))` fallback
+- `ForumDashboard` updated with `colour_hex: Field::String`
+- CSS additions: `.reply-delete-btn`, `.notification-bell`, `.notification-bell--active`, `.notification-bell__badge`, `.notification-list`, `.notification-item`, `.button--sm`, `.button--danger`
+- 5 tests in `test/integration/community_reply_delete_test.rb`; 8 in `test/models/notification_test.rb`; 4 in `test/integration/notifications_test.rb`; 6 in `test/models/forum_test.rb`
+- **Suite: 545 runs, 1429 assertions, 0 failures, 0 errors, 0 skips**
 
 **Phase 4.2 — Reactions & Moderation Queue** (commit `2b90b1c`):
 - Polymorphic `Like` model with unique index on `[user_id, likeable_type, likeable_id]`; `after_create/destroy_commit` counter callbacks increment/decrement `ForumReply.likes_count`
@@ -227,12 +240,7 @@ Previous milestones: Rails 8 foundation → auth/Pundit → Page/Post/Category �
 
 ## Active Task
 
-Phase 4.2 (Reactions & Moderation Queue) complete and committed. Remaining Phase 4 sub-phases:
-- **4.3 — Per-Reply Admin Controls**: inline delete button in thread view (placeholder `<!-- TODO -->` already in `_reply.html.erb`)
-- **4.4 — Notification Bell**: `Notification` model; notify thread author on reply; unread bell badge in site header via Turbo Streams
-- **4.5 — Per-Forum Accent Colour**: `colour_hex` column on Forum; applied to forum card and thread headers
-
-Next Phase 4 step is 4.2 (Reactions & Moderation Queue). Deploy 4.1 to Railway by pushing `main` when ready.
+Phase 4 fully complete (4.1–4.5, commit `f811492`). Push `main` to GitHub to trigger Railway auto-deploy, then plan Phase 5.
 
 ## Architecture (rules — never break without explicit owner approval)
 
@@ -251,10 +259,11 @@ Next Phase 4 step is 4.2 (Reactions & Moderation Queue). Deploy 4.1 to Railway b
 ## Current Content Model
 
 ### Community (Phase 4)
-- `Forum` — FriendlyId slug, visibility enum (`open`/`members_only`/`subscribers_only`), `name`, `description`, `icon`, `position`. `has_many :forum_threads, dependent: :destroy`. Scope `ordered` sorts by position then created_at.
+- `Forum` — FriendlyId slug, visibility enum (`open`/`members_only`/`subscribers_only`), `name`, `description`, `icon`, `position`, `colour_hex` (optional 6-digit hex; blank = no accent override). `has_many :forum_threads, dependent: :destroy`. Scope `ordered` sorts by position then created_at.
 - `ForumThread` — `title`, `author` (User), `forum`, Action Text `body`, `pinned`, `locked`, `view_count`, `reply_count` (counter cache), `last_reply_at`. Scope `pinned_first`, `for_listing`.
-- `ForumReply` — `author` (User), `forum_thread`, Action Text `body`, `likes_count`, `is_solution`, `reported_at`, `report_reason`. `after_create_commit` updates thread `last_reply_at`; `after_destroy_commit` resets it (with cascade-destroy guard via `forum_thread.destroyed?`). `has_many :likes, as: :likeable`. Helpers: `like!/unlike!/liked_by?`, `report!/clear_report!/reported?`. Scope: `reported`.
+- `ForumReply` — `author` (User), `forum_thread`, Action Text `body`, `likes_count`, `is_solution`, `reported_at`, `report_reason`. `after_create_commit` callbacks: (1) updates thread `last_reply_at`; (2) `notify_thread_author` — creates `Notification` for thread author if different from reply author. `after_destroy_commit` resets `last_reply_at` (with cascade-destroy guard via `forum_thread.destroyed?`). `has_many :likes, as: :likeable`. Helpers: `like!/unlike!/liked_by?`, `report!/clear_report!/reported?`. Scope: `reported`.
 - `Like` — polymorphic `belongs_to :likeable`; `belongs_to :user`; unique index on `[user_id, likeable_type, likeable_id]`; `after_create/destroy_commit` increment/decrement `likeable.likes_count`.
+- `Notification` — `recipient` (User), `actor` (User, optional), `notifiable` (polymorphic), `read_at` (nil = unread). `after_create_commit :broadcast_bell_to_recipient` broadcasts unread count to per-user Turbo Stream channel. Scopes: `unread`, `recent`. Helpers: `unread?`, `mark_read!`.
 
 ### Publishing
 - `Page` — standalone/hierarchical. Action Text `body`, Active Storage `hero_image`, `Publishable`, `Seoable`, FriendlyId slug, `show_in_nav`, `position`, optional `parent`/`children` self-join
@@ -302,7 +311,7 @@ ruby bin\rails test
 ## Test Suite
 
 ```
-523 runs, 1375 assertions, 0 failures, 0 errors, 0 skips
+545 runs, 1429 assertions, 0 failures, 0 errors, 0 skips
 ```
 
 Key test files:
@@ -344,6 +353,17 @@ Key test files:
 - `test/jobs/send_order_confirmation_job_test.rb` — delivers on paid order, idempotent (skips on second call), skips non-paid, skips missing ID, `download_ready` triggered when product has files, `download_ready` skipped when no files
 - `test/jobs/send_refund_receipt_job_test.rb` — delivers on refunded order, idempotent, skips non-refunded, skips missing ID
 - `test/jobs/send_email_verification_job_test.rb` — delivers, skips already-verified user, skips deleted user
+
+**Phase 4 — Community**
+- `test/integration/community_test.rb` — visibility gates, auth gates, Turbo Stream reply, locked-thread guard, view-count increment
+- `test/integration/admin_forum_test.rb` — admin CRUD, lock/pin toggle
+- `test/models/like_test.rb` — unique index, counter increment/decrement
+- `test/integration/community_reactions_test.rb` — like toggle (own/other), report, Turbo Stream responses, moderation queue
+- `test/integration/admin_moderation_test.rb` — moderation queue auth gates, approve/remove actions
+- `test/integration/community_reply_delete_test.rb` — author deletes own reply (HTML + Turbo Stream), admin deletes any, member cannot delete another's, anon redirected
+- `test/models/notification_test.rb` — reply creates notification, own-thread skipped, unread?, mark_read!, idempotent mark_read!, unread scope, notifiable association
+- `test/integration/notifications_test.rb` — anon redirected, authenticated can view, visit marks all read, scoped to own notifications
+- `test/models/forum_test.rb` — colour_hex validation (valid hex, missing hash, short, non-hex chars, blank/nil valid)
 
 **Shared helpers**
 - `test/test_helpers/stripe_helper.rb` — `with_stripe_payment_intent`, `with_stripe_refund`; both use `define_singleton_method` + `.method()` save/restore in `ensure` (Minitest 6 has no `#stub`)

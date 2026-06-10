@@ -4,9 +4,9 @@
 > Keep "Last Completed" and "Immediate Next Session" current at the end of every session.
 
 **Updated:** 2026-06-09
-**Branch:** `main` — Phase 4.2 committed; ready to push to GitHub
-**Last commit:** `2b90b1c` (Phase 4.2 — Reactions & Moderation Queue)
-**Test suite:** `523 runs, 1375 assertions, 0 failures, 0 errors, 0 skips`
+**Branch:** `main` — Phase 4.3-4.5 committed; ready to push to GitHub
+**Last commit:** `f811492` (Phase 4.3-4.5 — Per-Reply Delete, Notification Bell, Forum Accent Colour)
+**Test suite:** `545 runs, 1429 assertions, 0 failures, 0 errors, 0 skips`
 
 ---
 
@@ -18,8 +18,8 @@
 | Rails app | `C:\DEV\VybeDeck\vybedeck_cms` |
 | GitHub | `https://github.com/Vybecode-LTD/VybeDeckCMS.git` |
 | Deployed | Railway (auto-deploy from `main`) |
-| Branch | `main` — Phase 4.2 committed; push when ready to deploy |
-| Tests | `523 runs, 1375 assertions, 0 failures, 0 errors, 0 skips` |
+| Branch | `main` — Phase 4.3-4.5 committed; push when ready to deploy |
+| Tests | `545 runs, 1429 assertions, 0 failures, 0 errors, 0 skips` |
 
 ---
 
@@ -138,10 +138,15 @@ ruby bin\rails server        # dev server on :3000
 - `Admin::ModerationController`: reported-reply queue, approve (clear report), remove (destroy)
 - Admin nav "Moderation" link; defensive `NameError` rescue in Administrate nav loop for custom controllers
 
-**Remaining Phase 4 sub-phases:**
-- 4.3 — Per-reply admin delete (placeholder `<!-- TODO -->` already in `_reply.html.erb`)
-- 4.4 — Notification bell (`Notification` model; thread-reply notifications; Turbo Stream unread badge)
-- 4.5 — Per-forum accent colour (`colour_hex` column; applied to forum card/thread headers)
+**4.3-4.5 — Per-Reply Delete, Notification Bell, Forum Accent Colour** (`f811492`)
+- `community#destroy_reply` (`DELETE /community/:slug/:id/replies/:reply_id`); Turbo Stream `remove`; `ForumReplyPolicy#destroy?` (own or admin_accessible?); delete button in `_reply.html.erb` behind `policy(reply).destroy?`
+- Polymorphic `Notification` model: `recipient`/`actor`/`notifiable`/`read_at`; `after_create_commit` broadcasts unread count to per-user Turbo Stream channel (`notifications_user_:id`)
+- `ForumReply#notify_thread_author` `after_create_commit` — creates Notification unless author == thread author
+- `NotificationsController` (`GET /notifications`): policy-scoped, marks all unread read, broadcasts bell count to 0, Pagy 20/page
+- `shared/_notification_bell.html.erb` SVG bell + badge; in site header for signed-in users; layout subscribes via `turbo_stream_from`
+- `colour_hex` on `Forum` (validates 6-digit hex, allow_blank); `--forum-accent` CSS custom property injected inline; all affected CSS rules use `var(--forum-accent, var(--accent))` fallback
+- `ForumDashboard` updated; CSS additions: `.reply-delete-btn`, `.notification-bell*`, `.button--sm`, `.button--danger`
+- **Phase 4 fully complete. Suite: 545 runs, 1429 assertions, 0 failures, 0 errors, 0 skips**
 
 ---
 
@@ -268,28 +273,26 @@ cd C:\DEV\VybeDeck\vybedeck_cms
 
 # 2. Confirm green baseline
 ruby bin\rails test
-# Expected: 523 runs, 1375 assertions, 0 failures
+# Expected: 545 runs, 1429 assertions, 0 failures
 
 # 3. Choose next phase (see options below)
 ```
 
 **Next phase options (priority order):**
 
-1. **Phase 4.3 — Per-Reply Admin Controls** (small, <1 hour)
-   - Add inline "Delete" button in `_reply.html.erb` for `admin_accessible?` users
-   - Turbo Stream remove from DOM on delete; route `DELETE /community/:slug/:id/replies/:reply_id`
-   - Policy: `destroy?` = author or admin_accessible?
-
-2. **Phase 4.4 — Notification Bell** (higher UX value, can skip 4.3)
-   - `Notification` model: `recipient` (User), `actor` (User), `notifiable` (polymorphic), `read_at`
-   - `after_create_commit` on ForumReply: creates Notification for thread author (if different from reply author)
-   - Notification bell in site header: counter badge; `GET /notifications` list page; mark-as-read Turbo Stream action
+1. **Push `main` to GitHub** — Railway auto-deploys; Phase 4 features go live
+2. **Phase 5** — plan with user (likely direct messages, or a Phase 5.1 from ROADMAP.md)
 
 ---
 
 ## File Map (unusual or easy-to-forget)
 
 ```
+app/models/notification.rb                   Polymorphic notification; after_create_commit broadcasts bell via Turbo Streams
+app/controllers/notifications_controller.rb  GET /notifications; marks all read; broadcasts bell count to 0
+app/views/shared/_notification_bell.html.erb SVG bell + unread badge partial (rendered in site header)
+app/views/notifications/index.html.erb       Notification list page
+app/policies/notification_policy.rb         index? = user.present?; Scope filters by recipient
 app/fields/active_storage_field.rb           Custom Administrate field for has_one_attached
 app/fields/active_storage_multi_field.rb     Custom Administrate field for has_many_attached
 app/views/fields/active_storage/             _form and _show partials for single attachment
@@ -316,6 +319,7 @@ test/test_helpers/stripe_helper.rb           with_stripe_payment_intent / with_s
 
 | Hash | Message |
 |------|---------|
+| `f811492` | feat(community): Phase 4.3-4.5 — reply delete, notification bell, forum accent colour |
 | `2b90b1c` | feat(community): Phase 4.2 — reactions and moderation queue |
 | `40b5ea0` | feat(community): Phase 4.1 — Forum models, admin, and public UI |
 | `9f28005` | feat(email): Phase 3.7 - order email notifications + Tier 2/3 test debt |
